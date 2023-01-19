@@ -1,0 +1,11 @@
+[package]
+name = "divedb_core"
+version = "0.1.0"
+edition = "2018"
+license = "AGPL-3.0"
+
+
+[dependencies]
+anyhow = "1.0.27"
+tokio-postgres = {version = "0.7", features=["with-chrono-0_4", "with-uuid-0_8"]}
+divedb_macro = {path = "../divedb_macro"}

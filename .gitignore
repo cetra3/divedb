@@ -1,0 +1,7 @@
+/target
+.env
+db_dump.gz
+store/
+thumbs/
+*.jpg
+deploy.sh

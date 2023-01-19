@@ -1,0 +1,15 @@
+fragment CurrentUser on LoginResponse {
+	id
+	email
+	level
+	username
+	watermarkLocation
+	copyrightLocation
+}
+
+fragment CurrentUserToken on LoginResponse {
+	id
+	email
+	level
+	token
+}

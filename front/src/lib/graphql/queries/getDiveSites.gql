@@ -1,0 +1,20 @@
+query getDiveSites($id: UUID, $name: String, $maxDepth: Float, $slug: String) {
+	diveSites(id: $id, name: $name, maxDepth: $maxDepth, slug: $slug) {
+		...Site
+	}
+	siteUrl
+	regions {
+		...RegionNode
+	}
+}
+query getDiveSitesSummaryMetrics($id: UUID, $name: String, $maxDepth: Float, $slug: String) {
+	diveSites(id: $id, name: $name, maxDepth: $maxDepth, slug: $slug) {
+		...SiteSummaryMetrics
+	}
+}
+
+query popularDiveSites {
+	popularDiveSites {
+		...SiteSummaryMetrics
+	}
+}

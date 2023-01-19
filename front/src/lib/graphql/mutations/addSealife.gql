@@ -1,0 +1,5 @@
+mutation addSealife($sealife: CreateSealife!) {
+	newSealife(sealife: $sealife) {
+		...SealifeNode
+	}
+}

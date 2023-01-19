@@ -1,0 +1,5 @@
+mutation addDiveSite($site: CreateDiveSite!) {
+	newDiveSite(site: $site) {
+		...Site
+	}
+}

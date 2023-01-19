@@ -1,0 +1,3 @@
+mutation removeReference($id: UUID!) {
+	removeReference(id: $id)
+}

@@ -1,0 +1,3 @@
+mutation syncSubsurface($email: String!, $password: String!) {
+	syncSubsurface(email: $email, password: $password)
+}

@@ -1,0 +1,5 @@
+mutation fbRegisterUser($redirectUri: String!, $code: String!) {
+	fbRegisterUser(redirectUri: $redirectUri, code: $code) {
+		...CurrentUserToken
+	}
+}

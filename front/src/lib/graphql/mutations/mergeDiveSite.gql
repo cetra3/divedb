@@ -1,0 +1,3 @@
+mutation mergeDiveSites($fromId: UUID!, $toId: UUID!) {
+	mergeDiveSites(fromId: $fromId, toId: $toId)
+}

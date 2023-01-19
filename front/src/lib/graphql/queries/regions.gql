@@ -1,0 +1,5 @@
+query getRegions {
+	regions {
+		...RegionNode
+	}
+}

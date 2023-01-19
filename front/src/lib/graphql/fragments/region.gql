@@ -1,0 +1,9 @@
+fragment RegionNode on Region {
+	id
+	name
+	latMin
+	lonMin
+	latMax
+	lonMax
+	slug
+}

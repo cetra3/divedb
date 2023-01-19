@@ -1,0 +1,292 @@
+
+type Category {
+	id: UUID!
+	name: String!
+	values: [CategoryValue!]!
+}
+
+type CategoryValue {
+	id: UUID!
+	categoryId: UUID!
+	value: String!
+}
+
+input CreateCategory {
+	id: UUID
+	name: String!
+}
+
+input CreateCategoryValue {
+	id: UUID
+	categoryId: UUID!
+	value: String!
+}
+
+input CreateDive {
+	id: UUID
+	date: DateTime!
+	duration: Int!
+	depth: Float!
+	diveSiteId: UUID
+}
+
+input CreateDiveSite {
+	id: UUID
+	name: String!
+	description: String!
+	access: String!
+	difficulty: Difficulty!
+	depth: Float!
+	photoId: UUID
+	lat: Float!
+	lon: Float!
+	published: Boolean!
+}
+
+input CreatePhoto {
+	id: UUID
+	userId: UUID!
+	filename: String!
+	date: DateTime!
+	diveId: UUID
+	size: Int!
+	diveSiteId: UUID
+	sealifeId: UUID
+}
+
+input CreateRegion {
+	id: UUID
+	name: String!
+	latMin: Float!
+	lonMin: Float!
+	latMax: Float!
+	lonMax: Float!
+}
+
+input CreateSealife {
+	id: UUID
+	name: String!
+	scientificName: String
+	description: String!
+	photoId: UUID
+	categoryMap: JSONObject
+	hideLocation: Boolean!
+}
+
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+
+enum Difficulty {
+	OW
+	AOW
+	TECH
+}
+
+type Dive {
+	id: UUID!
+	userId: UUID!
+	date: DateTime!
+	duration: Int!
+	depth: Float!
+	latestPhotos: [Photo!]!
+	number: Int!
+	hasMetrics: Boolean!
+	diveSiteId: UUID
+	diveSite: DiveSite
+}
+
+type DiveSite {
+	id: UUID!
+	userId: UUID
+	name: String!
+	description: String!
+	summary: String!
+	access: String!
+	difficulty: Difficulty!
+	depth: Float!
+	lat: Float!
+	lon: Float!
+	published: Boolean!
+	date: DateTime!
+	slug: String
+	siteMetrics: SiteMetric!
+	photoId: UUID
+	photo: Photo
+	latestPhotos: [Photo!]!
+	references: [OgReference!]!
+}
+
+type Feedback {
+	id: UUID!
+	date: DateTime!
+	userId: UUID!
+	feedback: String!
+}
+
+
+
+
+"""
+A scalar that can represent any JSON Object value.
+"""
+scalar JSONObject
+
+type LoginResponse {
+	id: UUID!
+	email: String!
+	token: String!
+	level: UserLevel!
+	username: String
+	watermarkLocation: OverlayLocation!
+	copyrightLocation: OverlayLocation
+}
+
+type Mutation {
+	requestResetToken(email: String!): Boolean!
+	changePassword(oldPassword: String!, newPassword: String!): Boolean!
+	resetPassword(email: String!, newPassword: String!, token: UUID!): LoginResponse!
+	registerUser(email: String!, password: String!): LoginResponse!
+	fbRegisterUser(redirectUri: String!, code: String!): LoginResponse!
+	login(email: String!, password: String!): LoginResponse!
+	fbLogin(redirectUri: String!, code: String!): LoginResponse!
+	updateSettings(username: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation): LoginResponse
+	syncSubsurface(email: String!, password: String!): Boolean!
+	addFeedback(feedback: String!): Feedback!
+	newCategory(category: CreateCategory!): Category!
+	removeCategory(categoryId: UUID!): Boolean!
+	removeCategoryValue(categoryValueId: UUID!): Boolean!
+	newCategoryValue(categoryValue: CreateCategoryValue!): CategoryValue!
+	newDive(dive: CreateDive!): Dive!
+	removeDive(id: UUID!): Boolean!
+	newDiveSite(site: CreateDiveSite!): DiveSite!
+	mergeDiveSites(fromId: UUID!, toId: UUID!): Boolean!
+	removeDiveSite(id: UUID!): Boolean!
+	deleteUser(password: String!): Boolean!
+	updatePhoto(photo: CreatePhoto!): Photo!
+	removePhoto(id: UUID!): Boolean!
+	newSealife(sealife: CreateSealife!): Sealife!
+	removeSealife(id: UUID!): Boolean!
+	checkReference(url: String!): OgReference!
+	newReference(url: String!, sealifeId: UUID, diveSiteId: UUID): OgReference!
+	removeReference(id: UUID!): Boolean!
+	newRegion(region: CreateRegion!): Region!
+	removeRegion(id: UUID!): Boolean!
+}
+
+type OgReference {
+	id: UUID!
+	url: String!
+	title: String!
+	imageUrl: String
+	description: String!
+	lastFetched: DateTime!
+}
+
+enum OverlayLocation {
+	TOP_LEFT
+	TOP_RIGHT
+	BOTTOM_LEFT
+	BOTTOM_RIGHT
+}
+
+type Photo {
+	id: UUID!
+	userId: UUID!
+	date: DateTime
+	filename: String!
+	size: Float!
+	width: Float!
+	height: Float!
+	dive: Dive
+	sealife: Sealife
+	diveSite: DiveSite
+}
+
+type Query {
+	siteUrl: String!
+	fbAppId: String!
+	categories: [Category!]!
+	categoryValues: [CategoryValue!]!
+	search(query: String!): [SearchResult!]!
+	dives(id: UUID, maxDepth: Float): [Dive!]!
+	currentUser: LoginResponse
+	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!
+	popularDiveSites: [DiveSite!]!
+	photos(id: UUID, userId: UUID, diveSite: UUID, dive: UUID, sealifeId: UUID, offset: Int, orderByUpload: Boolean): [Photo!]!
+	regions: [Region!]!
+	sealife(id: UUID, name: String, scientificName: String, slug: String, categoryValues: [UUID!]): [Sealife!]!
+}
+
+type Region {
+	id: UUID!
+	name: String!
+	latMin: Float!
+	lonMin: Float!
+	latMax: Float!
+	lonMax: Float!
+	slug: String!
+}
+
+type Sealife {
+	id: UUID!
+	name: String!
+	scientificName: String
+	description: String!
+	date: DateTime!
+	summary: String!
+	photoId: UUID
+	photo: Photo
+	latestPhotos: [Photo!]!
+	categoryMap: JSONObject!
+	slug: String
+	references: [OgReference!]!
+	hideLocation: Boolean!
+}
+
+type SearchResult {
+	id: String!
+	kind: SearchResultKind!
+	photoId: String
+	slug: String!
+	name: String!
+	scientificName: String
+	summary: String!
+}
+
+enum SearchResultKind {
+	SEALIFE
+	DIVE_SITE
+}
+
+type SiteMetric {
+	photoCount: Int!
+	diveCount: Int!
+}
+
+
+"""
+A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+Strings within GraphQL. UUIDs are used to assign unique identifiers to
+entities without requiring a central allocating authority.
+
+# References
+
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+* [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+"""
+scalar UUID
+
+enum UserLevel {
+	USER
+	EDITOR
+	ADMIN
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}

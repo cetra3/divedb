@@ -1,0 +1,3 @@
+mutation removePhoto($id: UUID!) {
+	removePhoto(id: $id)
+}

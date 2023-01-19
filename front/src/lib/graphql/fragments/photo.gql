@@ -1,0 +1,18 @@
+fragment PhotoSummary on Photo {
+	id
+	userId
+	filename
+	date
+	size
+	width
+	height
+	dive {
+		...DiveSummary
+	}
+	diveSite {
+		...SiteSummary
+	}
+	sealife {
+		...SealifeSummary
+	}
+}

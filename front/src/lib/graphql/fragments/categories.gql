@@ -1,0 +1,13 @@
+fragment CategoryNode on Category {
+	id
+	name
+	values {
+		...CategoryValueNode
+	}
+}
+
+fragment CategoryValueNode on CategoryValue {
+	id
+	categoryId
+	value
+}

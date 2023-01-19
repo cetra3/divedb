@@ -1,0 +1,22 @@
+query getPhotos(
+	$id: UUID
+	$userId: UUID
+	$diveSite: UUID
+	$dive: UUID
+	$sealifeId: UUID
+	$offset: Int
+	$orderByUpload: Boolean
+) {
+	photos(
+		id: $id
+		userId: $userId
+		diveSite: $diveSite
+		dive: $dive
+		sealifeId: $sealifeId
+		offset: $offset
+		orderByUpload: $orderByUpload
+	) {
+		...PhotoSummary
+	}
+	siteUrl
+}

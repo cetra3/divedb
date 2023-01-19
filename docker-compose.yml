@@ -1,0 +1,42 @@
+version: "3"
+services:
+  database:
+    image: "postgres"
+    environment:
+      POSTGRES_USER: divedb
+      POSTGRES_PASSWORD: divedb
+      POSTGRES_DB: divedb
+    volumes:
+      - divedb-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    environment:
+      CONNECT_URL: postgres://divedb:divedb@database
+    ports:
+      - "3333:3333"
+    depends_on:
+      - database
+    volumes:
+      - svelte-build:/svelte/build
+      - ./store:/store
+      - ./thumbs:/thumbs
+  front:
+    build: front
+    environment:
+      VITE_BACKEND_URL: http://web:3333
+    depends_on:
+      - web
+      - database
+    volumes:
+      - svelte-build:/svelte/build
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+
+volumes:
+  divedb-db: {}
+  svelte-build: {}

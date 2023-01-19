@@ -1,0 +1,11 @@
+query getCategories {
+	categories {
+		...CategoryNode
+	}
+}
+
+query getCategoryValues {
+	categoryValues {
+		...CategoryValueNode
+	}
+}

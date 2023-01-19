@@ -1,0 +1,9 @@
+fragment SearchResultNode on SearchResult {
+	id
+	kind
+	slug
+	photoId
+	name
+	scientificName
+	summary
+}

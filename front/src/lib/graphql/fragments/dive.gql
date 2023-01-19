@@ -1,0 +1,38 @@
+fragment DiveSummary on Dive {
+	id
+	date
+	duration
+	depth
+	diveSite {
+		...SiteSummary
+	}
+}
+
+fragment DiveWithMetrics on Dive {
+	id
+	userId
+	date
+	depth
+	duration
+	hasMetrics
+	diveSite {
+		...SiteSummary
+	}
+}
+
+fragment DiveNode on Dive {
+	id
+	userId
+	date
+	depth
+	duration
+	number
+	hasMetrics
+	latestPhotos {
+		...PhotoSummary
+	}
+	diveSiteId
+	diveSite {
+		...SiteSummary
+	}
+}

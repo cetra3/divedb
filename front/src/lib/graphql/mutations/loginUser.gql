@@ -1,0 +1,19 @@
+mutation loginUser($email: String!, $password: String!) {
+	login(email: $email, password: $password) {
+		...CurrentUserToken
+	}
+}
+
+mutation updateSettings(
+	$username: String
+	$watermarkLocation: OverlayLocation!
+	$copyrightLocation: OverlayLocation
+) {
+	updateSettings(
+		username: $username
+		watermarkLocation: $watermarkLocation
+		copyrightLocation: $copyrightLocation
+	) {
+		...CurrentUser
+	}
+}

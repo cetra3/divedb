@@ -1,0 +1,3 @@
+mutation removeSealife($id: UUID!) {
+	removeSealife(id: $id)
+}

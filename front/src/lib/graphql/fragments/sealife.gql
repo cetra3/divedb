@@ -1,0 +1,30 @@
+fragment SealifeNode on Sealife {
+	id
+	name
+	summary
+	scientificName
+	description
+	slug
+	date
+	categoryMap
+	hideLocation
+	photoId
+	photo {
+		...PhotoSummary
+	}
+	latestPhotos {
+		...PhotoSummary
+	}
+	references {
+		...Reference
+	}
+}
+
+fragment SealifeSummary on Sealife {
+	id
+	name
+	scientificName
+	summary
+	slug
+	photoId
+}

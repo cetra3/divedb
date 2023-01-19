@@ -1,0 +1,52 @@
+fragment Site on DiveSite {
+	id
+	name
+	description
+	summary
+	access
+	difficulty
+	depth
+	lat
+	lon
+	published
+	userId
+	slug
+	date
+	siteMetrics {
+		...SiteMetricNode
+	}
+	photoId
+	photo {
+		...PhotoSummary
+	}
+	latestPhotos {
+		...PhotoSummary
+	}
+	references {
+		...Reference
+	}
+}
+
+fragment SiteSummary on DiveSite {
+	name
+	id
+	slug
+}
+
+fragment SiteMetricNode on SiteMetric {
+	photoCount
+	diveCount
+}
+
+fragment SiteSummaryMetrics on DiveSite {
+	id
+	name
+	summary
+	slug
+	siteMetrics {
+		...SiteMetricNode
+	}
+	lat
+	lon
+	photoId
+}

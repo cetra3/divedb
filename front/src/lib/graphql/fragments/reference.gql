@@ -1,0 +1,8 @@
+fragment Reference on OgReference {
+	id
+	url
+	title
+	description
+	imageUrl
+	lastFetched
+}

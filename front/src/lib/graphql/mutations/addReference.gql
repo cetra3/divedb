@@ -1,0 +1,5 @@
+mutation newReference($url: String!, $sealifeId: UUID, $diveSiteId: UUID) {
+	newReference(url: $url, sealifeId: $sealifeId, diveSiteId: $diveSiteId) {
+		...Reference
+	}
+}

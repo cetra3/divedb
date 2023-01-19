@@ -1,0 +1,9 @@
+mutation newRegion($region: CreateRegion!) {
+	newRegion(region: $region) {
+		...RegionNode
+	}
+}
+
+mutation removeRegion($id: UUID!) {
+	removeRegion(id: $id)
+}

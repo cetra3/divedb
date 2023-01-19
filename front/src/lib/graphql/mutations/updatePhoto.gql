@@ -1,0 +1,5 @@
+mutation updatePhoto($photo: CreatePhoto!) {
+	updatePhoto(photo: $photo) {
+		...PhotoSummary
+	}
+}

@@ -1,0 +1,19 @@
+schema: '../schema.graphql'
+documents: './src/lib/graphql/**/*.gql'
+config:
+  scalars:
+    Datetime: string
+    UUID: string
+generates:
+  src/lib/graphql/generated.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
+    config:
+      dedupeFragments: true
+      useTypeImports: true
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write
