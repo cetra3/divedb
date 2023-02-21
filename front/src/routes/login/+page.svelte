@@ -1,17 +1,3 @@
-<script context="module" lang="ts">
-	import { client } from '$lib/graphql/client';
-
-	export async function load() {
-		let result = await client.fbAppId();
-
-		return {
-			props: {
-				fbAppId: result.fbAppId
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { ClientError } from 'graphql-request';
@@ -19,8 +5,12 @@
 	import { fbLoginRedirect } from '$lib/util/fbRedirect';
 	import FormRow from '$lib/components/FormRow.svelte';
 	import { session } from '$lib/session';
+	import { client } from '$lib/graphql/client';
+	import type { PageData } from './$types';
 
-	export let fbAppId: string;
+	export let data: PageData;
+
+	let fbAppId = data.fbAppId;
 
 	let email = '';
 	let password = '';

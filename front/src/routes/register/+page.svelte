@@ -20,7 +20,12 @@
 	import { session } from '$lib/session';
 	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
 
-	export let fbAppId: string;
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+
+	let fbAppId = data.fbAppId;
+
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
 
 	let email = '';
