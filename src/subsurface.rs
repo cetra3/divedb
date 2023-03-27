@@ -435,7 +435,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 .await?
                 .get(0)
             {
-                debug!("Site exists:{}, skipping", existing_site.id);
+                trace!("Site exists:{}, skipping", existing_site.id);
             } else {
                 //Resolve the depth & difficulty based upon site data.
                 let mut depth = 0.0;
@@ -500,7 +500,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 .await?
                 .get(0)
             {
-                debug!("Site exists:{}, skipping", existing_dive.id);
+                trace!("Site exists:{}, skipping", existing_dive.id);
             } else {
                 let request = CreateDive {
                     id: Some(dive.id),
@@ -550,7 +550,7 @@ fn clone_git(path: &Path, email: &str, password: &str) -> Result<(), git2::Error
     builder.fetch_options(fo);
 
     let repo = builder.clone(
-        &format!("https://cloud.subsurface-divelog.org/git/{email}"),
+        &format!("https://ssrf-cloud-eu.subsurface-divelog.org/git/{email}"),
         path,
     )?;
 
