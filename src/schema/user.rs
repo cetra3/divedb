@@ -15,6 +15,25 @@ pub struct LoginResponse {
     pub copyright_location: Option<OverlayLocation>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
+pub struct UserInfo {
+    pub id: Uuid,
+    pub email: String,
+    pub level: UserLevel,
+    pub username: Option<String>,
+}
+
+impl From<User> for UserInfo {
+    fn from(value: User) -> Self {
+        Self {
+            id: value.id,
+            email: value.email,
+            level: value.level,
+            username: value.username,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
 pub struct User {
     pub id: Uuid,

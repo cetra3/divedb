@@ -69,6 +69,10 @@ impl DbHandle {
             sql.add_param("depth < ${}", max_depth);
         }
 
+        if let Some(ref id) = query.dive_site {
+            sql.add_param("dive_site_id = ${}", id);
+        }
+
         sql.add_sql("order by \"date\" desc");
 
         Ok(Dive::from_rows(self.query(sql).await?)?)

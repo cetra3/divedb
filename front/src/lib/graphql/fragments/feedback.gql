@@ -1,0 +1,11 @@
+fragment FeedbackNode on Feedback {
+	id
+	user {
+		id
+		email
+		level
+		username
+	}
+	date
+	feedback
+}

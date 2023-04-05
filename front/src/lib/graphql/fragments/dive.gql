@@ -20,6 +20,11 @@ fragment DiveWithMetrics on Dive {
 	}
 }
 
+fragment DiveWithNumber on Dive {
+	...DiveWithMetrics
+	number
+}
+
 fragment DiveNode on Dive {
 	id
 	userId

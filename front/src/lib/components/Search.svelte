@@ -5,6 +5,7 @@
 	type CategoryMap = { [category: string]: string[] };
 
 	import SearchResult from './SearchResult.svelte';
+	import { onMount } from 'svelte';
 
 	export let query = '';
 	export let map: CategoryMap | undefined = undefined;
@@ -12,6 +13,12 @@
 	export let showSearchBar = true;
 
 	export let title = 'Search DiveDB';
+
+	let browserLoaded = false;
+
+	onMount(() => {
+		browserLoaded = true;
+	});
 
 	let results: SearchResultNodeFragment[] = [];
 
@@ -53,7 +60,13 @@
 		<div class="columns">
 			<div class="column col-12 search-row">
 				<SearchIcon size="1.4em" />
-				<input class={'form-input search-bar'} type="text" placeholder={title} bind:value={query} />
+				<input
+					disabled={browserLoaded === false}
+					class={'form-input search-bar'}
+					type="text"
+					placeholder={title}
+					bind:value={query}
+				/>
 			</div>
 		</div>
 	{/if}

@@ -157,6 +157,7 @@ export type Feedback = {
 	date: Scalars['DateTime'];
 	feedback: Scalars['String'];
 	id: Scalars['UUID'];
+	user: UserInfo;
 	userId: Scalars['UUID'];
 };
 
@@ -372,6 +373,7 @@ export type Query = {
 	diveSites: Array<DiveSite>;
 	dives: Array<Dive>;
 	fbAppId: Scalars['String'];
+	feedback: Array<Feedback>;
 	photos: Array<Photo>;
 	popularDiveSites: Array<DiveSite>;
 	regions: Array<Region>;
@@ -388,8 +390,13 @@ export type QueryDiveSitesArgs = {
 };
 
 export type QueryDivesArgs = {
+	diveSite?: InputMaybe<Scalars['UUID']>;
 	id?: InputMaybe<Scalars['UUID']>;
 	maxDepth?: InputMaybe<Scalars['Float']>;
+};
+
+export type QueryFeedbackArgs = {
+	id?: InputMaybe<Scalars['UUID']>;
 };
 
 export type QueryPhotosArgs = {
@@ -464,6 +471,14 @@ export type SiteMetric = {
 	photoCount: Scalars['Int'];
 };
 
+export type UserInfo = {
+	__typename?: 'UserInfo';
+	email: Scalars['String'];
+	id: Scalars['UUID'];
+	level: UserLevel;
+	username?: Maybe<Scalars['String']>;
+};
+
 export enum UserLevel {
 	Admin = 'ADMIN',
 	Editor = 'EDITOR',
@@ -495,6 +510,18 @@ export type DiveSummaryFragment = {
 
 export type DiveWithMetricsFragment = {
 	__typename?: 'Dive';
+	id: string;
+	userId: string;
+	date: any;
+	depth: number;
+	duration: number;
+	hasMetrics: boolean;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+};
+
+export type DiveWithNumberFragment = {
+	__typename?: 'Dive';
+	number: number;
 	id: string;
 	userId: string;
 	date: any;
@@ -652,6 +679,20 @@ export type SiteSummaryMetricsFragment = {
 	lon: number;
 	photoId?: string | null;
 	siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+};
+
+export type FeedbackNodeFragment = {
+	__typename?: 'Feedback';
+	id: string;
+	date: any;
+	feedback: string;
+	user: {
+		__typename?: 'UserInfo';
+		id: string;
+		email: string;
+		level: UserLevel;
+		username?: string | null;
+	};
 };
 
 export type PhotoSummaryFragment = {
@@ -1329,6 +1370,27 @@ export type FbAppIdQueryVariables = Exact<{ [key: string]: never }>;
 
 export type FbAppIdQuery = { __typename?: 'Query'; fbAppId: string };
 
+export type GetFeedbackQueryVariables = Exact<{
+	id?: InputMaybe<Scalars['UUID']>;
+}>;
+
+export type GetFeedbackQuery = {
+	__typename?: 'Query';
+	feedback: Array<{
+		__typename?: 'Feedback';
+		id: string;
+		date: any;
+		feedback: string;
+		user: {
+			__typename?: 'UserInfo';
+			id: string;
+			email: string;
+			level: UserLevel;
+			username?: string | null;
+		};
+	}>;
+};
+
 export type GetDiveQueryVariables = Exact<{
 	id: Scalars['UUID'];
 }>;
@@ -1536,12 +1598,33 @@ export type PopularDiveSitesQuery = {
 	}>;
 };
 
-export type GetDivesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetDivesQueryVariables = Exact<{
+	diveSite?: InputMaybe<Scalars['UUID']>;
+}>;
 
 export type GetDivesQuery = {
 	__typename?: 'Query';
 	dives: Array<{
 		__typename?: 'Dive';
+		id: string;
+		userId: string;
+		date: any;
+		depth: number;
+		duration: number;
+		hasMetrics: boolean;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+	}>;
+};
+
+export type GetDivesWithNumberQueryVariables = Exact<{
+	diveSite?: InputMaybe<Scalars['UUID']>;
+}>;
+
+export type GetDivesWithNumberQuery = {
+	__typename?: 'Query';
+	dives: Array<{
+		__typename?: 'Dive';
+		number: number;
 		id: string;
 		userId: string;
 		date: any;
@@ -1786,6 +1869,12 @@ export const DiveWithMetricsFragmentDoc = gql`
 		}
 	}
 `;
+export const DiveWithNumberFragmentDoc = gql`
+	fragment DiveWithNumber on Dive {
+		...DiveWithMetrics
+		number
+	}
+`;
 export const DiveSummaryFragmentDoc = gql`
 	fragment DiveSummary on Dive {
 		id
@@ -1903,6 +1992,19 @@ export const SiteSummaryMetricsFragmentDoc = gql`
 		lat
 		lon
 		photoId
+	}
+`;
+export const FeedbackNodeFragmentDoc = gql`
+	fragment FeedbackNode on Feedback {
+		id
+		user {
+			id
+			email
+			level
+			username
+		}
+		date
+		feedback
 	}
 `;
 export const RegionNodeFragmentDoc = gql`
@@ -2179,6 +2281,14 @@ export const FbAppIdDocument = gql`
 		fbAppId
 	}
 `;
+export const GetFeedbackDocument = gql`
+	query getFeedback($id: UUID) {
+		feedback(id: $id) {
+			...FeedbackNode
+		}
+	}
+	${FeedbackNodeFragmentDoc}
+`;
 export const GetDiveDocument = gql`
 	query getDive($id: UUID!) {
 		dives(id: $id) {
@@ -2229,11 +2339,21 @@ export const PopularDiveSitesDocument = gql`
 	${SiteMetricNodeFragmentDoc}
 `;
 export const GetDivesDocument = gql`
-	query getDives {
-		dives {
+	query getDives($diveSite: UUID) {
+		dives(diveSite: $diveSite) {
 			...DiveWithMetrics
 		}
 	}
+	${DiveWithMetricsFragmentDoc}
+	${SiteSummaryFragmentDoc}
+`;
+export const GetDivesWithNumberDocument = gql`
+	query getDivesWithNumber($diveSite: UUID) {
+		dives(diveSite: $diveSite) {
+			...DiveWithNumber
+		}
+	}
+	${DiveWithNumberFragmentDoc}
 	${DiveWithMetricsFragmentDoc}
 	${SiteSummaryFragmentDoc}
 `;
@@ -2718,6 +2838,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				'query'
 			);
 		},
+		getFeedback(
+			variables?: GetFeedbackQueryVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<GetFeedbackQuery> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<GetFeedbackQuery>(GetFeedbackDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'getFeedback',
+				'query'
+			);
+		},
 		getDive(
 			variables: GetDiveQueryVariables,
 			requestHeaders?: Dom.RequestInit['headers']
@@ -2786,6 +2920,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				'getDives',
+				'query'
+			);
+		},
+		getDivesWithNumber(
+			variables?: GetDivesWithNumberQueryVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<GetDivesWithNumberQuery> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<GetDivesWithNumberQuery>(GetDivesWithNumberDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'getDivesWithNumber',
 				'query'
 			);
 		},

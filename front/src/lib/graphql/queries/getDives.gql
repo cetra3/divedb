@@ -1,5 +1,11 @@
-query getDives {
-	dives {
+query getDives($diveSite: UUID) {
+	dives(diveSite: $diveSite) {
 		...DiveWithMetrics
+	}
+}
+
+query getDivesWithNumber($diveSite: UUID) {
+	dives(diveSite: $diveSite) {
+		...DiveWithNumber
 	}
 }

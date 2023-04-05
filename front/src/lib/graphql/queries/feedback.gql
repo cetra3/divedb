@@ -1,0 +1,5 @@
+query getFeedback($id: UUID) {
+	feedback(id: $id) {
+		...FeedbackNode
+	}
+}

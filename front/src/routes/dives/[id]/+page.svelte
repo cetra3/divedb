@@ -4,14 +4,16 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	import type { DiveNodeFragment } from '$lib/graphql/generated';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import ImageList from '$lib/components/ImageList.svelte';
 	import formatMinutes from '$lib/util/formatMinutes';
+	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
 
 	let width: number | undefined;
-	let dive = data.dive;
+	let relatedWidth: number | undefined;
+	$: dive = data.dive;
+	$: relatedDives = data.relatedDives;
 
 	$: title = dive ? `#${dive.number}${dive.diveSite ? ` - ${dive.diveSite.name}` : ''}` : ' Dive';
 </script>
@@ -48,6 +50,9 @@
 										<a href={`/sites/${dive.diveSite.slug}`}>
 											{dive.diveSite.name}
 										</a>
+										<br />
+										{(relatedDives?.length ?? 0) + 1} Dive{relatedDives?.length ?? 0 > 0 ? 's' : ''}
+										logged
 									</p>
 								{/if}
 							</div>
@@ -65,18 +70,35 @@
 					</div>
 				</div>
 			</div>
-			<div class="column col-12 col-sm-12">
-				<h1 class="page-title">
-					<PhotoIcon size="66px" /> Photos
-				</h1>
-			</div>
-			<div class="column col-12 col-sm-12">
-				<ImageList photos={dive.latestPhotos} query={{ dive: dive.id }} />
-			</div>
+
+			{#if dive.latestPhotos.length > 0}
+				<div class="column col-12 col-sm-12">
+					<h1 class="page-title">
+						<PhotoIcon size="66px" /> Photos
+					</h1>
+				</div>
+				<div class="column col-12 col-sm-12">
+					<ImageList photos={dive.latestPhotos} query={{ dive: dive.id }} />
+				</div>
+			{/if}
 		{:else}
 			<div class="column col-12">
 				<div class="loading loading-lg" />
 			</div>
 		{/if}
 	</div>
+
+	{#if relatedDives && relatedDives.length > 0}
+		<div bind:clientWidth={relatedWidth} class="column col-6 col-lg-12" />
+		<div class="column col-12 col-sm-12">
+			<h1 class="page-title">
+				<DiveLogIcon size="66px" /> Related Dives <small />
+			</h1>
+		</div>
+		<div class="columns">
+			{#each relatedDives as dive}
+				<DiveSummary {dive} width={relatedWidth} diveNumber={dive.number} />
+			{/each}
+		</div>
+	{/if}
 </div>

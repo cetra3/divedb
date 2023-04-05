@@ -122,8 +122,9 @@ type DiveSite {
 
 type Feedback {
 	id: UUID!
-	date: DateTime!
 	userId: UUID!
+	user: UserInfo!
+	date: DateTime!
 	feedback: String!
 }
 
@@ -212,13 +213,14 @@ type Query {
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
 	search(query: String!): [SearchResult!]!
-	dives(id: UUID, maxDepth: Float): [Dive!]!
+	dives(id: UUID, diveSite: UUID, maxDepth: Float): [Dive!]!
 	currentUser: LoginResponse
 	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!
 	popularDiveSites: [DiveSite!]!
 	photos(id: UUID, userId: UUID, diveSite: UUID, dive: UUID, sealifeId: UUID, offset: Int, orderByUpload: Boolean): [Photo!]!
 	regions: [Region!]!
 	sealife(id: UUID, name: String, scientificName: String, slug: String, categoryValues: [UUID!]): [Sealife!]!
+	feedback(id: UUID): [Feedback!]!
 }
 
 type Region {
@@ -279,6 +281,13 @@ entities without requiring a central allocating authority.
 * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 """
 scalar UUID
+
+type UserInfo {
+	id: UUID!
+	email: String!
+	level: UserLevel!
+	username: String
+}
 
 enum UserLevel {
 	USER

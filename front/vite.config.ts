@@ -9,6 +9,9 @@ const config: UserConfig = {
 				target: 'http://localhost:3333'
 			}
 		}
+	},
+	optimizeDeps: {
+		exclude: ['bytemd']
 	}
 };
 

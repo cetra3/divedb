@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::schema::*;
 
-use super::DbHandle;
+use super::{DbHandle, StatementBuilder};
 
 impl DbHandle {
     pub async fn add_feedback(&self, user_id: Uuid, feedback: String) -> Result<Feedback, Error> {
@@ -14,5 +14,17 @@ impl DbHandle {
         let result = client.query_one(query, &[&id, &user_id, &feedback]).await?;
 
         Ok(Feedback::from_row(result)?)
+    }
+
+    pub async fn get_feedback(&self, id: Option<Uuid>) -> Result<Vec<Feedback>, Error> {
+        let mut sql = StatementBuilder::new("select * from feedback");
+
+        if let Some(ref id) = id {
+            sql.add_param("id = ${}", id);
+        }
+
+        sql.add_sql("order by \"date\" desc");
+
+        Ok(Feedback::from_rows(self.query(sql).await?)?)
     }
 }

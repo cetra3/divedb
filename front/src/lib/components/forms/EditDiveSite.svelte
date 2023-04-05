@@ -1,11 +1,12 @@
 <script type="ts">
 	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
-	import { onMount, SvelteComponent, SvelteComponentTyped } from 'svelte';
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	export let site: SiteFragment | CreateDiveSite;
 	export let onSave: (site: CreateDiveSite) => void;
 	import { session } from '$lib/session';
+	import Markdown from './Markdown.svelte';
 
 	let EditableMap: any;
 
@@ -66,10 +67,10 @@
 				<input type="text" placeholder="Name" bind:value={site.name} class="form-input" />
 			</FormRow>
 			<FormRow name="Description">
-				<textarea bind:value={site.description} rows="8" class="form-input" />
+				<Markdown bind:value={site.description} />
 			</FormRow>
 			<FormRow name="Access">
-				<textarea bind:value={site.access} rows="8" class="form-input" />
+				<Markdown bind:value={site.access} />
 			</FormRow>
 			<FormRow name="Depth (m)">
 				<input type="number" placeholder="18.0" bind:value={site.depth} class="form-input" />
@@ -98,6 +99,7 @@
 					</span>
 				{/if}
 				<span class="form-input-hint">
+					<!-- svelte-ignore a11y-invalid-attribute -->
 					<a
 						href="javascript:void(0)"
 						on:click={() => {

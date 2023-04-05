@@ -101,6 +101,7 @@ impl Photo {
                 .dives(&DiveQuery {
                     id: Some(id),
                     user_id: context.con.user.as_ref().map(|val| val.id),
+                    dive_site: None,
                     max_depth: None,
                 })
                 .await?

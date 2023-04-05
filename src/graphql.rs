@@ -111,6 +111,7 @@ impl Query {
         &self,
         context: &Context<'_>,
         id: Option<Uuid>,
+        dive_site: Option<Uuid>,
         max_depth: Option<f64>,
     ) -> FieldResult<Vec<Dive>> {
         let schema_context = context.data::<SchemaContext>()?;
@@ -124,6 +125,7 @@ impl Query {
         let query = DiveQuery {
             id,
             max_depth,
+            dive_site,
             user_id: Some(user.id),
         };
 
@@ -254,6 +256,25 @@ impl Query {
         };
 
         Ok(context.web.handle.sealife(&query).await?)
+    }
+
+    async fn feedback(
+        &self,
+        context: &Context<'_>,
+        id: Option<Uuid>,
+    ) -> FieldResult<Vec<Feedback>> {
+        let context = context.data::<SchemaContext>()?;
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        if user.is_admin() {
+            Ok(context.web.handle.get_feedback(id).await?)
+        } else {
+            Err(anyhow!("Admin user level required").into())
+        }
     }
 }
 

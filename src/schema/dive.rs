@@ -111,6 +111,7 @@ pub struct CreateDive {
 pub struct DiveQuery {
     pub id: Option<Uuid>,
     pub user_id: Option<Uuid>,
+    pub dive_site: Option<Uuid>,
     pub max_depth: Option<f64>,
 }
 
@@ -119,6 +120,7 @@ impl DiveQuery {
         DiveQuery {
             id: Some(id),
             user_id: None,
+            dive_site: None,
             max_depth: None,
         }
     }

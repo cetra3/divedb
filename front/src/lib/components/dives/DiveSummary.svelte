@@ -4,10 +4,12 @@
 	import DiveGraph from './DiveGraph.svelte';
 
 	export let width = 470;
-	export let diveNumber: number;
+	export let diveNumber: number | undefined = undefined;
 	export let dive: DiveWithMetricsFragment;
 
-	$: title = `#${diveNumber}${dive.diveSite ? ` - ${dive.diveSite.name}` : ''}`;
+	$: title = diveNumber
+		? `#${diveNumber}${dive.diveSite ? ` - ${dive.diveSite.name}` : ''}`
+		: dive.diveSite?.name;
 </script>
 
 <div class="column col-6 col-lg-12">

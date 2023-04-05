@@ -3,6 +3,7 @@
 	export let data: PageData;
 
 	let regions = data.regions;
+	let feedback = data.feedback;
 </script>
 
 <svelte:head>
@@ -25,7 +26,7 @@
 						{#each regions as region}
 							<li>
 								{region.name}
-								<a href="/divesites/map/{region.slug}"><button class="btn btn-sm ">View</button></a>
+								<a href="/divesites/map/{region.slug}"><button class="btn btn-sm">View</button></a>
 								<a href={`/admin/region/edit/${region.id}`}>
 									<button class="btn btn-sm">Edit</button>
 								</a>
@@ -38,6 +39,24 @@
 					</a>
 				</div>
 			</div>
+		</div>
+
+		<div class="column col-12 col-sm-12">
+			<h1 class="page-title">Feedback</h1>
+		</div>
+
+		<div class="column col-12 col-sm-12">
+			{#each feedback as fb}
+				<div class="card">
+					<div class="card-body">
+						<strong>User: </strong>{fb.user.email}
+						<strong>Date: </strong>
+						{new Date(fb.date).toLocaleString()}<br />
+						<strong>Message:</strong>
+						{fb.feedback}
+					</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 </div>

@@ -6,6 +6,7 @@
 	export let onSave: (site: CreateSealife) => void;
 	import { session } from '$lib/session';
 	import CategoryPicker from '../categories/CategoryPicker.svelte';
+	import Markdown from './Markdown.svelte';
 
 	let categoryMap = sealife.categoryMap ?? {};
 
@@ -43,7 +44,7 @@
 				/>
 			</FormRow>
 			<FormRow name="Description">
-				<textarea bind:value={sealife.description} rows="8" class="form-input" />
+				<Markdown bind:value={sealife.description} />
 			</FormRow>
 			{#if isEditor}
 				<FormRow name="Hide Location">
