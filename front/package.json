@@ -47,7 +47,7 @@
 		"remark-parse": "^10.0.1",
 		"remark-rehype": "^10.1.0",
 		"spectre.css": "^0.5.9",
-		"swiper": "^8.4.4",
+		"swiper": "^8.4.7",
 		"unified": "^10.1.2"
 	}
 }

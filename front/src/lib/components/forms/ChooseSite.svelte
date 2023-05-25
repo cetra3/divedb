@@ -6,6 +6,8 @@
 	let focused = false;
 	let dropDownFocused = false;
 
+	export let belowInput = false;
+
 	export let id: string | null | undefined = undefined;
 	let query = '';
 	let siteLoading = false;
@@ -95,9 +97,10 @@
 		class="dropdown"
 		class:active={focused}
 	>
-		<ul class="menu">
+		<ul class="menu" class:above-input={belowInput == false}>
 			{#each results as result, index}
 				<li class="menu-item">
+					<!-- svelte-ignore a11y-invalid-attribute -->
 					<a
 						class:active={index == idx}
 						href="javascript:void(0)"
@@ -114,3 +117,13 @@
 		</ul>
 	</span>
 {/if}
+
+<style lang="scss">
+	.above-input {
+		bottom: 2.4rem;
+		top: auto !important;
+		left: 0;
+		right: 0;
+		max-height: 15rem !important;
+	}
+</style>

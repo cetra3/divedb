@@ -18,7 +18,7 @@ impl DbHandle {
 
     pub async fn user(&self, email: &str) -> Result<User, Error> {
         let client = self.pool.get().await?;
-        let query = "select * from users where email = $1";
+        let query = "select * from users where lower(email) = lower($1)";
         let result = client.query_one(query, &[&email]).await?;
 
         Ok(User::from_row(result)?)
@@ -44,7 +44,7 @@ impl DbHandle {
 
     pub async fn update_password(&self, email: &str, password: &str) -> Result<User, Error> {
         let client = self.pool.get().await?;
-        let query = "update users set password = $2 where email = $1 returning *";
+        let query = "update users set password = $2 where lower(email) = lower($1) returning *";
         let result = client.query_one(query, &[&email, &password]).await?;
 
         Ok(User::from_row(result)?)
@@ -58,7 +58,7 @@ impl DbHandle {
         copyright_location: Option<OverlayLocation>,
     ) -> Result<User, Error> {
         let client = self.pool.get().await?;
-        let query = "update users set username = $1, watermark_location = $2, copyright_location = $3 where email = $4 returning *";
+        let query = "update users set username = $1, watermark_location = $2, copyright_location = $3 where lower(email) = lower($4) returning *";
         let result = client
             .query_one(
                 query,

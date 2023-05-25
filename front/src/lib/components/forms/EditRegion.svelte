@@ -62,7 +62,7 @@
 			</FormRow>
 
 			<FormRow name="Submit">
-				<button class="btn  btn-primary" type="submit" disabled={canSave == false}
+				<button class="btn btn-primary" type="submit" disabled={canSave == false}
 					>Submit Region</button
 				>
 			</FormRow>

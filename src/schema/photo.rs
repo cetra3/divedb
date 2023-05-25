@@ -42,6 +42,11 @@ impl Photo {
     fn thumb_prefix(&self) -> String {
         format!("thumbs/{}", self.uuid_folder())
     }
+
+    fn large_prefix(&self) -> String {
+        format!("large/{}", self.uuid_folder())
+    }
+
     pub fn webp_thumb_location(&self) -> String {
         let ext_start = self.filename.rfind(".").unwrap_or(self.filename.len());
 
@@ -52,8 +57,22 @@ impl Photo {
         )
     }
 
+    pub fn webp_large_location(&self) -> String {
+        let ext_start = self.filename.rfind(".").unwrap_or(self.filename.len());
+
+        format!(
+            "{}/{}.webp",
+            self.large_prefix(),
+            &self.filename[0..ext_start]
+        )
+    }
+
     pub fn jpg_thumb_location(&self) -> String {
         format!("{}/{}", self.thumb_prefix(), self.filename)
+    }
+
+    pub fn jpg_large_location(&self) -> String {
+        format!("{}/{}", self.large_prefix(), self.filename)
     }
 }
 

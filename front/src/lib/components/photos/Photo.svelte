@@ -5,20 +5,26 @@
 	export let width: number | undefined = undefined;
 	export let height: number | undefined = undefined;
 	export let lazy = true;
+	export let large = false;
+
+	const THUMB_WIDTH = 1000;
+	const LARGE_WIDTH = 2000;
 
 	let newWidth: number | undefined = undefined,
 		newHeight: number | undefined = undefined;
 
 	// based on a max image size of 1000 this shows the appropriate size
-	const calculatedDims = (width: number, height: number) => {
+	const calculatedDims = (width: number, height: number, useLarge: boolean) => {
+		let desiredWidth = useLarge ? LARGE_WIDTH : THUMB_WIDTH;
+
 		if (width > height) {
 			let ratio = height / width;
-			newWidth = 1000;
-			newHeight = Math.round(ratio * 1000);
+			newWidth = desiredWidth;
+			newHeight = Math.round(ratio * desiredWidth);
 		} else {
 			let ratio = width / height;
-			newWidth = Math.round(ratio * 1000);
-			newHeight = 1000;
+			newWidth = Math.round(ratio * desiredWidth);
+			newHeight = desiredWidth;
 		}
 	};
 
@@ -26,12 +32,17 @@
 		width > 0 &&
 		height !== undefined &&
 		height > 0 &&
-		calculatedDims(width, height);
+		calculatedDims(width, height, large);
 </script>
 
 <picture>
-	<source type="image/webp" srcset="/api/photos/webp/{id}" />
-	<source type="image/jpeg" srcset="/api/photos/jpeg/{id}" />
+	{#if large == true}
+		<source type="image/webp" srcset="/api/photos/webplarge/{id}" />
+		<source type="image/jpeg" srcset="/api/photos/jpeglarge/{id}" />
+	{:else}
+		<source type="image/webp" srcset="/api/photos/webp/{id}" />
+		<source type="image/jpeg" srcset="/api/photos/jpeg/{id}" />
+	{/if}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<img
 		width={newWidth}

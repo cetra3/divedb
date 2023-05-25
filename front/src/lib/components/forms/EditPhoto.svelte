@@ -11,7 +11,7 @@
 	if ('diveSite' in photo) {
 		diveSiteId = photo.diveSite?.id;
 	} else if ('diveSiteId' in photo) {
-		diveSiteId = photo.diveSiteId;
+		diveSiteId = photo.diveSiteId ?? undefined;
 	}
 
 	let sealifeId: string | undefined;
@@ -19,7 +19,7 @@
 	if ('sealife' in photo) {
 		sealifeId = photo.sealife?.id;
 	} else if ('sealifeId' in photo) {
-		sealifeId = photo.sealifeId;
+		sealifeId = photo.sealifeId ?? undefined;
 	}
 
 	const onSubmit = (e: Event) => {

@@ -2,6 +2,9 @@
 	import { client } from '$lib/graphql/client';
 	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
 	import { onMount } from 'svelte';
+	import Photo from '../photos/Photo.svelte';
+	import SealifeSummary from '../SealifeSummary.svelte';
+	import SearchResult from '../SearchResult.svelte';
 
 	let focused = false;
 	let dropDownFocused = false;
@@ -59,12 +62,20 @@
 					} else if (results.length > curIdx + 1) {
 						idx = curIdx + 1;
 					}
+
+					document.getElementById(`sealife-list-item-${idx}`)?.scrollIntoView({
+						block: 'center'
+					});
 				}
 				if (e.key == 'ArrowUp') {
 					e.preventDefault();
 					if (curIdx > 0) {
 						idx = curIdx - 1;
 					}
+
+					document.getElementById(`sealife-list-item-${idx}`)?.scrollIntoView({
+						block: 'center'
+					});
 				}
 				if (e.key == 'Enter') {
 					e.preventDefault();
@@ -95,22 +106,78 @@
 		class="dropdown"
 		class:active={focused}
 	>
-		<ul class="menu">
+		<div class="menu sealife-menu">
 			{#each results as result, index}
-				<li class="menu-item">
-					<a
-						class:active={index == idx}
-						href="javascript:void(0)"
-						on:click={() => {
-							query = result.name;
-							id = result.id;
+				<!-- svelte-ignore a11y-invalid-attribute -->
+				<a
+					class="sealife-item"
+					class:active={index == idx}
+					id={`sealife-list-item-${index}`}
+					href="javascript:void(0)"
+					on:click={() => {
+						query = result.name;
+						id = result.id;
 
-							focused = false;
-							dropDownFocused = false;
-						}}>{result.name}</a
-					>
-				</li>
+						focused = false;
+						dropDownFocused = false;
+					}}
+				>
+					<!-- svelte-ignore a11y-invalid-attribute -->
+					<div class="sealife-photo">
+						{#if result.photoId}
+							<Photo id={result.photoId} />
+						{/if}
+					</div>
+					<div class="sealife-text">
+						<strong>{result.name}</strong>
+						{#if result.scientificName}
+							{result.scientificName}
+						{/if}
+					</div>
+				</a>
 			{/each}
-		</ul>
+		</div>
 	</span>
 {/if}
+
+<style lang="scss" global>
+	.sealife-menu {
+		bottom: 2.4rem;
+		top: auto !important;
+		left: 0;
+		right: 0;
+		max-height: 15rem !important;
+	}
+
+	.sealife-item {
+		display: flex;
+		&:not(:last-child) {
+			margin-bottom: 0.2rem;
+		}
+
+		border-radius: 0.3rem;
+		border: 0.05rem solid #dce2ec;
+
+		&:hover,
+		&.active {
+			background-color: #5dc5ed;
+			text-decoration: none;
+		}
+	}
+
+	.sealife-text {
+		display: flex;
+		flex-direction: column;
+		padding: 0.3rem;
+		flex: 1;
+	}
+
+	.sealife-photo {
+		img {
+			border-radius: 0.3rem 0 0 0.3rem;
+			width: 4rem;
+			min-height: 3rem;
+			object-fit: cover;
+		}
+	}
+</style>

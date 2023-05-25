@@ -57,7 +57,7 @@
 				</div>
 			</FormRow>
 			<FormRow name="Dive Site">
-				<ChooseSite bind:id={dive.diveSiteId} />
+				<ChooseSite bind:id={dive.diveSiteId} belowInput={true} />
 			</FormRow>
 			<FormRow name="Depth (m)">
 				<input

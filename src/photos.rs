@@ -46,7 +46,9 @@ pub struct OpenRequest {
 pub enum PhotoKind {
     #[default]
     Jpeg,
+    JpegLarge,
     Webp,
+    WebpLarge,
     Full,
 }
 
@@ -69,6 +71,8 @@ pub async fn open_photo(
     let thumb_location = match kind {
         PhotoKind::Jpeg => photo.jpg_thumb_location(),
         PhotoKind::Webp => photo.webp_thumb_location(),
+        PhotoKind::JpegLarge => photo.jpg_large_location(),
+        PhotoKind::WebpLarge => photo.webp_large_location(),
         PhotoKind::Full => {
             if let Some(user_id) = token.user_id {
                 let user = context
@@ -114,18 +118,11 @@ pub fn image_dims<P: AsRef<Path>>(path: P) -> Result<(i32, i32), anyhow::Error> 
     Ok((im.width() as i32, im.height() as i32))
 }
 
-pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<(), anyhow::Error> {
+const THUMB_WIDTH: u32 = 1000;
+const LARGE_WIDTH: u32 = 2000;
+
+fn add_overlay(im: &mut DynamicImage, photo: &Photo, user: &User) {
     use crate::schema::OverlayLocation::*;
-    let new_location = PathBuf::from(photo.jpg_thumb_location());
-
-    // Return if the image is already at the new location
-    if std::fs::metadata(&new_location).is_ok() && !force_rerender {
-        return Ok(());
-    }
-
-    let mut im = image::open(photo.orig_location())?;
-
-    im = im.resize(1000, 1000, FilterType::Lanczos3);
 
     let (xl, yl) = match user.watermark_location {
         TopLeft => (10, 10),
@@ -134,7 +131,7 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
         BottomRight => (im.width() - 160, im.height() - 40),
     };
 
-    overlay(&mut im, &*WATERMARK, xl as i64, yl as i64);
+    overlay(im, &*WATERMARK, xl as i64, yl as i64);
 
     let height = 30.0;
     let scale = Scale {
@@ -172,7 +169,7 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
         };
 
         draw_text_mut(
-            &mut im,
+            im,
             Rgba([59, 67, 81, 0]),
             xl as i32,
             (yl + 1) as i32,
@@ -181,7 +178,7 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
             &copyright_notice,
         );
         draw_text_mut(
-            &mut im,
+            im,
             Rgba([255, 255, 255, 255]),
             xl as i32,
             yl as i32,
@@ -190,32 +187,58 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
             &copyright_notice,
         );
     }
+}
 
-    let mut error_count = 0;
+pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<(), anyhow::Error> {
+    let jpg_location = PathBuf::from(photo.jpg_thumb_location());
 
-    while std::fs::create_dir_all(new_location.parent().unwrap()).is_err() {
-        std::thread::sleep(Duration::from_secs(10));
-        if error_count > 3 {
-            return Err(anyhow!("Could not create directory"));
-        } else {
-            debug!("Retrying directory creation");
-            error_count += error_count;
-        }
+    // Return if the image is already at the new location
+    if std::fs::metadata(&jpg_location).is_ok() && !force_rerender {
+        return Ok(());
     }
 
-    let mut file = BufWriter::new(std::fs::File::create(new_location)?);
-    let mut encoder = JpegEncoder::new_with_quality(&mut file, 50);
-    encoder.encode_image(&im)?;
+    let im = image::open(photo.orig_location())?;
+    for (width, jpg_location, webp_location) in [
+        (
+            THUMB_WIDTH,
+            PathBuf::from(photo.jpg_thumb_location()),
+            PathBuf::from(photo.webp_thumb_location()),
+        ),
+        (
+            LARGE_WIDTH,
+            PathBuf::from(photo.jpg_large_location()),
+            PathBuf::from(photo.webp_large_location()),
+        ),
+    ] {
+        let mut im = im.resize(width, width, FilterType::Lanczos3);
 
-    let webp_location = photo.webp_thumb_location();
-    let mut webp_file = BufWriter::new(std::fs::File::create(webp_location)?);
+        add_overlay(&mut im, photo, user);
 
-    let webp_encoder =
-        webp::Encoder::from_image(&im).map_err(|err| anyhow!("Error webp encoding:{err}"))?;
+        let mut error_count = 0;
 
-    let webp = webp_encoder.encode(50.0);
+        while std::fs::create_dir_all(jpg_location.parent().unwrap()).is_err() {
+            std::thread::sleep(Duration::from_secs(10));
+            if error_count > 3 {
+                return Err(anyhow!("Could not create directory"));
+            } else {
+                debug!("Retrying directory creation");
+                error_count += error_count;
+            }
+        }
 
-    webp_file.write_all(&webp)?;
+        let mut file = BufWriter::new(std::fs::File::create(jpg_location)?);
+        let mut encoder = JpegEncoder::new_with_quality(&mut file, 50);
+        encoder.encode_image(&im)?;
+
+        let mut webp_file = BufWriter::new(std::fs::File::create(webp_location)?);
+
+        let webp_encoder =
+            webp::Encoder::from_image(&im).map_err(|err| anyhow!("Error webp encoding:{err}"))?;
+
+        let webp = webp_encoder.encode(50.0);
+
+        webp_file.write_all(&webp)?;
+    }
 
     /*
 

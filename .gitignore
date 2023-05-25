@@ -3,5 +3,6 @@
 db_dump.gz
 store/
 thumbs/
+large/
 *.jpg
 deploy.sh
