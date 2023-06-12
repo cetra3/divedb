@@ -13,7 +13,7 @@ impl DbHandle {
         let query =  "insert into users (id, email, password, level) values ($1, $2, $3, 'User') returning *";
         let result = client.query_one(query, &[&uuid, &email, &hash]).await?;
 
-        Ok(User::from_row(result)?)
+        User::from_row(result)
     }
 
     pub async fn user(&self, email: &str) -> Result<User, Error> {
@@ -21,7 +21,7 @@ impl DbHandle {
         let query = "select * from users where lower(email) = lower($1)";
         let result = client.query_one(query, &[&email]).await?;
 
-        Ok(User::from_row(result)?)
+        User::from_row(result)
     }
 
     pub async fn user_details(&self, id: Uuid) -> Result<User, Error> {
@@ -29,7 +29,7 @@ impl DbHandle {
         let query = "select * from users where id = $1";
         let result = client.query_one(query, &[&id]).await?;
 
-        Ok(User::from_row(result)?)
+        User::from_row(result)
     }
 
     pub async fn delete_user(&self, id: Uuid) -> Result<(), Error> {
@@ -47,7 +47,7 @@ impl DbHandle {
         let query = "update users set password = $2 where lower(email) = lower($1) returning *";
         let result = client.query_one(query, &[&email, &password]).await?;
 
-        Ok(User::from_row(result)?)
+        User::from_row(result)
     }
 
     pub async fn update_settings(
@@ -66,7 +66,7 @@ impl DbHandle {
             )
             .await?;
 
-        Ok(User::from_row(result)?)
+        User::from_row(result)
     }
 
     pub async fn photo_quota_usage(&self, user_id: Uuid) -> Result<i64, Error> {

@@ -70,5 +70,5 @@ pub fn truncate(input: &str, len: usize) -> String {
         end_idx = val;
     }
 
-    return format!("{}...", &input[0..end_idx]);
+    format!("{}...", &input[0..end_idx])
 }

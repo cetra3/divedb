@@ -400,7 +400,7 @@ pub async fn save_files(
 
         let mut new_photo = context.handle.add_photo(&photo).await.map_err(log_error)?;
 
-        let (width, height) = tokio::task::spawn_blocking(move || image_dims(&write_path))
+        let (width, height) = tokio::task::spawn_blocking(move || image_dims(write_path))
             .await
             .map_err(log_error)?
             .map_err(log_error)?;

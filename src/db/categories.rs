@@ -27,7 +27,7 @@ impl DbHandle {
 
         let result = client.query_one(query, params).await?;
 
-        Ok(Category::from_row(result)?)
+        Category::from_row(result)
     }
 
     pub async fn create_category_value(
@@ -50,7 +50,7 @@ impl DbHandle {
 
         let result = client.query_one(query, params).await?;
 
-        Ok(CategoryValue::from_row(result)?)
+        CategoryValue::from_row(result)
     }
 
     pub async fn categories(&self) -> Result<Vec<Category>, Error> {
@@ -59,7 +59,7 @@ impl DbHandle {
 
         let result = client.query(query, &[]).await?;
 
-        Ok(Category::from_rows(result)?)
+        Category::from_rows(result)
     }
 
     pub async fn category_values(
@@ -74,7 +74,7 @@ impl DbHandle {
 
         let result = self.query(sql).await?;
 
-        Ok(CategoryValue::from_rows(result)?)
+        CategoryValue::from_rows(result)
     }
 
     pub async fn category_map(&self, sealife_id: Uuid) -> Result<CategoryMap, Error> {

@@ -91,7 +91,7 @@ impl DbHandle {
             sql.add_param("id in (select og_reference_id from dive_sites_og_reference where dive_site_id = ${})", dive_site_id);
         }
 
-        Ok(OgReference::from_rows(self.query(sql).await?)?)
+        OgReference::from_rows(self.query(sql).await?)
     }
 
     pub async fn remove_reference(&self, id: Uuid) -> Result<(), Error> {

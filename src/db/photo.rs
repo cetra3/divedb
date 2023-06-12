@@ -184,7 +184,7 @@ impl DbHandle {
         sql.add_statement("limit ${}", &limit);
         sql.add_statement("offset ${}", &offset);
 
-        Ok(Photo::from_rows(self.query(sql).await?)?)
+        Photo::from_rows(self.query(sql).await?)
     }
 
     pub async fn photo_filename(&self, id: Uuid) -> Result<String, Error> {

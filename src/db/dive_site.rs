@@ -60,7 +60,7 @@ impl DbHandle {
 
         self.clear_cache().await;
 
-        Ok(DiveSite::from_row(result)?)
+        DiveSite::from_row(result)
     }
 
     pub async fn site_metrics(&self, dive_site_id: Uuid) -> Result<Option<SiteMetric>, Error> {
@@ -135,7 +135,7 @@ impl DbHandle {
 
         let result = client.query(query, &[&uuids]).await?;
 
-        Ok(DiveSite::from_rows(result)?)
+        DiveSite::from_rows(result)
     }
 
     pub async fn popular_dive_sites(&self) -> Result<Vec<DiveSite>, Error> {
@@ -169,7 +169,7 @@ impl DbHandle {
                 limit 4
             ";
 
-        let result = DiveSite::from_rows(client.query(&*sql, &[]).await?)?;
+        let result = DiveSite::from_rows(client.query(sql, &[]).await?)?;
 
         *self.popular_sites.write().await = result.clone();
 
@@ -217,7 +217,7 @@ impl DbHandle {
 
         sql.add_sql(" order by last_dive_date desc nulls last");
 
-        Ok(DiveSite::from_rows(self.query(sql).await?)?)
+        DiveSite::from_rows(self.query(sql).await?)
     }
 
     pub async fn merge_dive_sites(&self, from_id: Uuid, to_id: Uuid) -> Result<(), Error> {

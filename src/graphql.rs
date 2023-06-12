@@ -878,7 +878,7 @@ impl Mutation {
             return Ok(new_photo);
         }
 
-        return Err(anyhow!("No permissions to edit this photo").into());
+        Err(anyhow!("No permissions to edit this photo").into())
     }
 
     async fn remove_photo(&self, context: &Context<'_>, id: Uuid) -> FieldResult<bool> {

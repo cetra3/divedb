@@ -39,7 +39,7 @@ impl DbHandle {
             )
             .await?;
 
-        Ok(Region::from_row(result)?)
+        Region::from_row(result)
     }
 
     pub async fn regions(&self) -> Result<Vec<Region>, Error> {
@@ -52,7 +52,7 @@ impl DbHandle {
             ",
         );
 
-        Ok(Region::from_rows(self.query(sql).await?)?)
+        Region::from_rows(self.query(sql).await?)
     }
 
     pub async fn remove_region(&self, id: Uuid) -> Result<(), Error> {

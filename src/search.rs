@@ -197,6 +197,12 @@ impl Searcher {
     }
 }
 
+impl Default for Searcher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
 pub struct SearchResult {
     pub id: String,

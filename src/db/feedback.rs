@@ -13,7 +13,7 @@ impl DbHandle {
         let query = "insert into feedback (id, user_id, feedback) values ($1, $2, $3) returning *";
         let result = client.query_one(query, &[&id, &user_id, &feedback]).await?;
 
-        Ok(Feedback::from_row(result)?)
+        Feedback::from_row(result)
     }
 
     pub async fn get_feedback(&self, id: Option<Uuid>) -> Result<Vec<Feedback>, Error> {
@@ -25,6 +25,6 @@ impl DbHandle {
 
         sql.add_sql("order by \"date\" desc");
 
-        Ok(Feedback::from_rows(self.query(sql).await?)?)
+        Feedback::from_rows(self.query(sql).await?)
     }
 }

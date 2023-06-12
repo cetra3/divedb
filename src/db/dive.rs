@@ -51,7 +51,7 @@ impl DbHandle {
 
         self.clear_cache().await;
 
-        Ok(Dive::from_row(result)?)
+        Dive::from_row(result)
     }
 
     pub async fn dives(&self, query: &DiveQuery) -> Result<Vec<Dive>, Error> {
@@ -75,7 +75,7 @@ impl DbHandle {
 
         sql.add_sql("order by \"date\" desc");
 
-        Ok(Dive::from_rows(self.query(sql).await?)?)
+        Dive::from_rows(self.query(sql).await?)
     }
 
     pub async fn nearest_dive_by_time(
@@ -155,7 +155,7 @@ impl DbHandle {
             "select time, depth, pressure, temperature from dive_metrics where dive_id = $1 order by time asc";
         let result = client.query(query, &[&dive_id]).await?;
 
-        Ok(DiveMetric::from_rows(result)?)
+        DiveMetric::from_rows(result)
     }
 
     pub async fn has_metrics(&self, dive_id: Uuid) -> Result<bool, Error> {

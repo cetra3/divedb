@@ -76,7 +76,7 @@ impl DbHandle {
 
         self.clear_cache().await;
 
-        Ok(Sealife::from_row(result)?)
+        Sealife::from_row(result)
     }
 
     pub async fn sealife_batch(&self, uuids: &[Uuid]) -> Result<Vec<Sealife>, Error> {
@@ -85,7 +85,7 @@ impl DbHandle {
 
         let result = client.query(query, &[&uuids]).await?;
 
-        Ok(Sealife::from_rows(result)?)
+        Sealife::from_rows(result)
     }
 
     pub async fn sealife(&self, query: &SealifeQuery) -> Result<Vec<Sealife>, Error> {
@@ -128,7 +128,7 @@ impl DbHandle {
 
         sql.add_sql(" order by \"date\" desc");
 
-        Ok(Sealife::from_rows(self.query(sql).await?)?)
+        Sealife::from_rows(self.query(sql).await?)
     }
 
     pub async fn remove_sealife(&self, id: Uuid) -> Result<(), Error> {

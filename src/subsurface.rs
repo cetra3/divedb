@@ -205,7 +205,7 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
     }
 
     Ok(Repository {
-        sites: sites.into_iter().map(|(_k, v)| v).collect(),
+        sites: sites.into_values().collect(),
         dives,
         dive_metrics,
     })
@@ -337,7 +337,7 @@ fn parse_metric(line: String) -> Result<DiveMetric, Error> {
     //Parses a metric string like ` 2:20 2.48m 30.2°C 199.75bar tts=0:16`
     //Time & depth are always first, then there are various other metrics
 
-    let mut metrics = line.trim().split_whitespace();
+    let mut metrics = line.split_whitespace();
 
     let mut time_val = metrics
         .next()

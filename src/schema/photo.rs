@@ -48,7 +48,7 @@ impl Photo {
     }
 
     pub fn webp_thumb_location(&self) -> String {
-        let ext_start = self.filename.rfind(".").unwrap_or(self.filename.len());
+        let ext_start = self.filename.rfind('.').unwrap_or(self.filename.len());
 
         format!(
             "{}/{}.webp",
@@ -58,7 +58,7 @@ impl Photo {
     }
 
     pub fn webp_large_location(&self) -> String {
-        let ext_start = self.filename.rfind(".").unwrap_or(self.filename.len());
+        let ext_start = self.filename.rfind('.').unwrap_or(self.filename.len());
 
         format!(
             "{}/{}.webp",
