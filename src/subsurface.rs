@@ -248,6 +248,7 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
     let minute: u32 = file_name[10..12].parse()?;
     let second: u32 = file_name[13..15].parse()?;
 
+    #[allow(deprecated)]
     let dt: NaiveDateTime = NaiveDate::from_ymd(year, month, day).and_hms(hour, minute, second);
 
     let date = Local

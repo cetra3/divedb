@@ -99,10 +99,15 @@ impl Query {
             .await?)
     }
 
-    async fn search(&self, context: &Context<'_>, query: String) -> FieldResult<Vec<SearchResult>> {
+    async fn search(
+        &self,
+        context: &Context<'_>,
+        query: String,
+        offset: Option<usize>,
+    ) -> FieldResult<Vec<SearchResult>> {
         let schema_context = context.data::<SchemaContext>()?;
 
-        let results = schema_context.web.searcher.search(&query)?;
+        let results = schema_context.web.searcher.search(&query, offset)?;
 
         Ok(results)
     }

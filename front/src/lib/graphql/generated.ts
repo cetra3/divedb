@@ -418,6 +418,7 @@ export type QuerySealifeArgs = {
 };
 
 export type QuerySearchArgs = {
+	offset?: InputMaybe<Scalars['Int']>;
 	query: Scalars['String'];
 };
 
@@ -1817,6 +1818,7 @@ export type GetRegionsQuery = {
 
 export type SearchQueryVariables = Exact<{
 	query: Scalars['String'];
+	offset?: InputMaybe<Scalars['Int']>;
 }>;
 
 export type SearchQuery = {
@@ -2428,8 +2430,8 @@ export const GetRegionsDocument = gql`
 	${RegionNodeFragmentDoc}
 `;
 export const SearchDocument = gql`
-	query search($query: String!) {
-		search(query: $query) {
+	query search($query: String!, $offset: Int) {
+		search(query: $query, offset: $offset) {
 			...SearchResultNode
 		}
 	}

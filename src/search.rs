@@ -60,7 +60,7 @@ impl Searcher {
 
         let idx = Index::create_in_ram(schema.clone());
 
-        let ngrams = TextAnalyzer::from(NgramTokenizer::new(1, 4, false)).filter(LowerCaser);
+        let ngrams = LowerCaser.transform(NgramTokenizer::new(1, 4, false));
 
         idx.tokenizers().register("autosuggest", ngrams);
 
@@ -141,7 +141,7 @@ impl Searcher {
                 }
             }
 
-            index_writer.add_document(doc);
+            index_writer.add_document(doc)?;
         }
 
         for dive_site in handle.dive_sites(None, &Default::default()).await? {
@@ -162,7 +162,7 @@ impl Searcher {
                 doc.add_text(self.photo_id, photo_id.to_string());
             }
 
-            index_writer.add_document(doc);
+            index_writer.add_document(doc)?;
         }
 
         tokio::task::spawn_blocking(move || index_writer.commit()).await??;
@@ -170,12 +170,17 @@ impl Searcher {
         Ok(())
     }
 
-    pub fn search(&self, query: &str) -> Result<Vec<SearchResult>, Error> {
+    pub fn search(&self, query: &str, offset: Option<usize>) -> Result<Vec<SearchResult>, Error> {
         let searcher = self.reader.searcher();
 
         let query = self.parser.parse_query(query)?;
 
-        let top_docs = searcher.search(&query, &TopDocs::with_limit(10))?;
+        let collector = match offset {
+            Some(val) => TopDocs::with_limit(10).and_offset(val),
+            None => TopDocs::with_limit(10),
+        };
+
+        let top_docs = searcher.search(&query, &collector)?;
 
         let mut output = Vec::with_capacity(top_docs.len());
 

@@ -212,7 +212,7 @@ type Query {
 	fbAppId: String!
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
-	search(query: String!): [SearchResult!]!
+	search(query: String!, offset: Int): [SearchResult!]!
 	dives(id: UUID, diveSite: UUID, maxDepth: Float): [Dive!]!
 	currentUser: LoginResponse
 	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!

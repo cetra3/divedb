@@ -6,6 +6,7 @@
 
 	import SearchResult from './SearchResult.svelte';
 	import { onMount } from 'svelte';
+	import { result, throttle } from 'lodash-es';
 
 	export let query = '';
 	export let map: CategoryMap | undefined = undefined;
@@ -14,7 +15,9 @@
 
 	export let title = 'Search DiveDB';
 
+	let scrollPercent = 0;
 	let browserLoaded = false;
+	let atTheEnd = false;
 
 	onMount(() => {
 		browserLoaded = true;
@@ -24,12 +27,17 @@
 
 	let loading = false;
 	let called = false;
+	let offset = 0;
 
 	$: hasValues = map !== undefined && Object.values(map).flat().length > 0;
 
-	const updateResult = () => {
-		if (query != '' || hasValues) {
+	const updateResult = (more: boolean = false) => {
+		if ((query != '' || hasValues) && !loading) {
 			loading = true;
+
+			if (!more) {
+				offset = 0;
+			}
 
 			let queryString = query;
 
@@ -44,17 +52,31 @@
 					.join(' ');
 			}
 
-			client.search({ query: queryString }).then((val) => {
+			client.search({ query: queryString, offset }).then((val) => {
 				loading = false;
 				called = true;
-				results = val.search;
+				results = more ? [...results, ...val.search] : val.search;
+				offset = results.length;
+				atTheEnd = val.search.length == 0;
 			});
 		}
 	};
 
 	$: query, map, updateResult();
+
+	const handleScroll = throttle(() => {
+		let scrollTop = window.scrollY;
+		let docHeight = document.body.offsetHeight;
+		let winHeight = window.innerHeight;
+		scrollPercent = scrollTop / (docHeight - winHeight);
+
+		if (scrollPercent > 0.5 && !loading && !atTheEnd) {
+			updateResult(true);
+		}
+	}, 300);
 </script>
 
+<svelte:window on:scroll={handleScroll} />
 <div class="container grid-lg">
 	{#if showSearchBar}
 		<div class="columns">
