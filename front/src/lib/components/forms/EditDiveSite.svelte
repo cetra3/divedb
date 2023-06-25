@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
 	import { onMount } from 'svelte';

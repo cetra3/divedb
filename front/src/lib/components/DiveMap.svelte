@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { SiteSummaryMetricsFragment } from '$lib/graphql/generated';
 	import type { LatLngBoundsExpression } from 'leaflet';
 	import DiveSiteSummary from './DiveSiteSummary.svelte';
@@ -29,22 +29,19 @@
 			});
 	};
 
-	let displaySites = sitesToDisplay(showOnlyDived);
-
 	$: displaySites = sitesToDisplay(showOnlyDived);
 
 	const siteToSelect = sites.find((site) => site.slug === selectedSite);
 
-	const totals = displaySites.reduce((a, b) => [a[0] + b.lat, a[1] + b.lon], [0, 0]);
-
 	const center =
 		siteToSelect !== undefined
 			? [siteToSelect.lat, siteToSelect.lon]
-			: [totals[0] / displaySites.length, totals[1] / displaySites.length];
+			: // We started in South Australia, so should the map!
+			  [-34.696, 137.726];
 
 	const mapOptions = {
 		center,
-		zoom: siteToSelect != undefined ? 11 : 9
+		zoom: siteToSelect != undefined ? 11 : 8
 	};
 	const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	const tileLayerOptions = {
@@ -120,7 +117,7 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		z-index: 1000;
+		z-index: 500;
 		border-radius: 0 0 0 0.3rem;
 		background-color: rgba(255, 255, 255, 0.8);
 		padding: 0 10px;

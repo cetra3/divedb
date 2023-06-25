@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import type { PageData } from './$types';

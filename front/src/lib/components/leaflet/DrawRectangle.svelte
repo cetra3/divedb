@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import { getContext, onDestroy, onMount } from 'svelte';
 	import L, { type LatLngBoundsExpression } from 'leaflet';
 	import '@geoman-io/leaflet-geoman-free';

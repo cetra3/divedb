@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import FormRow from '$lib/components/FormRow.svelte';
 	import { goto } from '$app/navigation';
 	import type { ClientError } from 'graphql-request';

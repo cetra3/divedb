@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import ImageList from '$lib/components/ImageList.svelte';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';

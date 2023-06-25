@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	export let size: string;
 	export let viewBox = '0 0 16 16';
 </script>

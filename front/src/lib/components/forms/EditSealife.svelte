@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { Category, CreateSealife, SealifeNodeFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
 	export let sealife: SealifeNodeFragment | CreateSealife;

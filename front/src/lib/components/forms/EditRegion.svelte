@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { CreateRegion, RegionNodeFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
 	export let region: CreateRegion | RegionNodeFragment | undefined = undefined;

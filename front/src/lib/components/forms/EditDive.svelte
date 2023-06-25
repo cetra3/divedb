@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { CreateDive, DiveNodeFragment } from '$lib/graphql/generated';
 	import formatMinutes from '$lib/util/formatMinutes';
 	import FormRow from '../FormRow.svelte';

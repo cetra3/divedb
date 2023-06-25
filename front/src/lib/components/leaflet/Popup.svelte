@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import { createEventDispatcher, getContext, onDestroy } from 'svelte';
 	import L from 'leaflet';
 

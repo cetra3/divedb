@@ -1,5 +1,5 @@
-<script type="ts">
-	import type { CurrentUserFragment, UserLevel } from '$lib/graphql/generated';
+<script lang="ts">
+	import type { CurrentUserFragment } from '$lib/graphql/generated';
 	import { browser } from '$app/environment';
 	import { client } from '$lib/graphql/client';
 	import { onMount } from 'svelte';
@@ -51,7 +51,9 @@
 		</div>
 	{/if}
 	<div>
-		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/divesites"> Sites </a>
+		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/divesites/map">
+			Sites
+		</a>
 	</div>
 	<div>
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos"> Photos </a>
@@ -106,7 +108,7 @@
 			{#if $session.loggedIn}
 				<a class="btn btn-link hide-small" href="/dives">Dives</a>
 			{/if}
-			<a class="btn btn-link hide-small" href="/divesites">Sites</a>
+			<a class="btn btn-link hide-small" href="/divesites/map">Sites</a>
 			<a class="btn btn-link hide-small" href="/photos">Photos</a>
 			<a class="btn btn-link hide-small" href="/sealife">Sealife</a>
 		</section>

@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { CreatePhoto, PhotoSummaryFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
 	import ChooseSealife from './ChooseSealife.svelte';

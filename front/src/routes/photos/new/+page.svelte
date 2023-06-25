@@ -1,7 +1,7 @@
 <script context="module">
 </script>
 
-<script type="ts">
+<script lang="ts">
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
 	import ImageList from '$lib/components/ImageList.svelte';

@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import type { RegionNodeFragment } from '$lib/graphql/generated';
@@ -47,7 +47,7 @@
 
 <div class="dive-sites container grid-lg">
 	<div class="columns">
-		<div class="column col-6 col-lg-12">
+		<div class="column col-12 col-lg-12">
 			<h1 class="page-title inline">
 				<DiveSiteIcon size="22px" /> Dive Map
 				{#if data.regions.length > 0}
@@ -68,17 +68,10 @@
 						</ul>
 					</div>
 				{/if}
+				<a href="/divesites">
+					<button class="btn btn-secondary btn-sm">View List</button>
+				</a>
 			</h1>
-		</div>
-		<div class="column col-3 col-ml-auto col-lg-12">
-			<ul class="page-title tab tab-block">
-				<li class="tab-item">
-					<a href="/divesites"> List </a>
-				</li>
-				<li class="tab-item">
-					<a class="active" href="/divesites/map"> Map </a>
-				</li>
-			</ul>
 		</div>
 	</div>
 	<div class="columns dive-site-content">
@@ -91,7 +84,7 @@
 <style>
 	.inline {
 		display: inline-block;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.1rem;
 	}
 	.dive-sites {
 		flex: 1;

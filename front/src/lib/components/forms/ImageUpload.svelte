@@ -12,7 +12,7 @@
 	}
 </script>
 
-<script type="ts">
+<script lang="ts">
 	import { client } from '$lib/graphql/client';
 
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';

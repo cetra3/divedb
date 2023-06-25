@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import { createEventDispatcher, setContext } from 'svelte';
 	import L, { type LatLngBoundsExpression } from 'leaflet';
 

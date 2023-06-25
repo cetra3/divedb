@@ -44,6 +44,7 @@
 		<source type="image/jpeg" srcset="/api/photos/jpeg/{id}" />
 	{/if}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<img
 		width={newWidth}
 		height={newHeight}

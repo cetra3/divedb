@@ -33,9 +33,12 @@
 			<div class="column col-12 col-sm-12">
 				<h1 class="page-title">
 					<DiveSiteIcon size="1.4em" />
-					Popular Dive Sites
+					Popular Sites
+					<a href="/divesites/map">
+						<button class="btn btn-primary btn-sm"> View Map </button>
+					</a>
 					<a href="/divesites">
-						<button class="btn btn-primary btn-sm"> View All Sites </button>
+						<button class="btn btn-sm"> View List </button>
 					</a>
 				</h1>
 			</div>
@@ -78,7 +81,7 @@
 					</div>
 					<div class="card-header">
 						<div class="card-title h5">Photos</div>
-						<div class="card-subtitle ">Add and view photos from your dives</div>
+						<div class="card-subtitle">Add and view photos from your dives</div>
 					</div>
 					<div class="card-footer">
 						<a href="/photos">

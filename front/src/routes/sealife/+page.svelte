@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
 	import type { PageData } from './$types';
 	import Search from '$lib/components/Search.svelte';
 	import SealifeSummary from '$lib/components/SealifeSummary.svelte';
