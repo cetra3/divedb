@@ -166,6 +166,7 @@
 			</div>
 			<div class="column col-12 col-sm-12">
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<ImageList {photos} query={{ diveSite: diveSite.id }}>
 					<svelte:fragment let:photo slot="photo-label">
 						{#if diveSite.photoId !== photo}

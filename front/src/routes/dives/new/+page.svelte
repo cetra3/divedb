@@ -10,7 +10,9 @@
 	let dive: CreateDive = {
 		date: new Date(),
 		depth: 0,
-		duration: 0
+		duration: 0,
+		description: "",
+		published: false
 	};
 
 	let onSave = (dive: CreateDive) => {

@@ -56,7 +56,7 @@ struct Curve {
 
 impl Curve {
     #[allow(dead_code)]
-    fn to_svg(&self) -> String {
+    fn as_svg(&self) -> String {
         format!(
             "C {:.4} {:.4}, {:.4} {:.4}, {:.4} {:.4}",
             self.c1.x, self.c1.y, self.c2.x, self.c2.y, self.end.x, self.end.y
@@ -125,7 +125,7 @@ fn render_dive(
     let max_point = points.iter().find(|val| val.y == max_y).unwrap();
     let max_depth = max_point.y;
 
-    let max_y = ((max_y + 5.0) / 10.0).round() * 10.0;
+    let max_y = ((max_y + 5.0) / 5.0).round() * 5.0;
 
     let max_point = Point {
         x: (max_point.x / max_x * width) + offset,

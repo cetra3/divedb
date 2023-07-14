@@ -3,9 +3,3 @@ query getDives($diveSite: UUID) {
 		...DiveWithMetrics
 	}
 }
-
-query getDivesWithNumber($diveSite: UUID) {
-	dives(diveSite: $diveSite) {
-		...DiveWithNumber
-	}
-}

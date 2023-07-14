@@ -7,11 +7,18 @@ use crate::schema::*;
 use super::DbHandle;
 
 impl DbHandle {
-    pub async fn new_user(&self, email: &str, hash: &str) -> Result<User, Error> {
+    pub async fn new_user(
+        &self,
+        username: &str,
+        email: &str,
+        hash: Option<&str>,
+    ) -> Result<User, Error> {
         let uuid = Uuid::new_v4();
         let client = self.pool.get().await?;
-        let query =  "insert into users (id, email, password, level) values ($1, $2, $3, 'User') returning *";
-        let result = client.query_one(query, &[&uuid, &email, &hash]).await?;
+        let query =  "insert into users (id, username, email, password, level) values ($1, slugify($2), lower($3), $4, 'User') returning *";
+        let result = client
+            .query_one(query, &[&uuid, &username, &email, &hash])
+            .await?;
 
         User::from_row(result)
     }
@@ -53,16 +60,16 @@ impl DbHandle {
     pub async fn update_settings(
         &self,
         email: &str,
-        username: Option<String>,
+        display_name: Option<String>,
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
     ) -> Result<User, Error> {
         let client = self.pool.get().await?;
-        let query = "update users set username = $1, watermark_location = $2, copyright_location = $3 where lower(email) = lower($4) returning *";
+        let query = "update users set display_name = $1, watermark_location = $2, copyright_location = $3 where lower(email) = lower($4) returning *";
         let result = client
             .query_one(
                 query,
-                &[&username, &watermark_location, &copyright_location, &email],
+                &[&display_name, &watermark_location, &copyright_location, &email],
             )
             .await?;
 

@@ -70,6 +70,7 @@
 
 		<div class={`column  col-12`}>
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div
 				class="card pointer"
 				on:click={clickUpload}

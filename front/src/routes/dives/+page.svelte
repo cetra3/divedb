@@ -5,7 +5,6 @@
 
 	export let data: PageData;
 	let dives = data.dives;
-	let width: number;
 </script>
 
 <svelte:head>
@@ -16,8 +15,7 @@
 		<div class="column col-12 col-lg-12">
 			<h1 class="page-title">
 				<DiveLogIcon size="1.4em" />
-				Your Dives
-
+				Dives
 				<a href="/dives/new">
 					<button class="btn btn-secondary btn-sm">Add New</button>
 				</a>
@@ -26,12 +24,11 @@
 				</a>
 			</h1>
 		</div>
-		<div bind:clientWidth={width} class="column col-6 col-lg-12" />
 	</div>
 	{#if dives !== undefined}
 		<div class="columns">
-			{#each dives as dive, index}
-				<DiveSummary {dive} {width} diveNumber={dives.length - index} />
+			{#each dives as dive }
+				<DiveSummary {dive} />
 			{/each}
 		</div>
 	{:else}

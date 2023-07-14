@@ -142,7 +142,7 @@ fn add_overlay(im: &mut DynamicImage, photo: &Photo, user: &User) {
     if let Some(location) = user.copyright_location {
         let mut copyright_notice = String::from("©");
 
-        if let Some(ref username) = user.username {
+        if let Some(ref username) = user.display_name {
             copyright_notice.push(' ');
             copyright_notice.push_str(username);
         }

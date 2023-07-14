@@ -1,4 +1,5 @@
 mod categories;
+mod comment;
 mod dive;
 mod dive_site;
 mod feedback;
@@ -9,6 +10,7 @@ mod region;
 mod sealife;
 mod user;
 
+pub use comment::*;
 pub use categories::*;
 pub use dive::*;
 pub use dive_site::*;

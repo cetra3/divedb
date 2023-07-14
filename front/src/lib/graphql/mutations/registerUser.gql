@@ -1,5 +1,5 @@
-mutation registerUser($email: String!, $password: String!) {
-	registerUser(email: $email, password: $password) {
+mutation registerUser($username: String!, $email: String!, $password: String!) {
+	registerUser(username: $username, email: $email, password: $password) {
 		...CurrentUserToken
 	}
 }

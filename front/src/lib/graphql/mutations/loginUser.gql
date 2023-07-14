@@ -5,12 +5,12 @@ mutation loginUser($email: String!, $password: String!) {
 }
 
 mutation updateSettings(
-	$username: String
+	$displayName: String
 	$watermarkLocation: OverlayLocation!
 	$copyrightLocation: OverlayLocation
 ) {
 	updateSettings(
-		username: $username
+		displayName: $displayName
 		watermarkLocation: $watermarkLocation
 		copyrightLocation: $copyrightLocation
 	) {

@@ -6,3 +6,4 @@ thumbs/
 large/
 *.jpg
 deploy.sh
+Justfile

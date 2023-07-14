@@ -10,7 +10,8 @@ pub struct LoginResponse {
     pub email: String,
     pub token: String,
     pub level: UserLevel,
-    pub username: Option<String>,
+    pub username: String,
+    pub display_name: Option<String>,
     pub watermark_location: OverlayLocation,
     pub copyright_location: Option<OverlayLocation>,
 }
@@ -20,7 +21,27 @@ pub struct UserInfo {
     pub id: Uuid,
     pub email: String,
     pub level: UserLevel,
-    pub username: Option<String>,
+    pub username: String,
+    pub display_name: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
+pub struct PublicUserInfo {
+    pub id: Uuid,
+    pub level: UserLevel,
+    pub username: String,
+    pub display_name: Option<String>,
+}
+
+impl From<User> for PublicUserInfo {
+    fn from(value: User) -> Self {
+        Self {
+            id: value.id,
+            level: value.level,
+            username: value.username,
+            display_name: value.display_name,
+        }
+    }
 }
 
 impl From<User> for UserInfo {
@@ -30,6 +51,7 @@ impl From<User> for UserInfo {
             email: value.email,
             level: value.level,
             username: value.username,
+            display_name: value.display_name,
         }
     }
 }
@@ -38,11 +60,13 @@ impl From<User> for UserInfo {
 pub struct User {
     pub id: Uuid,
     pub email: String,
-    pub password: String,
+    pub password: Option<String>,
     pub level: UserLevel,
-    pub username: Option<String>,
+    pub username: String,
     pub watermark_location: OverlayLocation,
     pub copyright_location: Option<OverlayLocation>,
+    pub email_verified: bool,
+    pub display_name: Option<String>,
 }
 
 impl User {

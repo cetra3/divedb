@@ -1,4 +1,4 @@
-use super::{Dive, DiveQuery, DiveSite, Sealife, SealifeQuery};
+use super::{Dive, DiveQuery, DiveSite, PublicUserInfo, Sealife, SealifeQuery};
 use crate::graphql::SchemaContext;
 use async_graphql::*;
 use chrono::prelude::*;
@@ -109,20 +109,19 @@ impl Photo {
     async fn dive(&self, context: &Context<'_>) -> FieldResult<Option<Dive>> {
         let context = context.data::<SchemaContext>()?;
 
-        if context.con.user.is_none() {
-            return Ok(None);
-        }
-
         if let Some(id) = self.dive_id {
             Ok(context
                 .web
                 .handle
-                .dives(&DiveQuery {
-                    id: Some(id),
-                    user_id: context.con.user.as_ref().map(|val| val.id),
-                    dive_site: None,
-                    max_depth: None,
-                })
+                .dives(
+                    context.con.user.as_ref().map(|val| val.id),
+                    &DiveQuery {
+                        id: Some(id),
+                        user_id: None,
+                        dive_site: None,
+                        max_depth: None,
+                    },
+                )
                 .await?
                 .pop())
         } else {
@@ -173,6 +172,44 @@ impl Photo {
             }
         }
         Ok(None)
+    }
+
+    async fn likes(&self, context: &Context<'_>) -> FieldResult<i64> {
+        Ok(context
+            .data::<SchemaContext>()?
+            .web
+            .handle
+            .photo_likes(self.id)
+            .await?)
+    }
+
+    async fn liked(&self, context: &Context<'_>) -> FieldResult<bool> {
+        if let Some(user_id) = context
+            .data::<SchemaContext>()?
+            .con
+            .user
+            .as_ref()
+            .map(|val| val.id)
+        {
+            Ok(context
+                .data::<SchemaContext>()?
+                .web
+                .handle
+                .photo_liked(user_id, self.id)
+                .await?)
+        } else {
+            Ok(false)
+        }
+    }
+
+    async fn user(&self, context: &Context<'_>) -> FieldResult<PublicUserInfo> {
+        Ok(context
+            .data::<SchemaContext>()?
+            .web
+            .handle
+            .user_details(self.user_id)
+            .await?
+            .into())
     }
 }
 

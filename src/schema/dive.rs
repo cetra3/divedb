@@ -1,11 +1,14 @@
-use crate::graphql::SchemaContext;
+use crate::{
+    escape::{md_to_text, truncate},
+    graphql::SchemaContext,
+};
 use async_graphql::*;
 use chrono::prelude::*;
 use divedb_core::FromRow;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{DiveSite, Photo, PhotoQuery};
+use super::{DiveComment, DiveCommentQuery, DiveSite, Photo, PhotoQuery, PublicUserInfo};
 
 #[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
 pub struct DiveMetric {
@@ -23,6 +26,9 @@ pub struct Dive {
     pub duration: i32,
     pub depth: f32,
     pub dive_site_id: Option<Uuid>,
+    pub dive_number: i32,
+    pub description: String,
+    pub published: bool,
 }
 
 #[Object]
@@ -39,8 +45,16 @@ impl Dive {
         self.date.into()
     }
 
-    async fn duration(&self) -> &i32 {
-        &self.duration
+    async fn description(&self) -> &str {
+        &self.description
+    }
+
+    async fn summary(&self) -> String {
+        md_to_text(&truncate(&self.description, 250))
+    }
+
+    async fn duration(&self) -> i32 {
+        self.duration
     }
 
     async fn depth(&self) -> f64 {
@@ -61,12 +75,61 @@ impl Dive {
             .await?)
     }
 
-    async fn number(&self, context: &Context<'_>) -> FieldResult<i64> {
+    async fn number(&self) -> i32 {
+        self.dive_number
+    }
+
+    async fn published(&self) -> bool {
+        self.published
+    }
+
+    async fn likes(&self, context: &Context<'_>) -> FieldResult<i64> {
         Ok(context
             .data::<SchemaContext>()?
             .web
             .handle
-            .dive_number(self.id, self.user_id)
+            .dive_likes(self.id)
+            .await?)
+    }
+
+    async fn liked(&self, context: &Context<'_>) -> FieldResult<bool> {
+        if let Some(user_id) = context
+            .data::<SchemaContext>()?
+            .con
+            .user
+            .as_ref()
+            .map(|val| val.id)
+        {
+            Ok(context
+                .data::<SchemaContext>()?
+                .web
+                .handle
+                .dive_liked(user_id, self.id)
+                .await?)
+        } else {
+            Ok(false)
+        }
+    }
+
+    async fn num_comments(&self, context: &Context<'_>) -> FieldResult<i64> {
+        Ok(context
+            .data::<SchemaContext>()?
+            .web
+            .handle
+            .dive_comments(self.id)
+            .await?)
+    }
+
+    async fn comments(&self, context: &Context<'_>) -> FieldResult<Vec<DiveComment>> {
+        Ok(context
+            .data::<SchemaContext>()?
+            .web
+            .handle
+            .comments(&DiveCommentQuery {
+                id: None,
+                user_id: None,
+                dive_id: Some(self.id),
+            })
             .await?)
     }
 
@@ -96,6 +159,16 @@ impl Dive {
             Ok(None)
         }
     }
+
+    async fn user(&self, context: &Context<'_>) -> FieldResult<PublicUserInfo> {
+        Ok(context
+            .data::<SchemaContext>()?
+            .web
+            .handle
+            .user_details(self.user_id)
+            .await?
+            .into())
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject)]
@@ -105,6 +178,8 @@ pub struct CreateDive {
     pub duration: i32,
     pub depth: f64,
     pub dive_site_id: Option<Uuid>,
+    pub description: String,
+    pub published: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject, Default)]

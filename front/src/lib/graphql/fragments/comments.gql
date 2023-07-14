@@ -1,0 +1,9 @@
+fragment Comment on DiveComment {
+	id
+  diveId
+  user {
+    ...UserSummary
+  }
+  date
+  description
+}

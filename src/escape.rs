@@ -31,10 +31,10 @@ pub fn md_to_text(input: &str) -> String {
     use pulldown_cmark::Event::*;
     Parser::new_ext(input, Options::ENABLE_TABLES)
         .filter_map(|ev| match ev {
-            Text(val) => Some(val.to_string()),
+            Text(val) => Some(val),
             _ => None,
         })
-        .collect::<Vec<String>>()
+        .collect::<Vec<_>>()
         .join(" ")
 }
 

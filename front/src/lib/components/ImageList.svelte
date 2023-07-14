@@ -3,6 +3,7 @@
 	import { client } from '$lib/graphql/client';
 	import { throttle } from 'lodash-es';
 	export let query: GetPhotosQueryVariables | undefined = undefined;
+	export let condensed = false;
 	export let photos: PhotoSummaryFragment[];
 
 	import { browser } from '$app/environment';
@@ -99,13 +100,15 @@
 	});
 
 	const handleScroll = throttle(() => {
-		let scrollTop = window.scrollY;
-		let docHeight = document.body.offsetHeight;
-		let winHeight = window.innerHeight;
-		scrollPercent = scrollTop / (docHeight - winHeight);
+		if (!condensed) {
+			let scrollTop = window.scrollY;
+			let docHeight = document.body.offsetHeight;
+			let winHeight = window.innerHeight;
+			scrollPercent = scrollTop / (docHeight - winHeight);
 
-		if (scrollPercent > 0.5) {
-			morePhotos();
+			if (scrollPercent > 0.5) {
+				morePhotos();
+			}
 		}
 	}, 300);
 </script>
@@ -116,6 +119,7 @@
 		<!-- svelte-ignore a11y-invalid-attribute -->
 		<div class="modal-close">
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<span class="pointer" on:click={closeModal}>✕ </span>
 		</div>
 		<Swiper
@@ -157,19 +161,21 @@
 			{/each}
 		</Swiper>
 		<div class="photo-modal-toolbar">
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<span
-				class="pointer label label-secondary"
-				on:click={() => {
-					if (toEdit != undefined) {
-						toEdit = undefined;
-					} else {
-						toEdit = photos[curIdx];
-					}
-				}}>Edit</span
-			>
-			<PhotoLabels photo={photos[curIdx]} />
-			<slot name="photo-label" photo={photos[curIdx].id} />
+			<PhotoLabels photo={photos[curIdx]}>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<span
+					class="pointer label label-secondary"
+					on:click={() => {
+						if (toEdit != undefined) {
+							toEdit = undefined;
+						} else {
+							toEdit = photos[curIdx];
+						}
+					}}>Edit</span
+				>
+				<slot name="photo-label" photo={photos[curIdx].id} />
+			</PhotoLabels>
 
 			{#if toEdit}
 				<PhotoSlide {onEditSave} photo={toEdit} />
@@ -179,40 +185,91 @@
 {/if}
 
 <svelte:window on:scroll={handleScroll} />
-<div class="columns" class:hide-scroll={showModal}>
-	{#each photos as photo, idx}
-		<div class="column col-6 col-sm-12">
-			<div class="card">
-				<div class="card-image">
-					<Photo
-						alt={imageAlt(photo)}
-						width={photo.width}
-						height={photo.height}
-						imgClass="img-responsive pointer"
-						id={photo.id}
-						on:click={() => {
-							photoId = photo.id;
-							updateSwiper();
-							showModal = true;
-							const body = document.querySelector('body');
-							if (body) {
-								body.style.overflow = 'hidden';
-							}
-						}}
-					/>
-				</div>
-				<div class="card-footer photo-labels">
-					<PhotoLabels {photo} />
+{#if !condensed}
+	<div class="columns" class:hide-scroll={showModal}>
+		{#each photos as photo, idx}
+			<div class="column col-6 col-sm-12">
+				<div class="card">
+					<div class="card-image">
+						<Photo
+							alt={imageAlt(photo)}
+							width={photo.width}
+							height={photo.height}
+							imgClass="img-responsive pointer"
+							id={photo.id}
+							on:click={() => {
+								photoId = photo.id;
+								updateSwiper();
+								showModal = true;
+								const body = document.querySelector('body');
+								if (body) {
+									body.style.overflow = 'hidden';
+								}
+							}}
+						/>
+					</div>
+					<div class="card-footer photo-labels no-padding">
+						<PhotoLabels {photo} />
+					</div>
 				</div>
 			</div>
-		</div>
-	{/each}
-</div>
+		{/each}
+	</div>
+{:else}
+	<div class="condensed">
+		{#each photos as photo}
+			<div class="condensed-photo">
+				<Photo
+					on:click={() => {
+						photoId = photo.id;
+						updateSwiper();
+						showModal = true;
+						const body = document.querySelector('body');
+						if (body) {
+							body.style.overflow = 'hidden';
+						}
+					}}
+					imgClass="pointer"
+					id={photo.id}
+				/>
+			</div>
+		{/each}
+		{#if photos.length % 3 != 0}
+			<div class="condensed-spacer" />
+		{/if}
+	</div>
+{/if}
 
 <style global lang="scss">
 	.hide-scroll {
 		overflow: hidden;
 	}
+
+	.condensed {
+		display: flex;
+		font-size: 0;
+		flex-wrap: wrap;
+		margin-bottom: 0.4rem;
+
+		.condensed-photo {
+			flex-grow: 1;
+			height: 100px;
+			img {
+				border-radius: 0.3rem;
+				padding: 1px;
+				height: 100%;
+
+				width: 100%;
+				object-fit: cover;
+				vertical-align: bottom;
+			}
+		}
+
+		.condensed-spacer {
+			flex-grow: 11;
+		}
+	}
+
 	.photo-modal {
 		position: fixed;
 		top: 0;

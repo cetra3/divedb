@@ -91,6 +91,7 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<span
 		on:mouseenter={() => (dropDownFocused = true)}
 		on:mouseleave={() => (dropDownFocused = false)}

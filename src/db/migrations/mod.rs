@@ -49,6 +49,7 @@ impl Migrator {
                 Box::new(external!("V017__photo_fields.sql")),
                 Box::new(fix_photo_dive_ids::FixPhotoDiveIds),
                 Box::new(external!("V018__regions_slug.sql")),
+                Box::new(external!("V019__social.sql")),
             ],
         }
     }

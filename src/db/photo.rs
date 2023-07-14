@@ -206,4 +206,39 @@ impl DbHandle {
 
         Ok(())
     }
+
+    pub async fn photo_likes(&self, photo_id: Uuid) -> Result<i64, Error> {
+        let client = self.pool.get().await?;
+        let query = "select count(*) from photo_likes where photo_id = $1";
+
+        let result = client.query_one(query, &[&photo_id]).await?;
+        let count: i64 = result.get(0);
+
+        Ok(count)
+    }
+
+    pub async fn photo_liked(&self, user_id: Uuid, photo_id: Uuid) -> Result<bool, Error> {
+        let client = self.pool.get().await?;
+        let query = "select count(*) from photo_likes where user_id = $1 and photo_id = $2";
+
+        let result = client.query_one(query, &[&user_id, &photo_id]).await?;
+        let count: i64 = result.get(0);
+
+        Ok(count > 0)
+    }
+
+    pub async fn like_photo(&self, user_id: Uuid, photo_id: Uuid) -> Result<(), Error> {
+        let client = self.pool.get().await?;
+        let query =
+            "insert into photo_likes (photo_id, user_id) values ($1,$2) on conflict do nothing";
+        client.execute(query, &[&photo_id, &user_id]).await?;
+        Ok(())
+    }
+
+    pub async fn unlike_photo(&self, user_id: Uuid, photo_id: Uuid) -> Result<(), Error> {
+        let client = self.pool.get().await?;
+        let query = "delete from photo_likes where photo_id = $1 and user_id = $2";
+        client.execute(query, &[&photo_id, &user_id]).await?;
+        Ok(())
+    }
 }

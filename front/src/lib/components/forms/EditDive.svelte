@@ -3,6 +3,8 @@
 	import formatMinutes from '$lib/util/formatMinutes';
 	import FormRow from '../FormRow.svelte';
 	import ChooseSite from './ChooseSite.svelte';
+	import Markdown from './Markdown.svelte';
+	import { session } from '$lib/session';
 	export let dive: CreateDive | DiveNodeFragment;
 	export let onSave: (site: CreateDive) => void;
 
@@ -28,6 +30,12 @@
 		timeParts.length == 2 &&
 		duration.match(durationRegex) != undefined;
 
+	$: isEditor =
+		$session.user?.level == 'ADMIN' ||
+		$session.user?.level == 'EDITOR' ||
+		!('userId' in dive) ||
+		($session.user?.id != undefined && $session.user.id === dive.userId);
+
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
 
@@ -38,6 +46,8 @@
 			depth: dive.depth,
 			duration: +durationParts[0] * 60 + +durationParts[1],
 			date: new Date(`${dateValue}T${timeValue}`).toISOString(),
+			description: dive.description,
+			published: dive.published,
 			diveSiteId: dive.diveSiteId
 		});
 	};
@@ -71,6 +81,17 @@
 			<FormRow name="Duration (mm:ss)">
 				<input class="form-input" placeholder="mm:ss" bind:value={duration} />
 			</FormRow>
+			<FormRow name="Description">
+				<Markdown bind:value={dive.description} />
+			</FormRow>
+			{#if isEditor}
+				<FormRow name="Published">
+					<label class="form-switch">
+						<input type="checkbox" bind:checked={dive.published} />
+						<i class="form-icon" /> Publish this dive (otherwise only you will be able to see it)
+					</label>
+				</FormRow>
+			{/if}
 			<FormRow name="">
 				<button class="btn btn-primary" type="submit" disabled={canSave == false}
 					>Submit Dive</button

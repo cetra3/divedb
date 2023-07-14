@@ -44,7 +44,7 @@
 							{titleWithDate}
 						</div>
 					{/if}
-					<div class="card-footer photo-labels">
+					<div class="card-footer photo-labels no-padding">
 						<PhotoLabels showEdit {photo} />
 					</div>
 				</div>

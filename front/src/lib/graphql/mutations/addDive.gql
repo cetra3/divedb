@@ -1,5 +1,5 @@
 mutation addDive($dive: CreateDive!) {
 	newDive(dive: $dive) {
-		...DiveSummary
+		...DiveNode
 	}
 }

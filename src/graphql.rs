@@ -9,10 +9,7 @@ use governor::clock::{Clock, DefaultClock};
 use governor::state::keyed::DefaultKeyedStateStore;
 use governor::{Quota, RateLimiter};
 use log::*;
-use rand::distributions::Standard;
-use rand::{thread_rng, Rng};
 use scrypt::*;
-use std::iter;
 use std::net::IpAddr;
 use std::num::NonZeroU32;
 use std::sync::Arc;
@@ -118,25 +115,26 @@ impl Query {
         id: Option<Uuid>,
         dive_site: Option<Uuid>,
         max_depth: Option<f64>,
+        user_id: Option<Uuid>,
     ) -> FieldResult<Vec<Dive>> {
         let schema_context = context.data::<SchemaContext>()?;
 
-        let user = schema_context
-            .con
-            .user
-            .as_ref()
-            .ok_or_else(|| anyhow!("Login Required"))?;
+        let logged_in_id = schema_context.con.user.as_ref().map(|val| val.id);
 
         let query = DiveQuery {
             id,
             max_depth,
             dive_site,
-            user_id: Some(user.id),
+            user_id,
         };
 
         let include_sites = context.look_ahead().field("diveSites").exists();
 
-        let dives = schema_context.web.handle.dives(&query).await?;
+        let dives = schema_context
+            .web
+            .handle
+            .dives(logged_in_id, &query)
+            .await?;
 
         if include_sites {
             let sites_to_load: Vec<Uuid> =
@@ -147,6 +145,13 @@ impl Query {
 
         Ok(dives)
     }
+
+    async fn recent_dives(&self, context: &Context<'_>) -> FieldResult<Vec<Dive>> {
+        let context = context.data::<SchemaContext>()?;
+
+        Ok(context.web.handle.recent_dives().await?)
+    }
+
 
     async fn current_user(&self, ctx: &Context<'_>) -> FieldResult<Option<LoginResponse>> {
         let context = ctx.data::<SchemaContext>()?;
@@ -166,6 +171,7 @@ impl Query {
             token,
             level: user.level,
             username: user.username,
+            display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
         }))
@@ -327,7 +333,12 @@ impl Mutation {
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
 
-        scrypt_check(&old_password, &user.password)
+        let existing_password = user
+            .password
+            .as_deref()
+            .ok_or_else(|| anyhow!("Invalid Existing Password"))?;
+
+        scrypt_check(&old_password, &existing_password)
             .map_err(|_| anyhow!("Invalid Existing Password"))?;
 
         let params = ScryptParams::recommended();
@@ -373,6 +384,7 @@ impl Mutation {
                 token,
                 level: user.level,
                 username: user.username,
+                display_name: user.display_name,
                 watermark_location: user.watermark_location,
                 copyright_location: user.copyright_location,
             })
@@ -384,6 +396,7 @@ impl Mutation {
     async fn register_user(
         &self,
         context: &Context<'_>,
+        username: String,
         email: String,
         password: String,
     ) -> FieldResult<LoginResponse> {
@@ -396,7 +409,11 @@ impl Mutation {
 
         let hash = scrypt_simple(&password, &params)?;
 
-        let user = context.web.handle.new_user(&email, &hash).await?;
+        let user = context
+            .web
+            .handle
+            .new_user(&username, &email, Some(&hash))
+            .await?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -405,7 +422,8 @@ impl Mutation {
             email,
             token,
             level: UserLevel::User,
-            username: None,
+            username: user.username,
+            display_name: None,
             watermark_location: OverlayLocation::BottomRight,
             copyright_location: Some(OverlayLocation::BottomLeft),
         })
@@ -414,6 +432,7 @@ impl Mutation {
     async fn fb_register_user(
         &self,
         context: &Context<'_>,
+        username: String,
         redirect_uri: String,
         code: String,
     ) -> FieldResult<LoginResponse> {
@@ -429,21 +448,7 @@ impl Mutation {
             return Err(anyhow!("Email address is already in use.  Try logging in instead").into());
         }
 
-        let params = ScryptParams::recommended();
-
-        //make a random password to appease the database
-        let password: String = {
-            let mut rng = thread_rng();
-
-            iter::repeat(())
-                .map(|()| rng.sample::<char, _>(Standard))
-                .take(30)
-                .collect()
-        };
-
-        let hash = scrypt_simple(&password, &params)?;
-
-        let user = context.web.handle.new_user(&email, &hash).await?;
+        let user = context.web.handle.new_user(&username, &email, None).await?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -453,6 +458,7 @@ impl Mutation {
             token,
             level: UserLevel::User,
             username: user.username,
+            display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
         })
@@ -473,7 +479,12 @@ impl Mutation {
                 anyhow!("Unknown Email Address, Please make sure you've registered")
             })?;
 
-        scrypt_check(&password, &user.password).map_err(|_| anyhow!("Invalid Password"))?;
+        let existing_password = user
+            .password
+            .as_deref()
+            .ok_or_else(|| anyhow!("Invalid Password"))?;
+
+        scrypt_check(&password, &existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -483,6 +494,7 @@ impl Mutation {
             token,
             level: user.level,
             username: user.username,
+            display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
         })
@@ -517,6 +529,7 @@ impl Mutation {
             token,
             level: user.level,
             username: user.username,
+            display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
         })
@@ -525,7 +538,7 @@ impl Mutation {
     async fn update_settings(
         &self,
         context: &Context<'_>,
-        username: Option<String>,
+        display_name: Option<String>,
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
     ) -> FieldResult<Option<LoginResponse>> {
@@ -543,7 +556,7 @@ impl Mutation {
             .handle
             .update_settings(
                 &user.email,
-                username,
+                display_name,
                 watermark_location,
                 copyright_location,
             )
@@ -557,6 +570,7 @@ impl Mutation {
             token,
             level: user.level,
             username: user.username,
+            display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
         }))
@@ -708,6 +722,68 @@ impl Mutation {
         Ok(true)
     }
 
+    async fn like_dive(&self, context: &Context<'_>, dive_id: Uuid) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        context.web.handle.like_dive(user.id, dive_id).await?;
+
+        Ok(true)
+    }
+
+    async fn unlike_dive(&self, context: &Context<'_>, dive_id: Uuid) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        context.web.handle.unlike_dive(user.id, dive_id).await?;
+
+        Ok(true)
+    }
+
+    async fn new_comment(
+        &self,
+        context: &Context<'_>,
+        comment: CreateDiveComment,
+    ) -> FieldResult<DiveComment> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        Ok(context.web.handle.create_comment(user.id, &comment).await?)
+    }
+
+    async fn remove_comment(
+        &self,
+        context: &Context<'_>,
+        id: Uuid
+    ) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        context.web.handle.remove_comment(id, user.id).await?;
+
+        Ok(true)
+    }
+
     async fn new_dive_site(
         &self,
         context: &Context<'_>,
@@ -840,7 +916,11 @@ impl Mutation {
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
 
-        scrypt_check(&password, &user.password).map_err(|_| anyhow!("Invalid Password"))?;
+        let existing_password = user
+            .password
+            .as_deref()
+            .ok_or_else(|| anyhow!("Invalid Password"))?;
+        scrypt_check(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         context.web.handle.delete_user(user.id).await?;
 
@@ -905,6 +985,34 @@ impl Mutation {
         }
 
         Ok(false)
+    }
+
+    async fn like_photo(&self, context: &Context<'_>, photo_id: Uuid) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        context.web.handle.like_photo(user.id, photo_id).await?;
+
+        Ok(true)
+    }
+
+    async fn unlike_photo(&self, context: &Context<'_>, photo_id: Uuid) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context
+            .con
+            .user
+            .as_ref()
+            .ok_or_else(|| anyhow!("Login Required"))?;
+
+        context.web.handle.unlike_photo(user.id, photo_id).await?;
+
+        Ok(true)
     }
 
     async fn new_sealife(

@@ -1,4 +1,4 @@
-<script context="module" type="ts">
+<script context="module" lang="ts">
 	export interface UploadResponse {
 		id: string;
 		user_id: string;

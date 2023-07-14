@@ -1,10 +1,20 @@
 <?xml version="1.0" standalone="no"?>
-{% let graph1 = "#118ab2" %}
-{% let axis1 = "#095d79" %}
+{% let graph1 = "#118AB2" %}
+{% let axis1 = "#A0CEE3" %}
+{% let axis2 = "#9CA7B0" %}
 <svg width="{{width + offset * 2.0}}" height="{{height + offset * 2.0}}"  viewBox="0 0 {{width + offset * 2.0}} {{height + offset * 2.0}}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="horizontalPipe" x2="0" y2="1">
+        <stop offset="0" stop-color="{{graph1}}22"/>
+        <stop offset="1" stop-color="{{graph1}}66"/>
+      </linearGradient>
+    </defs>
   <style>
     text {
       font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif
+    }
+    svg {
+      background: #303742
     }
   </style>
   {% for i in 0..lines + 1 %}
@@ -12,14 +22,15 @@
   {% let offset_y = offset + lidx * height%}
   {% let offset_x = offset + lidx * width%}
   <text  x="{{offset - 5.0}}" y="{{offset_y}}" dominant-baseline="middle" text-anchor="end" font-size="12" fill="{{axis1}}" font-weight="bold" >{{lidx * max_y}}m</text>
-  <text  x="{{offset_x}}" y="{{height + offset + 10.0}}" dominant-baseline="hanging" text-anchor="middle" font-size="12" fill="#74838f" font-weight="bold" >{{(lidx * max_x)| minutes}}</text>
-  <path stroke="#74838f99" stroke-width="1.0"  d="M {{offset_x }} {{height+offset}} L {{offset_x}} {{height+offset + 10.0}}" />
+  <text  x="{{offset_x}}" y="{{height + offset + 10.0}}" dominant-baseline="hanging" text-anchor="middle" font-size="12" fill="{{axis2}}" font-weight="bold" >{{(lidx * max_x)| minutes}}</text>
+  <path stroke="{{axis2}}" stroke-width="1.0"  d="M {{offset_x }} {{height+offset}} L {{offset_x}} {{height+offset + 10.0}}" />
   {% if loop.last == false %}
-  <path stroke="#74838f99" stroke-dasharray="10 6" stroke-width="0.5"  d="M {{offset }} {{offset_y}} L {{width + offset}} {{offset_y}}" />
+  <path stroke="{{axis2}}" stroke-dasharray="10 6" stroke-width="0.5"  d="M {{offset }} {{offset_y}} L {{width + offset}} {{offset_y}}" />
   {% endif %}
   {% endfor %}
-  <path stroke="#74838f99" stroke-width="1.0"  d="M {{offset }} {{height+offset}} L {{width + offset}} {{height+offset}}" />
+  <path stroke="{{axis2}}" stroke-width="1.0"  d="M {{offset }} {{height+offset}} L {{width + offset}} {{height+offset}}" />
   <path stroke="{{graph1}}" d="M {{offset}} {{offset}} {{path}} L {{width + offset}} {{offset}}" stroke-width="2.0" fill="none" />
+  <path stroke="none" d="M {{offset}} {{offset}} {{path}} L {{width + offset}} {{offset}}" fill="url(#horizontalPipe)" />
   <circle cx="{{max_point.x}}" cy="{{max_point.y}}" r="3" fill="{{axis1}}" />
   <text x="{{max_point.x}}" y="{{max_point.y + 2.0}}" dominant-baseline="hanging" text-anchor="left" font-size="12" fill="{{axis1}}" font-weight="bold" >MAX {{ "{:.2}"|format(max_depth) }}m</text>
 </svg>

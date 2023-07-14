@@ -10,12 +10,14 @@
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 	let currentUser: CurrentUserFragment | undefined;
 	let username = '';
+	let displayName = '';
 	let watermarkLocation = OverlayLocation.BottomRight;
 	let copyrightLocation: OverlayLocation | '' = OverlayLocation.BottomLeft;
 
 	onMount(async () => {
 		currentUser = (await client.getCurrentUser()).currentUser ?? undefined;
 		username = currentUser?.username ?? '';
+		displayName = currentUser?.displayName ?? '';
 		watermarkLocation = currentUser?.watermarkLocation ?? OverlayLocation.BottomLeft;
 		copyrightLocation = currentUser?.copyrightLocation ?? ('' as OverlayLocation | '');
 	});
@@ -40,7 +42,7 @@
 		errors = undefined;
 		client
 			.updateSettings({
-				username,
+				displayName,
 				watermarkLocation,
 				copyrightLocation: copyrightLocation == '' ? undefined : copyrightLocation
 			})
@@ -54,7 +56,7 @@
 			});
 	};
 
-	$: canSave = username != '' && !pristine;
+	$: canSave = displayName != '' && !pristine;
 </script>
 
 <svelte:head>
@@ -78,15 +80,19 @@
 		<div class="column col-12 col-sm-12">
 			<form class="form-horizontal" on:submit={onSubmit}>
 				<FormRow name="Username">
+					<input type="text" bind:value={username} disabled class="form-input" />
+					<span class="form-input-hint"> This is the username you registered with </span>
+				</FormRow>
+				<FormRow name="Display Name">
 					<input
 						type="text"
-						placeholder="Enter in a username to use for watermarks and other things"
-						bind:value={username}
+						placeholder="Enter in a display name to use for watermarks and other things"
+						bind:value={displayName}
 						on:input={onInput}
 						class="form-input"
 					/>
 					<span class="form-input-hint">
-						This is the username that will be displayed on watermarks and other places on DiveDB
+						This is the display name that will be displayed on watermarks and other places on DiveDB
 					</span>
 				</FormRow>
 				<FormRow name="Logo Location">
@@ -112,7 +118,7 @@
 						The copyright message is the year of the photo &amp; your username. I.e,{' '}
 						<code>
 							© {new Date().getFullYear()}
-							{username}
+							{displayName}
 						</code>
 					</span>
 				</FormRow>

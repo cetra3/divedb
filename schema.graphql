@@ -28,6 +28,14 @@ input CreateDive {
 	duration: Int!
 	depth: Float!
 	diveSiteId: UUID
+	description: String!
+	published: Boolean!
+}
+
+input CreateDiveComment {
+	id: UUID
+	diveId: UUID!
+	description: String!
 }
 
 input CreateDiveSite {
@@ -90,13 +98,31 @@ type Dive {
 	id: UUID!
 	userId: UUID!
 	date: DateTime!
+	description: String!
+	summary: String!
 	duration: Int!
 	depth: Float!
 	latestPhotos: [Photo!]!
 	number: Int!
+	published: Boolean!
+	likes: Int!
+	liked: Boolean!
+	numComments: Int!
+	comments: [DiveComment!]!
 	hasMetrics: Boolean!
 	diveSiteId: UUID
 	diveSite: DiveSite
+	user: PublicUserInfo!
+}
+
+type DiveComment {
+	id: UUID!
+	userId: UUID!
+	user: PublicUserInfo!
+	diveId: UUID!
+	dive: Dive!
+	date: DateTime!
+	description: String!
 }
 
 type DiveSite {
@@ -141,7 +167,8 @@ type LoginResponse {
 	email: String!
 	token: String!
 	level: UserLevel!
-	username: String
+	username: String!
+	displayName: String
 	watermarkLocation: OverlayLocation!
 	copyrightLocation: OverlayLocation
 }
@@ -150,11 +177,11 @@ type Mutation {
 	requestResetToken(email: String!): Boolean!
 	changePassword(oldPassword: String!, newPassword: String!): Boolean!
 	resetPassword(email: String!, newPassword: String!, token: UUID!): LoginResponse!
-	registerUser(email: String!, password: String!): LoginResponse!
-	fbRegisterUser(redirectUri: String!, code: String!): LoginResponse!
+	registerUser(username: String!, email: String!, password: String!): LoginResponse!
+	fbRegisterUser(username: String!, redirectUri: String!, code: String!): LoginResponse!
 	login(email: String!, password: String!): LoginResponse!
 	fbLogin(redirectUri: String!, code: String!): LoginResponse!
-	updateSettings(username: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation): LoginResponse
+	updateSettings(displayName: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation): LoginResponse
 	syncSubsurface(email: String!, password: String!): Boolean!
 	addFeedback(feedback: String!): Feedback!
 	newCategory(category: CreateCategory!): Category!
@@ -163,12 +190,18 @@ type Mutation {
 	newCategoryValue(categoryValue: CreateCategoryValue!): CategoryValue!
 	newDive(dive: CreateDive!): Dive!
 	removeDive(id: UUID!): Boolean!
+	likeDive(diveId: UUID!): Boolean!
+	unlikeDive(diveId: UUID!): Boolean!
+	newComment(comment: CreateDiveComment!): DiveComment!
+	removeComment(id: UUID!): Boolean!
 	newDiveSite(site: CreateDiveSite!): DiveSite!
 	mergeDiveSites(fromId: UUID!, toId: UUID!): Boolean!
 	removeDiveSite(id: UUID!): Boolean!
 	deleteUser(password: String!): Boolean!
 	updatePhoto(photo: CreatePhoto!): Photo!
 	removePhoto(id: UUID!): Boolean!
+	likePhoto(photoId: UUID!): Boolean!
+	unlikePhoto(photoId: UUID!): Boolean!
 	newSealife(sealife: CreateSealife!): Sealife!
 	removeSealife(id: UUID!): Boolean!
 	checkReference(url: String!): OgReference!
@@ -205,6 +238,16 @@ type Photo {
 	dive: Dive
 	sealife: Sealife
 	diveSite: DiveSite
+	likes: Int!
+	liked: Boolean!
+	user: PublicUserInfo!
+}
+
+type PublicUserInfo {
+	id: UUID!
+	level: UserLevel!
+	username: String!
+	displayName: String
 }
 
 type Query {
@@ -213,7 +256,8 @@ type Query {
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
 	search(query: String!, offset: Int): [SearchResult!]!
-	dives(id: UUID, diveSite: UUID, maxDepth: Float): [Dive!]!
+	dives(id: UUID, diveSite: UUID, maxDepth: Float, userId: UUID): [Dive!]!
+	recentDives: [Dive!]!
 	currentUser: LoginResponse
 	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!
 	popularDiveSites: [DiveSite!]!
@@ -286,7 +330,8 @@ type UserInfo {
 	id: UUID!
 	email: String!
 	level: UserLevel!
-	username: String
+	username: String!
+	displayName: String
 }
 
 enum UserLevel {

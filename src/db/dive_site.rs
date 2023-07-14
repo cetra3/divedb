@@ -124,8 +124,6 @@ impl DbHandle {
             }
         }
 
-        debug!("Metrics:{:?}", metrics.values());
-
         return Ok(metrics.get(&dive_site_id).cloned());
     }
 

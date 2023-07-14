@@ -1,0 +1,15 @@
+mutation likeDive($diveId: UUID!) {
+	likeDive(diveId: $diveId)
+}
+
+mutation unlikeDive($diveId: UUID!) {
+	unlikeDive(diveId: $diveId)
+}
+
+mutation likePhoto($photoId: UUID!) {
+	likePhoto(photoId: $photoId)
+}
+
+mutation unlikePhoto($photoId: UUID!) {
+	unlikePhoto(photoId: $photoId)
+}

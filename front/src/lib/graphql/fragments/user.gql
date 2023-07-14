@@ -3,6 +3,7 @@ fragment CurrentUser on LoginResponse {
 	email
 	level
 	username
+	displayName
 	watermarkLocation
 	copyrightLocation
 }
@@ -12,4 +13,10 @@ fragment CurrentUserToken on LoginResponse {
 	email
 	level
 	token
+}
+
+fragment UserSummary on PublicUserInfo {
+	id
+	username
+	displayName
 }

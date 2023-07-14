@@ -1,27 +1,28 @@
 <script lang="ts">
-	import type { DiveWithMetricsFragment } from '$lib/graphql/generated';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import type { DiveWithMetricsFragment, DiveNodeFragment } from '$lib/graphql/generated';
+	import GraphImage from './GraphImage.svelte';
+	import GraphPlaceholder from './GraphPlaceholder.svelte';
 
-	export let width = 470;
-	export let height = 300;
-	export let dive: DiveWithMetricsFragment;
+	export let link = false;
+	export let smallOnly = false;
+
+	export let dive: DiveWithMetricsFragment | DiveNodeFragment;
 </script>
 
 {#if dive.hasMetrics}
 	<div class="card-image">
-		<img
-			loading="lazy"
-			{width}
-			{height}
-			src={`/api/chart/${dive.id}?width=${width}&height=${height}`}
-			class="img-responsive"
-			alt={'Dive Chart'}
-		/>
+		{#if link}
+			<a href={`/dives/${dive.id}`}>
+				<GraphImage diveId={dive.id} {smallOnly} />
+			</a>
+		{:else}
+			<GraphImage diveId={dive.id} {smallOnly} />
+		{/if}
 	</div>
+{:else if link}
+	<a href={`/dives/${dive.id}`}>
+		<GraphPlaceholder />
+	</a>
 {:else}
-	<div class="hero bg-dark flex-center">
-		<div class="hero-body">
-			<DiveLogIcon size="88px" />
-		</div>
-	</div>
+	<GraphPlaceholder />
 {/if}

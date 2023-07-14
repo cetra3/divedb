@@ -28,6 +28,7 @@
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
 
+	let username = '';
 	let email = '';
 	let password = '';
 	let confirmPassword = '';
@@ -45,7 +46,7 @@
 		loading = true;
 		errors = undefined;
 		client
-			.registerUser({ email, password })
+			.registerUser({ username, email, password })
 			.then((val) => {
 				localStorage.setItem('token', val.registerUser.token);
 				session.set({ loggedIn: true, user: val.registerUser });
@@ -58,7 +59,7 @@
 			});
 	};
 
-	$: canSave = email != '' && password != '' && password == confirmPassword;
+	$: canSave = username != '' && email != '' && password != '' && password == confirmPassword;
 </script>
 
 <svelte:head>
@@ -79,6 +80,9 @@
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
 			<form class="form-horizontal" on:submit={onSubmit}>
+				<FormRow name="Username">
+					<input type="text" placeholder="Username" bind:value={username} class="form-input" />
+				</FormRow>
 				<FormRow name="Email">
 					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
 				</FormRow>

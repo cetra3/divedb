@@ -45,16 +45,20 @@
 			<i class="icon icon-menu" />
 		</button>
 	</div>
-	{#if $session.loggedIn}
-		<div>
-			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> Dives </a>
-		</div>
-	{/if}
 	<div>
+		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> Dives </a>
+	</div>
+
+	<div class="divider" data-content="SITES" />
+	<div>
+		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/divesites">
+			View List
+		</a>
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/divesites/map">
-			Sites
+			View Map
 		</a>
 	</div>
+	<div class="divider" />
 	<div>
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos"> Photos </a>
 	</div>
@@ -105,10 +109,16 @@
 			<button aria-label="Menu" class="btn btn-link mobile-link hide-big" on:click={menuShow}>
 				<i class="icon icon-menu" />
 			</button>
-			{#if $session.loggedIn}
-				<a class="btn btn-link hide-small" href="/dives">Dives</a>
-			{/if}
-			<a class="btn btn-link hide-small" href="/divesites/map">Sites</a>
+			<a class="btn btn-link hide-small" href="/dives">Dives</a>
+			<div class="dropdown hide-small">
+				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+				<!-- svelte-ignore a11y-missing-attribute -->
+				<a class="btn btn-link dropdown-toggle" tabindex="0">Sites <i class="icon icon-caret" /></a>
+				<ul class="menu menu-list">
+					<li class="menu-item"><a href="/divesites">View List</a></li>
+					<li class="menu-item"><a href="/divesites/map">View Map</a></li>
+				</ul>
+			</div>
 			<a class="btn btn-link hide-small" href="/photos">Photos</a>
 			<a class="btn btn-link hide-small" href="/sealife">Sealife</a>
 		</section>

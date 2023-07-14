@@ -184,6 +184,9 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
                                             date: subsurface_dive.date,
                                             depth: subsurface_dive.depth,
                                             duration: subsurface_dive.duration,
+                                            description: subsurface_dive.description,
+                                            dive_number: 0,
+                                            published: false,
                                             dive_site_id: subsurface_dive
                                                 .dive_site_id
                                                 .and_then(|id| sites.get(&id))
@@ -232,6 +235,7 @@ pub struct SubsurfaceDive {
     pub dive_number: u32,
     pub date: DateTime<Local>,
     pub duration: i32,
+    pub description: String,
     pub depth: f32,
     pub metrics: Vec<DiveMetric>,
 }
@@ -262,6 +266,7 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
 
     let mut metrics = vec![];
     let mut dive_number = 0;
+    let mut description = String::new();
 
     for entry in read_dir(folder)? {
         let file = entry?.path();
@@ -276,11 +281,25 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
 
             debug!("Dive number:{}", dive_number);
 
+            let mut in_notes = false;
+
             let mut lines = read_lines(&file)?;
 
             while let Some(Ok(line)) = lines.next() {
                 if line.starts_with("divesiteid") {
                     dive_site_id = Some(dive_id_from_hex(&line[("divesiteid".len() + 1)..])?);
+                }
+                if in_notes {
+                    in_notes = !parse_notes(&line.trim_start_matches('\t'), &mut description);
+                    if in_notes {
+                        description.push('\n');
+                    }
+                }
+                if let Some(val) = line.strip_prefix("notes \"") {
+                    in_notes = !parse_notes(val, &mut description);
+                    if in_notes {
+                        description.push('\n');
+                    }
                 }
             }
         } else if file_name == "Divecomputer" {
@@ -326,11 +345,37 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
         dive_number,
         date,
         duration,
+        description,
         depth,
         metrics,
     };
 
     Ok(subsurface_dive)
+}
+
+/// Will return `true` if it's at the end of the notes
+fn parse_notes(line: &str, result: &mut String) -> bool {
+    let mut chars = line.chars();
+    let mut escaped = false;
+    let mut within_quotes = true;
+
+    while let Some(ch) = chars.next() {
+        if escaped {
+            result.push(ch);
+            escaped = false;
+        } else if ch == '\\' {
+            escaped = true;
+        } else if ch == '"' {
+            if within_quotes {
+                return true
+            }
+            within_quotes = true;
+        } else if within_quotes {
+            result.push(ch);
+        }
+    }
+
+    return false
 }
 
 fn parse_metric(line: String) -> Result<DiveMetric, Error> {
@@ -494,10 +539,13 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             debug!("Syncing {:?}", dive);
 
             if let Some(existing_dive) = handle
-                .dives(&DiveQuery {
-                    id: Some(dive.id),
-                    ..Default::default()
-                })
+                .dives(
+                    Some(dive.user_id),
+                    &DiveQuery {
+                        id: Some(dive.id),
+                        ..Default::default()
+                    },
+                )
                 .await?
                 .get(0)
             {
@@ -509,6 +557,8 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     duration: dive.duration,
                     depth: dive.depth as f64,
                     dive_site_id: dive.dive_site_id,
+                    description: dive.description,
+                    published: dive.published,
                 };
 
                 handle.create_dive(dive.user_id, &request).await?;

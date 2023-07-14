@@ -12,7 +12,7 @@ export const load: PageLoad = async ({ params }) => {
 		let diveSite = response?.diveSites[0];
 		let siteUrl = response?.siteUrl;
 
-		const mdProc = await unified()
+		const mdProc = unified()
 			.use(remarkParse)
 			.use(remarkRehype)
 			.use(rehypeSanitize)

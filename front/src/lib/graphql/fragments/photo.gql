@@ -6,6 +6,8 @@ fragment PhotoSummary on Photo {
 	size
 	width
 	height
+	likes
+	liked
 	dive {
 		...DiveSummary
 	}
@@ -14,5 +16,8 @@ fragment PhotoSummary on Photo {
 	}
 	sealife {
 		...SealifeSummary
+	}
+	user {
+		...UserSummary
 	}
 }

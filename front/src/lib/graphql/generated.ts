@@ -62,8 +62,16 @@ export type CreateCategoryValue = {
 export type CreateDive = {
 	date: Scalars['DateTime'];
 	depth: Scalars['Float'];
+	description: Scalars['String'];
 	diveSiteId?: InputMaybe<Scalars['UUID']>;
 	duration: Scalars['Int'];
+	id?: InputMaybe<Scalars['UUID']>;
+	published: Scalars['Boolean'];
+};
+
+export type CreateDiveComment = {
+	description: Scalars['String'];
+	diveId: Scalars['UUID'];
 	id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -118,15 +126,34 @@ export enum Difficulty {
 
 export type Dive = {
 	__typename?: 'Dive';
+	comments: Array<DiveComment>;
 	date: Scalars['DateTime'];
 	depth: Scalars['Float'];
+	description: Scalars['String'];
 	diveSite?: Maybe<DiveSite>;
 	diveSiteId?: Maybe<Scalars['UUID']>;
 	duration: Scalars['Int'];
 	hasMetrics: Scalars['Boolean'];
 	id: Scalars['UUID'];
 	latestPhotos: Array<Photo>;
+	liked: Scalars['Boolean'];
+	likes: Scalars['Int'];
+	numComments: Scalars['Int'];
 	number: Scalars['Int'];
+	published: Scalars['Boolean'];
+	summary: Scalars['String'];
+	user: PublicUserInfo;
+	userId: Scalars['UUID'];
+};
+
+export type DiveComment = {
+	__typename?: 'DiveComment';
+	date: Scalars['DateTime'];
+	description: Scalars['String'];
+	dive: Dive;
+	diveId: Scalars['UUID'];
+	id: Scalars['UUID'];
+	user: PublicUserInfo;
 	userId: Scalars['UUID'];
 };
 
@@ -164,11 +191,12 @@ export type Feedback = {
 export type LoginResponse = {
 	__typename?: 'LoginResponse';
 	copyrightLocation?: Maybe<OverlayLocation>;
+	displayName?: Maybe<Scalars['String']>;
 	email: Scalars['String'];
 	id: Scalars['UUID'];
 	level: UserLevel;
 	token: Scalars['String'];
-	username?: Maybe<Scalars['String']>;
+	username: Scalars['String'];
 	watermarkLocation: OverlayLocation;
 };
 
@@ -180,10 +208,13 @@ export type Mutation = {
 	deleteUser: Scalars['Boolean'];
 	fbLogin: LoginResponse;
 	fbRegisterUser: LoginResponse;
+	likeDive: Scalars['Boolean'];
+	likePhoto: Scalars['Boolean'];
 	login: LoginResponse;
 	mergeDiveSites: Scalars['Boolean'];
 	newCategory: Category;
 	newCategoryValue: CategoryValue;
+	newComment: DiveComment;
 	newDive: Dive;
 	newDiveSite: DiveSite;
 	newReference: OgReference;
@@ -192,6 +223,7 @@ export type Mutation = {
 	registerUser: LoginResponse;
 	removeCategory: Scalars['Boolean'];
 	removeCategoryValue: Scalars['Boolean'];
+	removeComment: Scalars['Boolean'];
 	removeDive: Scalars['Boolean'];
 	removeDiveSite: Scalars['Boolean'];
 	removePhoto: Scalars['Boolean'];
@@ -201,6 +233,8 @@ export type Mutation = {
 	requestResetToken: Scalars['Boolean'];
 	resetPassword: LoginResponse;
 	syncSubsurface: Scalars['Boolean'];
+	unlikeDive: Scalars['Boolean'];
+	unlikePhoto: Scalars['Boolean'];
 	updatePhoto: Photo;
 	updateSettings?: Maybe<LoginResponse>;
 };
@@ -230,6 +264,15 @@ export type MutationFbLoginArgs = {
 export type MutationFbRegisterUserArgs = {
 	code: Scalars['String'];
 	redirectUri: Scalars['String'];
+	username: Scalars['String'];
+};
+
+export type MutationLikeDiveArgs = {
+	diveId: Scalars['UUID'];
+};
+
+export type MutationLikePhotoArgs = {
+	photoId: Scalars['UUID'];
 };
 
 export type MutationLoginArgs = {
@@ -248,6 +291,10 @@ export type MutationNewCategoryArgs = {
 
 export type MutationNewCategoryValueArgs = {
 	categoryValue: CreateCategoryValue;
+};
+
+export type MutationNewCommentArgs = {
+	comment: CreateDiveComment;
 };
 
 export type MutationNewDiveArgs = {
@@ -275,6 +322,7 @@ export type MutationNewSealifeArgs = {
 export type MutationRegisterUserArgs = {
 	email: Scalars['String'];
 	password: Scalars['String'];
+	username: Scalars['String'];
 };
 
 export type MutationRemoveCategoryArgs = {
@@ -283,6 +331,10 @@ export type MutationRemoveCategoryArgs = {
 
 export type MutationRemoveCategoryValueArgs = {
 	categoryValueId: Scalars['UUID'];
+};
+
+export type MutationRemoveCommentArgs = {
+	id: Scalars['UUID'];
 };
 
 export type MutationRemoveDiveArgs = {
@@ -324,13 +376,21 @@ export type MutationSyncSubsurfaceArgs = {
 	password: Scalars['String'];
 };
 
+export type MutationUnlikeDiveArgs = {
+	diveId: Scalars['UUID'];
+};
+
+export type MutationUnlikePhotoArgs = {
+	photoId: Scalars['UUID'];
+};
+
 export type MutationUpdatePhotoArgs = {
 	photo: CreatePhoto;
 };
 
 export type MutationUpdateSettingsArgs = {
 	copyrightLocation?: InputMaybe<OverlayLocation>;
-	username?: InputMaybe<Scalars['String']>;
+	displayName?: InputMaybe<Scalars['String']>;
 	watermarkLocation: OverlayLocation;
 };
 
@@ -359,10 +419,21 @@ export type Photo = {
 	filename: Scalars['String'];
 	height: Scalars['Float'];
 	id: Scalars['UUID'];
+	liked: Scalars['Boolean'];
+	likes: Scalars['Int'];
 	sealife?: Maybe<Sealife>;
 	size: Scalars['Float'];
+	user: PublicUserInfo;
 	userId: Scalars['UUID'];
 	width: Scalars['Float'];
+};
+
+export type PublicUserInfo = {
+	__typename?: 'PublicUserInfo';
+	displayName?: Maybe<Scalars['String']>;
+	id: Scalars['UUID'];
+	level: UserLevel;
+	username: Scalars['String'];
 };
 
 export type Query = {
@@ -376,6 +447,7 @@ export type Query = {
 	feedback: Array<Feedback>;
 	photos: Array<Photo>;
 	popularDiveSites: Array<DiveSite>;
+	recentDives: Array<Dive>;
 	regions: Array<Region>;
 	sealife: Array<Sealife>;
 	search: Array<SearchResult>;
@@ -393,6 +465,7 @@ export type QueryDivesArgs = {
 	diveSite?: InputMaybe<Scalars['UUID']>;
 	id?: InputMaybe<Scalars['UUID']>;
 	maxDepth?: InputMaybe<Scalars['Float']>;
+	userId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type QueryFeedbackArgs = {
@@ -474,10 +547,11 @@ export type SiteMetric = {
 
 export type UserInfo = {
 	__typename?: 'UserInfo';
+	displayName?: Maybe<Scalars['String']>;
 	email: Scalars['String'];
 	id: Scalars['UUID'];
 	level: UserLevel;
-	username?: Maybe<Scalars['String']>;
+	username: Scalars['String'];
 };
 
 export enum UserLevel {
@@ -500,12 +574,32 @@ export type CategoryValueNodeFragment = {
 	value: string;
 };
 
+export type CommentFragment = {
+	__typename?: 'DiveComment';
+	id: string;
+	diveId: string;
+	date: any;
+	description: string;
+	user: {
+		__typename?: 'PublicUserInfo';
+		id: string;
+		username: string;
+		displayName?: string | null;
+	};
+};
+
 export type DiveSummaryFragment = {
 	__typename?: 'Dive';
 	id: string;
 	date: any;
-	duration: number;
-	depth: number;
+	number: number;
+	numComments: number;
+	user: {
+		__typename?: 'PublicUserInfo';
+		id: string;
+		username: string;
+		displayName?: string | null;
+	};
 	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 };
 
@@ -516,32 +610,13 @@ export type DiveWithMetricsFragment = {
 	date: any;
 	depth: number;
 	duration: number;
-	hasMetrics: boolean;
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
-};
-
-export type DiveWithNumberFragment = {
-	__typename?: 'Dive';
-	number: number;
-	id: string;
-	userId: string;
-	date: any;
-	depth: number;
-	duration: number;
-	hasMetrics: boolean;
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
-};
-
-export type DiveNodeFragment = {
-	__typename?: 'Dive';
-	id: string;
-	userId: string;
-	date: any;
-	depth: number;
-	duration: number;
 	number: number;
 	hasMetrics: boolean;
-	diveSiteId?: string | null;
+	summary: string;
+	likes: number;
+	liked: boolean;
+	numComments: number;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	latestPhotos: Array<{
 		__typename?: 'Photo';
 		id: string;
@@ -551,12 +626,20 @@ export type DiveNodeFragment = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -569,6 +652,96 @@ export type DiveNodeFragment = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
+	}>;
+	user: {
+		__typename?: 'PublicUserInfo';
+		id: string;
+		username: string;
+		displayName?: string | null;
+	};
+};
+
+export type DiveNodeFragment = {
+	__typename?: 'Dive';
+	id: string;
+	userId: string;
+	date: any;
+	depth: number;
+	duration: number;
+	number: number;
+	hasMetrics: boolean;
+	description: string;
+	published: boolean;
+	likes: number;
+	liked: boolean;
+	numComments: number;
+	diveSiteId?: string | null;
+	comments: Array<{
+		__typename?: 'DiveComment';
+		id: string;
+		diveId: string;
+		date: any;
+		description: string;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
+	}>;
+	user: {
+		__typename?: 'PublicUserInfo';
+		id: string;
+		username: string;
+		displayName?: string | null;
+	};
+	latestPhotos: Array<{
+		__typename?: 'Photo';
+		id: string;
+		userId: string;
+		filename: string;
+		date?: any | null;
+		size: number;
+		width: number;
+		height: number;
+		likes: number;
+		liked: boolean;
+		dive?: {
+			__typename?: 'Dive';
+			id: string;
+			date: any;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		sealife?: {
+			__typename?: 'Sealife';
+			id: string;
+			name: string;
+			scientificName?: string | null;
+			summary: string;
+			slug?: string | null;
+			photoId?: string | null;
+		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	}>;
 	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 };
@@ -599,12 +772,20 @@ export type SiteFragment = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -617,6 +798,12 @@ export type SiteFragment = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	} | null;
 	latestPhotos: Array<{
 		__typename?: 'Photo';
@@ -627,12 +814,20 @@ export type SiteFragment = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -645,6 +840,12 @@ export type SiteFragment = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	}>;
 	references: Array<{
 		__typename?: 'OgReference';
@@ -687,13 +888,7 @@ export type FeedbackNodeFragment = {
 	id: string;
 	date: any;
 	feedback: string;
-	user: {
-		__typename?: 'UserInfo';
-		id: string;
-		email: string;
-		level: UserLevel;
-		username?: string | null;
-	};
+	user: { __typename?: 'UserInfo'; id: string; email: string; level: UserLevel; username: string };
 };
 
 export type PhotoSummaryFragment = {
@@ -705,12 +900,20 @@ export type PhotoSummaryFragment = {
 	size: number;
 	width: number;
 	height: number;
+	likes: number;
+	liked: boolean;
 	dive?: {
 		__typename?: 'Dive';
 		id: string;
 		date: any;
-		duration: number;
-		depth: number;
+		number: number;
+		numComments: number;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	} | null;
 	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -723,6 +926,12 @@ export type PhotoSummaryFragment = {
 		slug?: string | null;
 		photoId?: string | null;
 	} | null;
+	user: {
+		__typename?: 'PublicUserInfo';
+		id: string;
+		username: string;
+		displayName?: string | null;
+	};
 };
 
 export type ReferenceFragment = {
@@ -767,12 +976,20 @@ export type SealifeNodeFragment = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -785,6 +1002,12 @@ export type SealifeNodeFragment = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	} | null;
 	latestPhotos: Array<{
 		__typename?: 'Photo';
@@ -795,12 +1018,20 @@ export type SealifeNodeFragment = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -813,6 +1044,12 @@ export type SealifeNodeFragment = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	}>;
 	references: Array<{
 		__typename?: 'OgReference';
@@ -851,7 +1088,8 @@ export type CurrentUserFragment = {
 	id: string;
 	email: string;
 	level: UserLevel;
-	username?: string | null;
+	username: string;
+	displayName?: string | null;
 	watermarkLocation: OverlayLocation;
 	copyrightLocation?: OverlayLocation | null;
 };
@@ -864,6 +1102,13 @@ export type CurrentUserTokenFragment = {
 	token: string;
 };
 
+export type UserSummaryFragment = {
+	__typename?: 'PublicUserInfo';
+	id: string;
+	username: string;
+	displayName?: string | null;
+};
+
 export type AddDiveMutationVariables = Exact<{
 	dive: CreateDive;
 }>;
@@ -873,9 +1118,84 @@ export type AddDiveMutation = {
 	newDive: {
 		__typename?: 'Dive';
 		id: string;
+		userId: string;
 		date: any;
-		duration: number;
 		depth: number;
+		duration: number;
+		number: number;
+		hasMetrics: boolean;
+		description: string;
+		published: boolean;
+		likes: number;
+		liked: boolean;
+		numComments: number;
+		diveSiteId?: string | null;
+		comments: Array<{
+			__typename?: 'DiveComment';
+			id: string;
+			diveId: string;
+			date: any;
+			description: string;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
+		latestPhotos: Array<{
+			__typename?: 'Photo';
+			id: string;
+			userId: string;
+			filename: string;
+			date?: any | null;
+			size: number;
+			width: number;
+			height: number;
+			likes: number;
+			liked: boolean;
+			dive?: {
+				__typename?: 'Dive';
+				id: string;
+				date: any;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			sealife?: {
+				__typename?: 'Sealife';
+				id: string;
+				name: string;
+				scientificName?: string | null;
+				summary: string;
+				slug?: string | null;
+				photoId?: string | null;
+			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	};
 };
@@ -912,12 +1232,20 @@ export type AddDiveSiteMutation = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -935,6 +1263,12 @@ export type AddDiveSiteMutation = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
@@ -945,12 +1279,20 @@ export type AddDiveSiteMutation = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -968,6 +1310,12 @@ export type AddDiveSiteMutation = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		}>;
 		references: Array<{
 			__typename?: 'OgReference';
@@ -1036,12 +1384,20 @@ export type AddSealifeMutation = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1059,6 +1415,12 @@ export type AddSealifeMutation = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
@@ -1069,12 +1431,20 @@ export type AddSealifeMutation = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1092,6 +1462,12 @@ export type AddSealifeMutation = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		}>;
 		references: Array<{
 			__typename?: 'OgReference';
@@ -1104,6 +1480,34 @@ export type AddSealifeMutation = {
 		}>;
 	};
 };
+
+export type AddCommentMutationVariables = Exact<{
+	diveId: Scalars['UUID'];
+	description: Scalars['String'];
+}>;
+
+export type AddCommentMutation = {
+	__typename?: 'Mutation';
+	newComment: {
+		__typename?: 'DiveComment';
+		id: string;
+		diveId: string;
+		date: any;
+		description: string;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
+	};
+};
+
+export type RemoveCommentMutationVariables = Exact<{
+	commentId: Scalars['UUID'];
+}>;
+
+export type RemoveCommentMutation = { __typename?: 'Mutation'; removeComment: boolean };
 
 export type DeleteUserMutationVariables = Exact<{
 	password: Scalars['String'];
@@ -1128,6 +1532,7 @@ export type FbLoginUserMutation = {
 };
 
 export type FbRegisterUserMutationVariables = Exact<{
+	username: Scalars['String'];
 	redirectUri: Scalars['String'];
 	code: Scalars['String'];
 }>;
@@ -1142,6 +1547,30 @@ export type FbRegisterUserMutation = {
 		token: string;
 	};
 };
+
+export type LikeDiveMutationVariables = Exact<{
+	diveId: Scalars['UUID'];
+}>;
+
+export type LikeDiveMutation = { __typename?: 'Mutation'; likeDive: boolean };
+
+export type UnlikeDiveMutationVariables = Exact<{
+	diveId: Scalars['UUID'];
+}>;
+
+export type UnlikeDiveMutation = { __typename?: 'Mutation'; unlikeDive: boolean };
+
+export type LikePhotoMutationVariables = Exact<{
+	photoId: Scalars['UUID'];
+}>;
+
+export type LikePhotoMutation = { __typename?: 'Mutation'; likePhoto: boolean };
+
+export type UnlikePhotoMutationVariables = Exact<{
+	photoId: Scalars['UUID'];
+}>;
+
+export type UnlikePhotoMutation = { __typename?: 'Mutation'; unlikePhoto: boolean };
 
 export type LoginUserMutationVariables = Exact<{
 	email: Scalars['String'];
@@ -1160,7 +1589,7 @@ export type LoginUserMutation = {
 };
 
 export type UpdateSettingsMutationVariables = Exact<{
-	username?: InputMaybe<Scalars['String']>;
+	displayName?: InputMaybe<Scalars['String']>;
 	watermarkLocation: OverlayLocation;
 	copyrightLocation?: InputMaybe<OverlayLocation>;
 }>;
@@ -1172,7 +1601,8 @@ export type UpdateSettingsMutation = {
 		id: string;
 		email: string;
 		level: UserLevel;
-		username?: string | null;
+		username: string;
+		displayName?: string | null;
 		watermarkLocation: OverlayLocation;
 		copyrightLocation?: OverlayLocation | null;
 	} | null;
@@ -1240,6 +1670,7 @@ export type RemoveRegionMutationVariables = Exact<{
 export type RemoveRegionMutation = { __typename?: 'Mutation'; removeRegion: boolean };
 
 export type RegisterUserMutationVariables = Exact<{
+	username: Scalars['String'];
 	email: Scalars['String'];
 	password: Scalars['String'];
 }>;
@@ -1307,12 +1738,20 @@ export type UpdatePhotoMutation = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -1325,6 +1764,12 @@ export type UpdatePhotoMutation = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	};
 };
 
@@ -1361,7 +1806,8 @@ export type GetCurrentUserQuery = {
 		id: string;
 		email: string;
 		level: UserLevel;
-		username?: string | null;
+		username: string;
+		displayName?: string | null;
 		watermarkLocation: OverlayLocation;
 		copyrightLocation?: OverlayLocation | null;
 	} | null;
@@ -1387,7 +1833,92 @@ export type GetFeedbackQuery = {
 			id: string;
 			email: string;
 			level: UserLevel;
-			username?: string | null;
+			username: string;
+		};
+	}>;
+};
+
+export type FrontPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type FrontPageQuery = {
+	__typename?: 'Query';
+	popularDiveSites: Array<{
+		__typename?: 'DiveSite';
+		id: string;
+		name: string;
+		summary: string;
+		slug?: string | null;
+		lat: number;
+		lon: number;
+		photoId?: string | null;
+		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+	}>;
+	recentDives: Array<{
+		__typename?: 'Dive';
+		id: string;
+		userId: string;
+		date: any;
+		depth: number;
+		duration: number;
+		number: number;
+		hasMetrics: boolean;
+		summary: string;
+		likes: number;
+		liked: boolean;
+		numComments: number;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		latestPhotos: Array<{
+			__typename?: 'Photo';
+			id: string;
+			userId: string;
+			filename: string;
+			date?: any | null;
+			size: number;
+			width: number;
+			height: number;
+			likes: number;
+			liked: boolean;
+			dive?: {
+				__typename?: 'Dive';
+				id: string;
+				date: any;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			sealife?: {
+				__typename?: 'Sealife';
+				id: string;
+				name: string;
+				scientificName?: string | null;
+				summary: string;
+				slug?: string | null;
+				photoId?: string | null;
+			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
 		};
 	}>;
 };
@@ -1407,7 +1938,31 @@ export type GetDiveQuery = {
 		duration: number;
 		number: number;
 		hasMetrics: boolean;
+		description: string;
+		published: boolean;
+		likes: number;
+		liked: boolean;
+		numComments: number;
 		diveSiteId?: string | null;
+		comments: Array<{
+			__typename?: 'DiveComment';
+			id: string;
+			diveId: string;
+			date: any;
+			description: string;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -1417,12 +1972,20 @@ export type GetDiveQuery = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1440,6 +2003,12 @@ export type GetDiveQuery = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		}>;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	}>;
@@ -1481,12 +2050,20 @@ export type GetDiveSitesQuery = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1504,6 +2081,12 @@ export type GetDiveSitesQuery = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
@@ -1514,12 +2097,20 @@ export type GetDiveSitesQuery = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1537,6 +2128,12 @@ export type GetDiveSitesQuery = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		}>;
 		references: Array<{
 			__typename?: 'OgReference';
@@ -1582,23 +2179,6 @@ export type GetDiveSitesSummaryMetricsQuery = {
 	}>;
 };
 
-export type PopularDiveSitesQueryVariables = Exact<{ [key: string]: never }>;
-
-export type PopularDiveSitesQuery = {
-	__typename?: 'Query';
-	popularDiveSites: Array<{
-		__typename?: 'DiveSite';
-		id: string;
-		name: string;
-		summary: string;
-		slug?: string | null;
-		lat: number;
-		lon: number;
-		photoId?: string | null;
-		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
-	}>;
-};
-
 export type GetDivesQueryVariables = Exact<{
 	diveSite?: InputMaybe<Scalars['UUID']>;
 }>;
@@ -1612,27 +2192,66 @@ export type GetDivesQuery = {
 		date: any;
 		depth: number;
 		duration: number;
-		hasMetrics: boolean;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
-	}>;
-};
-
-export type GetDivesWithNumberQueryVariables = Exact<{
-	diveSite?: InputMaybe<Scalars['UUID']>;
-}>;
-
-export type GetDivesWithNumberQuery = {
-	__typename?: 'Query';
-	dives: Array<{
-		__typename?: 'Dive';
 		number: number;
-		id: string;
-		userId: string;
-		date: any;
-		depth: number;
-		duration: number;
 		hasMetrics: boolean;
+		summary: string;
+		likes: number;
+		liked: boolean;
+		numComments: number;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		latestPhotos: Array<{
+			__typename?: 'Photo';
+			id: string;
+			userId: string;
+			filename: string;
+			date?: any | null;
+			size: number;
+			width: number;
+			height: number;
+			likes: number;
+			liked: boolean;
+			dive?: {
+				__typename?: 'Dive';
+				id: string;
+				date: any;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			sealife?: {
+				__typename?: 'Sealife';
+				id: string;
+				name: string;
+				scientificName?: string | null;
+				summary: string;
+				slug?: string | null;
+				photoId?: string | null;
+			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	}>;
 };
 
@@ -1658,12 +2277,20 @@ export type GetPhotosQuery = {
 		size: number;
 		width: number;
 		height: number;
+		likes: number;
+		liked: boolean;
 		dive?: {
 			__typename?: 'Dive';
 			id: string;
 			date: any;
-			duration: number;
-			depth: number;
+			number: number;
+			numComments: number;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
 		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
@@ -1676,6 +2303,12 @@ export type GetPhotosQuery = {
 			slug?: string | null;
 			photoId?: string | null;
 		} | null;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
 	}>;
 };
 
@@ -1731,12 +2364,20 @@ export type GetSealifeQuery = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1754,6 +2395,12 @@ export type GetSealifeQuery = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
@@ -1764,12 +2411,20 @@ export type GetSealifeQuery = {
 			size: number;
 			width: number;
 			height: number;
+			likes: number;
+			liked: boolean;
 			dive?: {
 				__typename?: 'Dive';
 				id: string;
 				date: any;
-				duration: number;
-				depth: number;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
 				diveSite?: {
 					__typename?: 'DiveSite';
 					name: string;
@@ -1787,6 +2442,12 @@ export type GetSealifeQuery = {
 				slug?: string | null;
 				photoId?: string | null;
 			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
 		}>;
 		references: Array<{
 			__typename?: 'OgReference';
@@ -1858,31 +2519,22 @@ export const SiteSummaryFragmentDoc = gql`
 		slug
 	}
 `;
-export const DiveWithMetricsFragmentDoc = gql`
-	fragment DiveWithMetrics on Dive {
+export const UserSummaryFragmentDoc = gql`
+	fragment UserSummary on PublicUserInfo {
 		id
-		userId
-		date
-		depth
-		duration
-		hasMetrics
-		diveSite {
-			...SiteSummary
-		}
-	}
-`;
-export const DiveWithNumberFragmentDoc = gql`
-	fragment DiveWithNumber on Dive {
-		...DiveWithMetrics
-		number
+		username
+		displayName
 	}
 `;
 export const DiveSummaryFragmentDoc = gql`
 	fragment DiveSummary on Dive {
 		id
 		date
-		duration
-		depth
+		number
+		numComments
+		user {
+			...UserSummary
+		}
 		diveSite {
 			...SiteSummary
 		}
@@ -1907,6 +2559,8 @@ export const PhotoSummaryFragmentDoc = gql`
 		size
 		width
 		height
+		likes
+		liked
 		dive {
 			...DiveSummary
 		}
@@ -1916,6 +2570,44 @@ export const PhotoSummaryFragmentDoc = gql`
 		sealife {
 			...SealifeSummary
 		}
+		user {
+			...UserSummary
+		}
+	}
+`;
+export const DiveWithMetricsFragmentDoc = gql`
+	fragment DiveWithMetrics on Dive {
+		id
+		userId
+		date
+		depth
+		duration
+		number
+		hasMetrics
+		summary
+		likes
+		liked
+		numComments
+		diveSite {
+			...SiteSummary
+		}
+		latestPhotos {
+			...PhotoSummary
+		}
+		user {
+			...UserSummary
+		}
+	}
+`;
+export const CommentFragmentDoc = gql`
+	fragment Comment on DiveComment {
+		id
+		diveId
+		user {
+			...UserSummary
+		}
+		date
+		description
 	}
 `;
 export const DiveNodeFragmentDoc = gql`
@@ -1927,6 +2619,17 @@ export const DiveNodeFragmentDoc = gql`
 		duration
 		number
 		hasMetrics
+		description
+		published
+		likes
+		liked
+		numComments
+		comments {
+			...Comment
+		}
+		user {
+			...UserSummary
+		}
 		latestPhotos {
 			...PhotoSummary
 		}
@@ -2060,6 +2763,7 @@ export const CurrentUserFragmentDoc = gql`
 		email
 		level
 		username
+		displayName
 		watermarkLocation
 		copyrightLocation
 	}
@@ -2075,11 +2779,16 @@ export const CurrentUserTokenFragmentDoc = gql`
 export const AddDiveDocument = gql`
 	mutation addDive($dive: CreateDive!) {
 		newDive(dive: $dive) {
-			...DiveSummary
+			...DiveNode
 		}
 	}
+	${DiveNodeFragmentDoc}
+	${CommentFragmentDoc}
+	${UserSummaryFragmentDoc}
+	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
+	${SealifeSummaryFragmentDoc}
 `;
 export const AddDiveSiteDocument = gql`
 	mutation addDiveSite($site: CreateDiveSite!) {
@@ -2091,6 +2800,7 @@ export const AddDiveSiteDocument = gql`
 	${SiteMetricNodeFragmentDoc}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 	${ReferenceFragmentDoc}
@@ -2119,9 +2829,24 @@ export const AddSealifeDocument = gql`
 	${SealifeNodeFragmentDoc}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 	${ReferenceFragmentDoc}
+`;
+export const AddCommentDocument = gql`
+	mutation addComment($diveId: UUID!, $description: String!) {
+		newComment(comment: { description: $description, diveId: $diveId }) {
+			...Comment
+		}
+	}
+	${CommentFragmentDoc}
+	${UserSummaryFragmentDoc}
+`;
+export const RemoveCommentDocument = gql`
+	mutation removeComment($commentId: UUID!) {
+		removeComment(id: $commentId)
+	}
 `;
 export const DeleteUserDocument = gql`
 	mutation deleteUser($password: String!) {
@@ -2137,12 +2862,32 @@ export const FbLoginUserDocument = gql`
 	${CurrentUserTokenFragmentDoc}
 `;
 export const FbRegisterUserDocument = gql`
-	mutation fbRegisterUser($redirectUri: String!, $code: String!) {
-		fbRegisterUser(redirectUri: $redirectUri, code: $code) {
+	mutation fbRegisterUser($username: String!, $redirectUri: String!, $code: String!) {
+		fbRegisterUser(username: $username, redirectUri: $redirectUri, code: $code) {
 			...CurrentUserToken
 		}
 	}
 	${CurrentUserTokenFragmentDoc}
+`;
+export const LikeDiveDocument = gql`
+	mutation likeDive($diveId: UUID!) {
+		likeDive(diveId: $diveId)
+	}
+`;
+export const UnlikeDiveDocument = gql`
+	mutation unlikeDive($diveId: UUID!) {
+		unlikeDive(diveId: $diveId)
+	}
+`;
+export const LikePhotoDocument = gql`
+	mutation likePhoto($photoId: UUID!) {
+		likePhoto(photoId: $photoId)
+	}
+`;
+export const UnlikePhotoDocument = gql`
+	mutation unlikePhoto($photoId: UUID!) {
+		unlikePhoto(photoId: $photoId)
+	}
 `;
 export const LoginUserDocument = gql`
 	mutation loginUser($email: String!, $password: String!) {
@@ -2154,12 +2899,12 @@ export const LoginUserDocument = gql`
 `;
 export const UpdateSettingsDocument = gql`
 	mutation updateSettings(
-		$username: String
+		$displayName: String
 		$watermarkLocation: OverlayLocation!
 		$copyrightLocation: OverlayLocation
 	) {
 		updateSettings(
-			username: $username
+			displayName: $displayName
 			watermarkLocation: $watermarkLocation
 			copyrightLocation: $copyrightLocation
 		) {
@@ -2205,8 +2950,8 @@ export const RemoveRegionDocument = gql`
 	}
 `;
 export const RegisterUserDocument = gql`
-	mutation registerUser($email: String!, $password: String!) {
-		registerUser(email: $email, password: $password) {
+	mutation registerUser($username: String!, $email: String!, $password: String!) {
+		registerUser(username: $username, email: $email, password: $password) {
 			...CurrentUserToken
 		}
 	}
@@ -2250,6 +2995,7 @@ export const UpdatePhotoDocument = gql`
 	}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 `;
@@ -2291,6 +3037,24 @@ export const GetFeedbackDocument = gql`
 	}
 	${FeedbackNodeFragmentDoc}
 `;
+export const FrontPageDocument = gql`
+	query frontPage {
+		popularDiveSites {
+			...SiteSummaryMetrics
+		}
+		recentDives {
+			...DiveWithMetrics
+		}
+	}
+	${SiteSummaryMetricsFragmentDoc}
+	${SiteMetricNodeFragmentDoc}
+	${DiveWithMetricsFragmentDoc}
+	${SiteSummaryFragmentDoc}
+	${PhotoSummaryFragmentDoc}
+	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
+	${SealifeSummaryFragmentDoc}
+`;
 export const GetDiveDocument = gql`
 	query getDive($id: UUID!) {
 		dives(id: $id) {
@@ -2298,6 +3062,8 @@ export const GetDiveDocument = gql`
 		}
 	}
 	${DiveNodeFragmentDoc}
+	${CommentFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
@@ -2317,6 +3083,7 @@ export const GetDiveSitesDocument = gql`
 	${SiteMetricNodeFragmentDoc}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 	${ReferenceFragmentDoc}
@@ -2331,15 +3098,6 @@ export const GetDiveSitesSummaryMetricsDocument = gql`
 	${SiteSummaryMetricsFragmentDoc}
 	${SiteMetricNodeFragmentDoc}
 `;
-export const PopularDiveSitesDocument = gql`
-	query popularDiveSites {
-		popularDiveSites {
-			...SiteSummaryMetrics
-		}
-	}
-	${SiteSummaryMetricsFragmentDoc}
-	${SiteMetricNodeFragmentDoc}
-`;
 export const GetDivesDocument = gql`
 	query getDives($diveSite: UUID) {
 		dives(diveSite: $diveSite) {
@@ -2348,16 +3106,10 @@ export const GetDivesDocument = gql`
 	}
 	${DiveWithMetricsFragmentDoc}
 	${SiteSummaryFragmentDoc}
-`;
-export const GetDivesWithNumberDocument = gql`
-	query getDivesWithNumber($diveSite: UUID) {
-		dives(diveSite: $diveSite) {
-			...DiveWithNumber
-		}
-	}
-	${DiveWithNumberFragmentDoc}
-	${DiveWithMetricsFragmentDoc}
-	${SiteSummaryFragmentDoc}
+	${PhotoSummaryFragmentDoc}
+	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
+	${SealifeSummaryFragmentDoc}
 `;
 export const GetPhotosDocument = gql`
 	query getPhotos(
@@ -2384,6 +3136,7 @@ export const GetPhotosDocument = gql`
 	}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 `;
@@ -2417,6 +3170,7 @@ export const GetSealifeDocument = gql`
 	${SealifeNodeFragmentDoc}
 	${PhotoSummaryFragmentDoc}
 	${DiveSummaryFragmentDoc}
+	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 	${ReferenceFragmentDoc}
@@ -2518,6 +3272,34 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				'mutation'
 			);
 		},
+		addComment(
+			variables: AddCommentMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<AddCommentMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<AddCommentMutation>(AddCommentDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'addComment',
+				'mutation'
+			);
+		},
+		removeComment(
+			variables: RemoveCommentMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<RemoveCommentMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<RemoveCommentMutation>(RemoveCommentDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'removeComment',
+				'mutation'
+			);
+		},
 		deleteUser(
 			variables: DeleteUserMutationVariables,
 			requestHeaders?: Dom.RequestInit['headers']
@@ -2557,6 +3339,62 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				'fbRegisterUser',
+				'mutation'
+			);
+		},
+		likeDive(
+			variables: LikeDiveMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<LikeDiveMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<LikeDiveMutation>(LikeDiveDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'likeDive',
+				'mutation'
+			);
+		},
+		unlikeDive(
+			variables: UnlikeDiveMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<UnlikeDiveMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<UnlikeDiveMutation>(UnlikeDiveDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'unlikeDive',
+				'mutation'
+			);
+		},
+		likePhoto(
+			variables: LikePhotoMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<LikePhotoMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<LikePhotoMutation>(LikePhotoDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'likePhoto',
+				'mutation'
+			);
+		},
+		unlikePhoto(
+			variables: UnlikePhotoMutationVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<UnlikePhotoMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<UnlikePhotoMutation>(UnlikePhotoDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'unlikePhoto',
 				'mutation'
 			);
 		},
@@ -2854,6 +3692,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				'query'
 			);
 		},
+		frontPage(
+			variables?: FrontPageQueryVariables,
+			requestHeaders?: Dom.RequestInit['headers']
+		): Promise<FrontPageQuery> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<FrontPageQuery>(FrontPageDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'frontPage',
+				'query'
+			);
+		},
 		getDive(
 			variables: GetDiveQueryVariables,
 			requestHeaders?: Dom.RequestInit['headers']
@@ -2897,20 +3749,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				'query'
 			);
 		},
-		popularDiveSites(
-			variables?: PopularDiveSitesQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
-		): Promise<PopularDiveSitesQuery> {
-			return withWrapper(
-				(wrappedRequestHeaders) =>
-					client.request<PopularDiveSitesQuery>(PopularDiveSitesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
-					}),
-				'popularDiveSites',
-				'query'
-			);
-		},
 		getDives(
 			variables?: GetDivesQueryVariables,
 			requestHeaders?: Dom.RequestInit['headers']
@@ -2922,20 +3760,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				'getDives',
-				'query'
-			);
-		},
-		getDivesWithNumber(
-			variables?: GetDivesWithNumberQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
-		): Promise<GetDivesWithNumberQuery> {
-			return withWrapper(
-				(wrappedRequestHeaders) =>
-					client.request<GetDivesWithNumberQuery>(GetDivesWithNumberDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
-					}),
-				'getDivesWithNumber',
 				'query'
 			);
 		},

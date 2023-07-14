@@ -15,6 +15,7 @@ use log::*;
 mod migrations;
 
 mod categories;
+mod comment;
 mod dive;
 mod dive_site;
 mod feedback;

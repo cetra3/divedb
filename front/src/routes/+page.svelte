@@ -7,8 +7,10 @@
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import { assets } from '$app/paths';
+	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
 
-	let diveSites = data.diveSites;
+	$: diveSites = data.frontPage.popularDiveSites;
+	$: recentDives = data.frontPage.recentDives;
 
 	let query: string;
 </script>
@@ -32,6 +34,22 @@
 		<div class="columns">
 			<div class="column col-12 col-sm-12">
 				<h1 class="page-title">
+					<DiveLogIcon size="1.4em" />
+					Recent Dives
+					<a href="/dives">
+						<button class="btn btn-primary btn-sm"> View Dives </button>
+					</a>
+					<a href="/dives/new">
+						<button class="btn btn-sm"> Add New </button>
+					</a>
+				</h1>
+			</div>
+			{#each recentDives as dive}
+				<DiveSummary {dive} />
+			{/each}
+
+			<div class="column col-12 col-sm-12">
+				<h1 class="page-title">
 					<DiveSiteIcon size="1.4em" />
 					Popular Sites
 					<a href="/divesites/map">
@@ -43,56 +61,9 @@
 				</h1>
 			</div>
 
-			{#each diveSites.popularDiveSites as site}
+			{#each diveSites as site}
 				<DiveSiteSummary {site} />
 			{/each}
-
-			<div class="column col-6 col-lg-12">
-				<div class="card">
-					<div class="card-image">
-						<div class="hero bg-dark flex-center">
-							<div class="hero-body">
-								<DiveLogIcon size="66px" />
-							</div>
-						</div>
-					</div>
-					<div class="card-header">
-						<div class="card-title h5">Dive Log</div>
-						<div class="card-subtitle">Log your dives or sync from subsurface</div>
-					</div>
-					<div class="card-footer">
-						<a href="/dives">
-							<button class="btn btn-primary">Open</button>
-						</a>
-						<a href="/dives/new">
-							<button class="btn btn-secondary">Add New</button>
-						</a>
-					</div>
-				</div>
-			</div>
-			<div class="column col-6 col-lg-12">
-				<div class="card">
-					<div class="card-image">
-						<div class="hero bg-dark flex-center">
-							<div class="hero-body">
-								<PhotoIcon size="66px" />
-							</div>
-						</div>
-					</div>
-					<div class="card-header">
-						<div class="card-title h5">Photos</div>
-						<div class="card-subtitle">Add and view photos from your dives</div>
-					</div>
-					<div class="card-footer">
-						<a href="/photos">
-							<button class="btn btn-primary">Open</button>
-						</a>
-						<a href="/photos/new">
-							<button class="btn btn-secondary">Add New</button>
-						</a>
-					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 {/if}

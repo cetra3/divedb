@@ -1,8 +1,11 @@
 fragment DiveSummary on Dive {
 	id
 	date
-	duration
-	depth
+	number
+	numComments
+	user {
+		...UserSummary
+	}
 	diveSite {
 		...SiteSummary
 	}
@@ -14,15 +17,21 @@ fragment DiveWithMetrics on Dive {
 	date
 	depth
 	duration
+	number
 	hasMetrics
+	summary
+	likes
+	liked
+	numComments
 	diveSite {
 		...SiteSummary
 	}
-}
-
-fragment DiveWithNumber on Dive {
-	...DiveWithMetrics
-	number
+	latestPhotos {
+		...PhotoSummary
+	}
+	user {
+		...UserSummary
+	}
 }
 
 fragment DiveNode on Dive {
@@ -33,6 +42,17 @@ fragment DiveNode on Dive {
 	duration
 	number
 	hasMetrics
+	description
+	published
+	likes
+	liked
+	numComments
+	comments {
+		...Comment
+	}
+	user {
+		...UserSummary
+	}
 	latestPhotos {
 		...PhotoSummary
 	}
