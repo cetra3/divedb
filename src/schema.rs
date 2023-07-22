@@ -10,8 +10,8 @@ mod region;
 mod sealife;
 mod user;
 
-pub use comment::*;
 pub use categories::*;
+pub use comment::*;
 pub use dive::*;
 pub use dive_site::*;
 pub use feedback::*;

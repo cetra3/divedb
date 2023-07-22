@@ -1,6 +1,6 @@
-
 @use '@angular-package/spectre.css/src/spectre' as * with (
-	$base-font-family: unquote("'Asap', -apple-system, system-ui, BlinkMacSystemFont, Segoe UI, Roboto"),
+	$base-font-family:
+		unquote("'Asap', -apple-system, system-ui, BlinkMacSystemFont, Segoe UI, Roboto"),
 	$primary-color: #0e5e7c,
 	$html-font-size: 22px,
 	$border-radius: 0.3rem

@@ -11,6 +11,7 @@ fragment CurrentUser on LoginResponse {
 fragment CurrentUserToken on LoginResponse {
 	id
 	email
+	username
 	level
 	token
 }

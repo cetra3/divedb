@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{OgReference, OgReferenceQuery, Photo, PhotoQuery};
+use super::{Dive, DiveQuery, OgReference, OgReferenceQuery, Photo, PhotoQuery};
 use crate::escape::{md_to_text, truncate};
 use crate::{db::DbHandle, graphql::SchemaContext};
 use async_graphql::*;
@@ -181,6 +181,19 @@ impl DiveSite {
             .handle
             .photos(None, &query)
             .await?)
+    }
+
+    async fn latest_dives(&self, context: &Context<'_>) -> FieldResult<Vec<Dive>> {
+        let query = DiveQuery {
+            dive_site: Some(self.id),
+            ..Default::default()
+        };
+
+        let context = context.data::<SchemaContext>()?;
+
+        let user_id = context.con.user.as_ref().map(|val| val.id);
+
+        Ok(context.web.handle.dives(user_id, &query).await?)
     }
 
     async fn references(&self, context: &Context<'_>) -> FieldResult<Vec<OgReference>> {

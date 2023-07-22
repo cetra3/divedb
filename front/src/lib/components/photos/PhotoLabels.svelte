@@ -22,7 +22,9 @@
 <div class="label-list">
 	<LikeHeart liked={photo.liked} likes={photo.likes} on:liked={onLike} />
 
-	<UserLabel user={photo.user} />
+	<a href={`/photos?u=${photo.user.username}`}>
+		<UserLabel user={photo.user} />
+	</a>
 
 	{#if photo.sealife}
 		<a href={`/sealife/${photo.sealife.slug}`}>

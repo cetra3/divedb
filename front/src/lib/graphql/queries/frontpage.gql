@@ -2,7 +2,7 @@ query frontPage {
 	popularDiveSites {
 		...SiteSummaryMetrics
 	}
-  recentDives {
-    ...DiveWithMetrics
-  }
+	recentDives {
+		...DiveWithMetrics
+	}
 }

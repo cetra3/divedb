@@ -10,6 +10,8 @@
 
 	import type { PageData } from './$types';
 	import References from '$lib/components/References.svelte';
+	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import DiveList from '$lib/components/dives/DiveList.svelte';
 	export let data: PageData;
 
 	$: diveSite = data.diveSite;
@@ -18,6 +20,8 @@
 	$: mdAccess = data.mdAccess;
 
 	$: photos = diveSite?.latestPhotos ?? [];
+
+	$: dives = diveSite?.latestDives ?? [];
 
 	let loading = false;
 	let changed = false;
@@ -159,6 +163,16 @@
 					</section>
 				</article>
 			</div>
+			{#if dives.length > 0}
+				<div class="column col-12 col-sm-12">
+					<h1 class="page-title">
+						<DiveLogIcon size="33px" /> Dives
+					</h1>
+				</div>
+				<div class="column col-12 col-sm-12">
+					<DiveList {dives} query={{ diveSite: diveSite.id }} />
+				</div>
+			{/if}
 			<div class="column col-12 col-sm-12">
 				<h1 class="page-title">
 					<PhotoIcon size="33px" /> Photos

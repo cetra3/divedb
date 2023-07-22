@@ -118,8 +118,11 @@ impl Photo {
                     &DiveQuery {
                         id: Some(id),
                         user_id: None,
+                        username: None,
                         dive_site: None,
                         max_depth: None,
+                        offset: None,
+                        limit: Some(1),
                     },
                 )
                 .await?
@@ -229,6 +232,7 @@ pub struct CreatePhoto {
 pub struct PhotoQuery {
     pub id: Option<Uuid>,
     pub user_id: Option<Uuid>,
+    pub username: Option<String>,
     pub dive_site: Option<Uuid>,
     pub dive: Option<Uuid>,
     pub sealife_id: Option<Uuid>,
@@ -242,6 +246,7 @@ impl PhotoQuery {
         PhotoQuery {
             id: Some(id),
             user_id: None,
+            username: None,
             dive_site: None,
             dive: None,
             sealife_id: None,

@@ -22,6 +22,9 @@ fragment Site on DiveSite {
 	latestPhotos {
 		...PhotoSummary
 	}
+	latestDives {
+		...DiveWithMetrics
+	}
 	references {
 		...Reference
 	}

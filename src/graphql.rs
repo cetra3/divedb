@@ -116,6 +116,8 @@ impl Query {
         dive_site: Option<Uuid>,
         max_depth: Option<f64>,
         user_id: Option<Uuid>,
+        username: Option<String>,
+        offset: Option<usize>,
     ) -> FieldResult<Vec<Dive>> {
         let schema_context = context.data::<SchemaContext>()?;
 
@@ -126,6 +128,9 @@ impl Query {
             max_depth,
             dive_site,
             user_id,
+            username,
+            offset,
+            limit: None,
         };
 
         let include_sites = context.look_ahead().field("diveSites").exists();
@@ -151,7 +156,6 @@ impl Query {
 
         Ok(context.web.handle.recent_dives().await?)
     }
-
 
     async fn current_user(&self, ctx: &Context<'_>) -> FieldResult<Option<LoginResponse>> {
         let context = ctx.data::<SchemaContext>()?;
@@ -213,6 +217,7 @@ impl Query {
         context: &Context<'_>,
         id: Option<Uuid>,
         user_id: Option<Uuid>,
+        username: Option<String>,
         dive_site: Option<Uuid>,
         dive: Option<Uuid>,
         sealife_id: Option<Uuid>,
@@ -224,6 +229,7 @@ impl Query {
         let query = PhotoQuery {
             id,
             user_id,
+            username,
             dive_site,
             dive,
             sealife_id,
@@ -766,11 +772,7 @@ impl Mutation {
         Ok(context.web.handle.create_comment(user.id, &comment).await?)
     }
 
-    async fn remove_comment(
-        &self,
-        context: &Context<'_>,
-        id: Uuid
-    ) -> FieldResult<bool> {
+    async fn remove_comment(&self, context: &Context<'_>, id: Uuid) -> FieldResult<bool> {
         let context = context.data::<SchemaContext>()?;
 
         let user = context

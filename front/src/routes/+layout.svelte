@@ -45,9 +45,25 @@
 			<i class="icon icon-menu" />
 		</button>
 	</div>
-	<div>
-		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> Dives </a>
-	</div>
+	{#if $session.loggedIn}
+		<div class="divider" data-content="DIVES" />
+		<div>
+			<a
+				on:click={hideMenu}
+				class="btn btn-link mobile-link text-left"
+				href="/dives?u={$session.user?.username}"
+			>
+				Your Dives
+			</a>
+			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/dives">
+				All Dives
+			</a>
+		</div>
+	{:else}
+		<div>
+			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> Dives </a>
+		</div>
+	{/if}
 
 	<div class="divider" data-content="SITES" />
 	<div>
@@ -58,10 +74,27 @@
 			View Map
 		</a>
 	</div>
-	<div class="divider" />
-	<div>
-		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos"> Photos </a>
-	</div>
+	{#if $session.loggedIn}
+		<div class="divider" data-content="PHOTOS" />
+		<div>
+			<a
+				on:click={hideMenu}
+				class="btn btn-link mobile-link text-left"
+				href="/photos?u={$session.user?.username}"
+			>
+				Your Photos
+			</a>
+			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos">
+				All Photos
+			</a>
+		</div>
+		<div class="divider" />
+	{:else}
+		<div class="divider" />
+		<div>
+			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos"> Photos </a>
+		</div>
+	{/if}
 	<div>
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/sealife"> Sealife </a>
 	</div>
@@ -88,7 +121,7 @@
 				href={`/register?redirect=${browser ? location.pathname : ''}`}
 				on:click={hideMenu}
 			>
-				<button class="btn btn-link mobile-link text-left"> Register </button>
+				Register
 			</a>
 		</div>
 		<div>
@@ -97,7 +130,7 @@
 				href={`/login?redirect=${browser ? location.pathname : ''}`}
 				on:click={hideMenu}
 			>
-				<button class="btn btn-link mobile-link text-left"> Login </button>
+				Login
 			</a>
 		</div>
 	{/if}
@@ -109,7 +142,21 @@
 			<button aria-label="Menu" class="btn btn-link mobile-link hide-big" on:click={menuShow}>
 				<i class="icon icon-menu" />
 			</button>
-			<a class="btn btn-link hide-small" href="/dives">Dives</a>
+			{#if $session.user}
+				<div class="dropdown hide-small">
+					<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+					<!-- svelte-ignore a11y-missing-attribute -->
+					<a class="btn btn-link dropdown-toggle" tabindex="0"
+						>Dives <i class="icon icon-caret" /></a
+					>
+					<ul class="menu menu-list">
+						<li class="menu-item"><a href="/dives?u={$session.user?.username}">Your Dives</a></li>
+						<li class="menu-item"><a href="/dives">All Dives</a></li>
+					</ul>
+				</div>
+			{:else}
+				<a class="btn btn-link hide-small" href="/dives">Dives</a>
+			{/if}
 			<div class="dropdown hide-small">
 				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<!-- svelte-ignore a11y-missing-attribute -->
@@ -119,7 +166,21 @@
 					<li class="menu-item"><a href="/divesites/map">View Map</a></li>
 				</ul>
 			</div>
-			<a class="btn btn-link hide-small" href="/photos">Photos</a>
+			{#if $session.loggedIn}
+				<div class="dropdown hide-small">
+					<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+					<!-- svelte-ignore a11y-missing-attribute -->
+					<a class="btn btn-link dropdown-toggle" tabindex="0"
+						>Photos <i class="icon icon-caret" /></a
+					>
+					<ul class="menu menu-list">
+						<li class="menu-item"><a href="/photos?u={$session.user?.username}">Your Photos</a></li>
+						<li class="menu-item"><a href="/photos">All Photos</a></li>
+					</ul>
+				</div>
+			{:else}
+				<a class="btn btn-link hide-small" href="/photos">Photos</a>
+			{/if}
 			<a class="btn btn-link hide-small" href="/sealife">Sealife</a>
 		</section>
 		<section class="navbar-center">

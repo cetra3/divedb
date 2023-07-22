@@ -7,7 +7,9 @@
 
 	export let dive: DiveWithMetricsFragment;
 
-	$: title = `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${dive.diveSite ? ` - ${dive.diveSite.name}` : ''}`;
+	$: title = `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
+		dive.diveSite ? ` - ${dive.diveSite.name}` : ''
+	}`;
 </script>
 
 <div class="column col-6 col-lg-12">

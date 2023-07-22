@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/graphql/client';
-	import type {  DiveNodeFragment  } from '$lib/graphql/generated';
+	import type { DiveNodeFragment } from '$lib/graphql/generated';
 	import type { ClientError } from 'graphql-request';
 	import UserLabel from './labels/UserLabel.svelte';
 
@@ -28,7 +28,6 @@
 			showForm = !showForm;
 		}
 	};
-
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();

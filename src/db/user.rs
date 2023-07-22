@@ -69,7 +69,12 @@ impl DbHandle {
         let result = client
             .query_one(
                 query,
-                &[&display_name, &watermark_location, &copyright_location, &email],
+                &[
+                    &display_name,
+                    &watermark_location,
+                    &copyright_location,
+                    &email,
+                ],
             )
             .await?;
 

@@ -1,12 +1,9 @@
 mutation addComment($diveId: UUID!, $description: String!) {
-  newComment(comment: {
-    description: $description,
-    diveId: $diveId
-  }) {
-    ...Comment
-  }
+	newComment(comment: { description: $description, diveId: $diveId }) {
+		...Comment
+	}
 }
 
 mutation removeComment($commentId: UUID!) {
-  removeComment(id: $commentId)
+	removeComment(id: $commentId)
 }

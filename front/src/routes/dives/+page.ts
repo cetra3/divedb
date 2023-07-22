@@ -1,13 +1,13 @@
 import { client } from '$lib/graphql/client';
 
-export async function load() {
-	try {
-		let dives = await client.getDives();
+import type { PageLoad } from './$types';
 
-		return {
-			dives: dives.dives
-		};
-	} catch (error) {
-		return {};
-	}
-}
+export const load = (async ({ url }) => {
+	let username = url.searchParams.get('u') || undefined;
+	let dives = await client.getDives({ username });
+
+	return {
+		dives: dives.dives,
+		username
+	};
+}) satisfies PageLoad;

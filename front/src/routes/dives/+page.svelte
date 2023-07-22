@@ -1,21 +1,38 @@
 <script lang="ts">
-	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import type { PageData } from './$types';
+	import { session } from '$lib/session';
+	import DiveList from '$lib/components/dives/DiveList.svelte';
 
 	export let data: PageData;
-	let dives = data.dives;
+	$: dives = data.dives;
+	$: username = data.username;
 </script>
 
 <svelte:head>
-	<title>DiveDB - Dives</title>
+	{#if username != undefined}
+		<title>DiveDB - Dives by @{username}</title>
+	{:else}
+		<title>DiveDB - Dives</title>
+	{/if}
 </svelte:head>
 <div class="container grid-lg">
 	<div class="columns">
 		<div class="column col-12 col-lg-12">
 			<h1 class="page-title">
 				<DiveLogIcon size="1.4em" />
-				Dives
+				Dives {#if username != undefined}by @{username}{/if}
+
+				{#if username != undefined}
+					<a href="/dives">
+						<button class="btn btn-secondary btn-sm">All Dives</button>
+					</a>
+				{:else if $session.loggedIn}
+					<a href="/dives?u={$session.user?.username}">
+						<button class="btn btn-secondary btn-sm">Your Dives</button>
+					</a>
+				{/if}
+
 				<a href="/dives/new">
 					<button class="btn btn-secondary btn-sm">Add New</button>
 				</a>
@@ -26,11 +43,7 @@
 		</div>
 	</div>
 	{#if dives !== undefined}
-		<div class="columns">
-			{#each dives as dive }
-				<DiveSummary {dive} />
-			{/each}
-		</div>
+		<DiveList {dives} query={{ username }} />
 	{:else}
 		<div class="column col-12">
 			<div class="loading loading-lg" />

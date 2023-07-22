@@ -17,25 +17,24 @@
 			client.unlikeDive({ diveId });
 		}
 	};
-
 </script>
 
 <div class="label-list">
+	<LikeHeart liked={dive.liked} likes={dive.likes} on:liked={onLike} />
 
-<LikeHeart liked={dive.liked} likes={dive.likes} on:liked={onLike} />
+	<DiveComment diveId={dive.id} numComments={dive.numComments} />
 
-<DiveComment diveId={dive.id} numComments={dive.numComments} />
-
-<UserLabel user={dive.user} />
-{#if dive.diveSite}
-	<a href={`/sites/${dive.diveSite.slug}`}>
-		<span class="label label-primary">{dive.diveSite.name}</span>
+	<a href={`/dives?u=${dive.user.username}`}>
+		<UserLabel user={dive.user} />
 	</a>
-{/if}
-{#if dive.date}
-	<span class="label">{new Date(dive.date).toLocaleDateString()}</span>
-{/if}
-
+	{#if dive.diveSite}
+		<a href={`/sites/${dive.diveSite.slug}`}>
+			<span class="label label-primary">{dive.diveSite.name}</span>
+		</a>
+	{/if}
+	{#if dive.date}
+		<span class="label">{new Date(dive.date).toLocaleDateString()}</span>
+	{/if}
 </div>
 
 <style global lang="scss">

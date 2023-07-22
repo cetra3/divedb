@@ -1,26 +1,32 @@
 import type { GraphQLClient } from 'graphql-request';
-import type * as Dom from 'graphql-request/dist/types.dom';
+import type { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
+	[_ in K]?: never;
+};
+export type Incremental<T> =
+	| T
+	| { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-	ID: string;
-	String: string;
-	Boolean: boolean;
-	Int: number;
-	Float: number;
+	ID: { input: string | number; output: string };
+	String: { input: string; output: string };
+	Boolean: { input: boolean; output: boolean };
+	Int: { input: number; output: number };
+	Float: { input: number; output: number };
 	/**
 	 * Implement the DateTime<Utc> scalar
 	 *
 	 * The input/output is a string in RFC3339 format.
 	 */
-	DateTime: any;
+	DateTime: { input: any; output: any };
 	/** A scalar that can represent any JSON Object value. */
-	JSONObject: any;
+	JSONObject: { input: any; output: any };
 	/**
 	 * A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
 	 * Strings within GraphQL. UUIDs are used to assign unique identifiers to
@@ -31,91 +37,91 @@ export type Scalars = {
 	 * * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
 	 * * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 	 */
-	UUID: string;
+	UUID: { input: string; output: string };
 };
 
 export type Category = {
 	__typename?: 'Category';
-	id: Scalars['UUID'];
-	name: Scalars['String'];
+	id: Scalars['UUID']['output'];
+	name: Scalars['String']['output'];
 	values: Array<CategoryValue>;
 };
 
 export type CategoryValue = {
 	__typename?: 'CategoryValue';
-	categoryId: Scalars['UUID'];
-	id: Scalars['UUID'];
-	value: Scalars['String'];
+	categoryId: Scalars['UUID']['output'];
+	id: Scalars['UUID']['output'];
+	value: Scalars['String']['output'];
 };
 
 export type CreateCategory = {
-	id?: InputMaybe<Scalars['UUID']>;
-	name: Scalars['String'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name: Scalars['String']['input'];
 };
 
 export type CreateCategoryValue = {
-	categoryId: Scalars['UUID'];
-	id?: InputMaybe<Scalars['UUID']>;
-	value: Scalars['String'];
+	categoryId: Scalars['UUID']['input'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	value: Scalars['String']['input'];
 };
 
 export type CreateDive = {
-	date: Scalars['DateTime'];
-	depth: Scalars['Float'];
-	description: Scalars['String'];
-	diveSiteId?: InputMaybe<Scalars['UUID']>;
-	duration: Scalars['Int'];
-	id?: InputMaybe<Scalars['UUID']>;
-	published: Scalars['Boolean'];
+	date: Scalars['DateTime']['input'];
+	depth: Scalars['Float']['input'];
+	description: Scalars['String']['input'];
+	diveSiteId?: InputMaybe<Scalars['UUID']['input']>;
+	duration: Scalars['Int']['input'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	published: Scalars['Boolean']['input'];
 };
 
 export type CreateDiveComment = {
-	description: Scalars['String'];
-	diveId: Scalars['UUID'];
-	id?: InputMaybe<Scalars['UUID']>;
+	description: Scalars['String']['input'];
+	diveId: Scalars['UUID']['input'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
 };
 
 export type CreateDiveSite = {
-	access: Scalars['String'];
-	depth: Scalars['Float'];
-	description: Scalars['String'];
+	access: Scalars['String']['input'];
+	depth: Scalars['Float']['input'];
+	description: Scalars['String']['input'];
 	difficulty: Difficulty;
-	id?: InputMaybe<Scalars['UUID']>;
-	lat: Scalars['Float'];
-	lon: Scalars['Float'];
-	name: Scalars['String'];
-	photoId?: InputMaybe<Scalars['UUID']>;
-	published: Scalars['Boolean'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	lat: Scalars['Float']['input'];
+	lon: Scalars['Float']['input'];
+	name: Scalars['String']['input'];
+	photoId?: InputMaybe<Scalars['UUID']['input']>;
+	published: Scalars['Boolean']['input'];
 };
 
 export type CreatePhoto = {
-	date: Scalars['DateTime'];
-	diveId?: InputMaybe<Scalars['UUID']>;
-	diveSiteId?: InputMaybe<Scalars['UUID']>;
-	filename: Scalars['String'];
-	id?: InputMaybe<Scalars['UUID']>;
-	sealifeId?: InputMaybe<Scalars['UUID']>;
-	size: Scalars['Int'];
-	userId: Scalars['UUID'];
+	date: Scalars['DateTime']['input'];
+	diveId?: InputMaybe<Scalars['UUID']['input']>;
+	diveSiteId?: InputMaybe<Scalars['UUID']['input']>;
+	filename: Scalars['String']['input'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	sealifeId?: InputMaybe<Scalars['UUID']['input']>;
+	size: Scalars['Int']['input'];
+	userId: Scalars['UUID']['input'];
 };
 
 export type CreateRegion = {
-	id?: InputMaybe<Scalars['UUID']>;
-	latMax: Scalars['Float'];
-	latMin: Scalars['Float'];
-	lonMax: Scalars['Float'];
-	lonMin: Scalars['Float'];
-	name: Scalars['String'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	latMax: Scalars['Float']['input'];
+	latMin: Scalars['Float']['input'];
+	lonMax: Scalars['Float']['input'];
+	lonMin: Scalars['Float']['input'];
+	name: Scalars['String']['input'];
 };
 
 export type CreateSealife = {
-	categoryMap?: InputMaybe<Scalars['JSONObject']>;
-	description: Scalars['String'];
-	hideLocation: Scalars['Boolean'];
-	id?: InputMaybe<Scalars['UUID']>;
-	name: Scalars['String'];
-	photoId?: InputMaybe<Scalars['UUID']>;
-	scientificName?: InputMaybe<Scalars['String']>;
+	categoryMap?: InputMaybe<Scalars['JSONObject']['input']>;
+	description: Scalars['String']['input'];
+	hideLocation: Scalars['Boolean']['input'];
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name: Scalars['String']['input'];
+	photoId?: InputMaybe<Scalars['UUID']['input']>;
+	scientificName?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum Difficulty {
@@ -127,91 +133,92 @@ export enum Difficulty {
 export type Dive = {
 	__typename?: 'Dive';
 	comments: Array<DiveComment>;
-	date: Scalars['DateTime'];
-	depth: Scalars['Float'];
-	description: Scalars['String'];
+	date: Scalars['DateTime']['output'];
+	depth: Scalars['Float']['output'];
+	description: Scalars['String']['output'];
 	diveSite?: Maybe<DiveSite>;
-	diveSiteId?: Maybe<Scalars['UUID']>;
-	duration: Scalars['Int'];
-	hasMetrics: Scalars['Boolean'];
-	id: Scalars['UUID'];
+	diveSiteId?: Maybe<Scalars['UUID']['output']>;
+	duration: Scalars['Int']['output'];
+	hasMetrics: Scalars['Boolean']['output'];
+	id: Scalars['UUID']['output'];
 	latestPhotos: Array<Photo>;
-	liked: Scalars['Boolean'];
-	likes: Scalars['Int'];
-	numComments: Scalars['Int'];
-	number: Scalars['Int'];
-	published: Scalars['Boolean'];
-	summary: Scalars['String'];
+	liked: Scalars['Boolean']['output'];
+	likes: Scalars['Int']['output'];
+	numComments: Scalars['Int']['output'];
+	number: Scalars['Int']['output'];
+	published: Scalars['Boolean']['output'];
+	summary: Scalars['String']['output'];
 	user: PublicUserInfo;
-	userId: Scalars['UUID'];
+	userId: Scalars['UUID']['output'];
 };
 
 export type DiveComment = {
 	__typename?: 'DiveComment';
-	date: Scalars['DateTime'];
-	description: Scalars['String'];
+	date: Scalars['DateTime']['output'];
+	description: Scalars['String']['output'];
 	dive: Dive;
-	diveId: Scalars['UUID'];
-	id: Scalars['UUID'];
+	diveId: Scalars['UUID']['output'];
+	id: Scalars['UUID']['output'];
 	user: PublicUserInfo;
-	userId: Scalars['UUID'];
+	userId: Scalars['UUID']['output'];
 };
 
 export type DiveSite = {
 	__typename?: 'DiveSite';
-	access: Scalars['String'];
-	date: Scalars['DateTime'];
-	depth: Scalars['Float'];
-	description: Scalars['String'];
+	access: Scalars['String']['output'];
+	date: Scalars['DateTime']['output'];
+	depth: Scalars['Float']['output'];
+	description: Scalars['String']['output'];
 	difficulty: Difficulty;
-	id: Scalars['UUID'];
-	lat: Scalars['Float'];
+	id: Scalars['UUID']['output'];
+	lat: Scalars['Float']['output'];
+	latestDives: Array<Dive>;
 	latestPhotos: Array<Photo>;
-	lon: Scalars['Float'];
-	name: Scalars['String'];
+	lon: Scalars['Float']['output'];
+	name: Scalars['String']['output'];
 	photo?: Maybe<Photo>;
-	photoId?: Maybe<Scalars['UUID']>;
-	published: Scalars['Boolean'];
+	photoId?: Maybe<Scalars['UUID']['output']>;
+	published: Scalars['Boolean']['output'];
 	references: Array<OgReference>;
 	siteMetrics: SiteMetric;
-	slug?: Maybe<Scalars['String']>;
-	summary: Scalars['String'];
-	userId?: Maybe<Scalars['UUID']>;
+	slug?: Maybe<Scalars['String']['output']>;
+	summary: Scalars['String']['output'];
+	userId?: Maybe<Scalars['UUID']['output']>;
 };
 
 export type Feedback = {
 	__typename?: 'Feedback';
-	date: Scalars['DateTime'];
-	feedback: Scalars['String'];
-	id: Scalars['UUID'];
+	date: Scalars['DateTime']['output'];
+	feedback: Scalars['String']['output'];
+	id: Scalars['UUID']['output'];
 	user: UserInfo;
-	userId: Scalars['UUID'];
+	userId: Scalars['UUID']['output'];
 };
 
 export type LoginResponse = {
 	__typename?: 'LoginResponse';
 	copyrightLocation?: Maybe<OverlayLocation>;
-	displayName?: Maybe<Scalars['String']>;
-	email: Scalars['String'];
-	id: Scalars['UUID'];
+	displayName?: Maybe<Scalars['String']['output']>;
+	email: Scalars['String']['output'];
+	id: Scalars['UUID']['output'];
 	level: UserLevel;
-	token: Scalars['String'];
-	username: Scalars['String'];
+	token: Scalars['String']['output'];
+	username: Scalars['String']['output'];
 	watermarkLocation: OverlayLocation;
 };
 
 export type Mutation = {
 	__typename?: 'Mutation';
 	addFeedback: Feedback;
-	changePassword: Scalars['Boolean'];
+	changePassword: Scalars['Boolean']['output'];
 	checkReference: OgReference;
-	deleteUser: Scalars['Boolean'];
+	deleteUser: Scalars['Boolean']['output'];
 	fbLogin: LoginResponse;
 	fbRegisterUser: LoginResponse;
-	likeDive: Scalars['Boolean'];
-	likePhoto: Scalars['Boolean'];
+	likeDive: Scalars['Boolean']['output'];
+	likePhoto: Scalars['Boolean']['output'];
 	login: LoginResponse;
-	mergeDiveSites: Scalars['Boolean'];
+	mergeDiveSites: Scalars['Boolean']['output'];
 	newCategory: Category;
 	newCategoryValue: CategoryValue;
 	newComment: DiveComment;
@@ -221,68 +228,68 @@ export type Mutation = {
 	newRegion: Region;
 	newSealife: Sealife;
 	registerUser: LoginResponse;
-	removeCategory: Scalars['Boolean'];
-	removeCategoryValue: Scalars['Boolean'];
-	removeComment: Scalars['Boolean'];
-	removeDive: Scalars['Boolean'];
-	removeDiveSite: Scalars['Boolean'];
-	removePhoto: Scalars['Boolean'];
-	removeReference: Scalars['Boolean'];
-	removeRegion: Scalars['Boolean'];
-	removeSealife: Scalars['Boolean'];
-	requestResetToken: Scalars['Boolean'];
+	removeCategory: Scalars['Boolean']['output'];
+	removeCategoryValue: Scalars['Boolean']['output'];
+	removeComment: Scalars['Boolean']['output'];
+	removeDive: Scalars['Boolean']['output'];
+	removeDiveSite: Scalars['Boolean']['output'];
+	removePhoto: Scalars['Boolean']['output'];
+	removeReference: Scalars['Boolean']['output'];
+	removeRegion: Scalars['Boolean']['output'];
+	removeSealife: Scalars['Boolean']['output'];
+	requestResetToken: Scalars['Boolean']['output'];
 	resetPassword: LoginResponse;
-	syncSubsurface: Scalars['Boolean'];
-	unlikeDive: Scalars['Boolean'];
-	unlikePhoto: Scalars['Boolean'];
+	syncSubsurface: Scalars['Boolean']['output'];
+	unlikeDive: Scalars['Boolean']['output'];
+	unlikePhoto: Scalars['Boolean']['output'];
 	updatePhoto: Photo;
 	updateSettings?: Maybe<LoginResponse>;
 };
 
 export type MutationAddFeedbackArgs = {
-	feedback: Scalars['String'];
+	feedback: Scalars['String']['input'];
 };
 
 export type MutationChangePasswordArgs = {
-	newPassword: Scalars['String'];
-	oldPassword: Scalars['String'];
+	newPassword: Scalars['String']['input'];
+	oldPassword: Scalars['String']['input'];
 };
 
 export type MutationCheckReferenceArgs = {
-	url: Scalars['String'];
+	url: Scalars['String']['input'];
 };
 
 export type MutationDeleteUserArgs = {
-	password: Scalars['String'];
+	password: Scalars['String']['input'];
 };
 
 export type MutationFbLoginArgs = {
-	code: Scalars['String'];
-	redirectUri: Scalars['String'];
+	code: Scalars['String']['input'];
+	redirectUri: Scalars['String']['input'];
 };
 
 export type MutationFbRegisterUserArgs = {
-	code: Scalars['String'];
-	redirectUri: Scalars['String'];
-	username: Scalars['String'];
+	code: Scalars['String']['input'];
+	redirectUri: Scalars['String']['input'];
+	username: Scalars['String']['input'];
 };
 
 export type MutationLikeDiveArgs = {
-	diveId: Scalars['UUID'];
+	diveId: Scalars['UUID']['input'];
 };
 
 export type MutationLikePhotoArgs = {
-	photoId: Scalars['UUID'];
+	photoId: Scalars['UUID']['input'];
 };
 
 export type MutationLoginArgs = {
-	email: Scalars['String'];
-	password: Scalars['String'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
 };
 
 export type MutationMergeDiveSitesArgs = {
-	fromId: Scalars['UUID'];
-	toId: Scalars['UUID'];
+	fromId: Scalars['UUID']['input'];
+	toId: Scalars['UUID']['input'];
 };
 
 export type MutationNewCategoryArgs = {
@@ -306,9 +313,9 @@ export type MutationNewDiveSiteArgs = {
 };
 
 export type MutationNewReferenceArgs = {
-	diveSiteId?: InputMaybe<Scalars['UUID']>;
-	sealifeId?: InputMaybe<Scalars['UUID']>;
-	url: Scalars['String'];
+	diveSiteId?: InputMaybe<Scalars['UUID']['input']>;
+	sealifeId?: InputMaybe<Scalars['UUID']['input']>;
+	url: Scalars['String']['input'];
 };
 
 export type MutationNewRegionArgs = {
@@ -320,68 +327,68 @@ export type MutationNewSealifeArgs = {
 };
 
 export type MutationRegisterUserArgs = {
-	email: Scalars['String'];
-	password: Scalars['String'];
-	username: Scalars['String'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
+	username: Scalars['String']['input'];
 };
 
 export type MutationRemoveCategoryArgs = {
-	categoryId: Scalars['UUID'];
+	categoryId: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveCategoryValueArgs = {
-	categoryValueId: Scalars['UUID'];
+	categoryValueId: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveCommentArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveDiveArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveDiveSiteArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemovePhotoArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveReferenceArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveRegionArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRemoveSealifeArgs = {
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 };
 
 export type MutationRequestResetTokenArgs = {
-	email: Scalars['String'];
+	email: Scalars['String']['input'];
 };
 
 export type MutationResetPasswordArgs = {
-	email: Scalars['String'];
-	newPassword: Scalars['String'];
-	token: Scalars['UUID'];
+	email: Scalars['String']['input'];
+	newPassword: Scalars['String']['input'];
+	token: Scalars['UUID']['input'];
 };
 
 export type MutationSyncSubsurfaceArgs = {
-	email: Scalars['String'];
-	password: Scalars['String'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
 };
 
 export type MutationUnlikeDiveArgs = {
-	diveId: Scalars['UUID'];
+	diveId: Scalars['UUID']['input'];
 };
 
 export type MutationUnlikePhotoArgs = {
-	photoId: Scalars['UUID'];
+	photoId: Scalars['UUID']['input'];
 };
 
 export type MutationUpdatePhotoArgs = {
@@ -390,18 +397,18 @@ export type MutationUpdatePhotoArgs = {
 
 export type MutationUpdateSettingsArgs = {
 	copyrightLocation?: InputMaybe<OverlayLocation>;
-	displayName?: InputMaybe<Scalars['String']>;
+	displayName?: InputMaybe<Scalars['String']['input']>;
 	watermarkLocation: OverlayLocation;
 };
 
 export type OgReference = {
 	__typename?: 'OgReference';
-	description: Scalars['String'];
-	id: Scalars['UUID'];
-	imageUrl?: Maybe<Scalars['String']>;
-	lastFetched: Scalars['DateTime'];
-	title: Scalars['String'];
-	url: Scalars['String'];
+	description: Scalars['String']['output'];
+	id: Scalars['UUID']['output'];
+	imageUrl?: Maybe<Scalars['String']['output']>;
+	lastFetched: Scalars['DateTime']['output'];
+	title: Scalars['String']['output'];
+	url: Scalars['String']['output'];
 };
 
 export enum OverlayLocation {
@@ -413,27 +420,27 @@ export enum OverlayLocation {
 
 export type Photo = {
 	__typename?: 'Photo';
-	date?: Maybe<Scalars['DateTime']>;
+	date?: Maybe<Scalars['DateTime']['output']>;
 	dive?: Maybe<Dive>;
 	diveSite?: Maybe<DiveSite>;
-	filename: Scalars['String'];
-	height: Scalars['Float'];
-	id: Scalars['UUID'];
-	liked: Scalars['Boolean'];
-	likes: Scalars['Int'];
+	filename: Scalars['String']['output'];
+	height: Scalars['Float']['output'];
+	id: Scalars['UUID']['output'];
+	liked: Scalars['Boolean']['output'];
+	likes: Scalars['Int']['output'];
 	sealife?: Maybe<Sealife>;
-	size: Scalars['Float'];
+	size: Scalars['Float']['output'];
 	user: PublicUserInfo;
-	userId: Scalars['UUID'];
-	width: Scalars['Float'];
+	userId: Scalars['UUID']['output'];
+	width: Scalars['Float']['output'];
 };
 
 export type PublicUserInfo = {
 	__typename?: 'PublicUserInfo';
-	displayName?: Maybe<Scalars['String']>;
-	id: Scalars['UUID'];
+	displayName?: Maybe<Scalars['String']['output']>;
+	id: Scalars['UUID']['output'];
 	level: UserLevel;
-	username: Scalars['String'];
+	username: Scalars['String']['output'];
 };
 
 export type Query = {
@@ -443,7 +450,7 @@ export type Query = {
 	currentUser?: Maybe<LoginResponse>;
 	diveSites: Array<DiveSite>;
 	dives: Array<Dive>;
-	fbAppId: Scalars['String'];
+	fbAppId: Scalars['String']['output'];
 	feedback: Array<Feedback>;
 	photos: Array<Photo>;
 	popularDiveSites: Array<DiveSite>;
@@ -451,87 +458,90 @@ export type Query = {
 	regions: Array<Region>;
 	sealife: Array<Sealife>;
 	search: Array<SearchResult>;
-	siteUrl: Scalars['String'];
+	siteUrl: Scalars['String']['output'];
 };
 
 export type QueryDiveSitesArgs = {
-	id?: InputMaybe<Scalars['UUID']>;
-	maxDepth?: InputMaybe<Scalars['Float']>;
-	name?: InputMaybe<Scalars['String']>;
-	slug?: InputMaybe<Scalars['String']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	maxDepth?: InputMaybe<Scalars['Float']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryDivesArgs = {
-	diveSite?: InputMaybe<Scalars['UUID']>;
-	id?: InputMaybe<Scalars['UUID']>;
-	maxDepth?: InputMaybe<Scalars['Float']>;
-	userId?: InputMaybe<Scalars['UUID']>;
+	diveSite?: InputMaybe<Scalars['UUID']['input']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	maxDepth?: InputMaybe<Scalars['Float']['input']>;
+	offset?: InputMaybe<Scalars['Int']['input']>;
+	userId?: InputMaybe<Scalars['UUID']['input']>;
+	username?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryFeedbackArgs = {
-	id?: InputMaybe<Scalars['UUID']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
 };
 
 export type QueryPhotosArgs = {
-	dive?: InputMaybe<Scalars['UUID']>;
-	diveSite?: InputMaybe<Scalars['UUID']>;
-	id?: InputMaybe<Scalars['UUID']>;
-	offset?: InputMaybe<Scalars['Int']>;
-	orderByUpload?: InputMaybe<Scalars['Boolean']>;
-	sealifeId?: InputMaybe<Scalars['UUID']>;
-	userId?: InputMaybe<Scalars['UUID']>;
+	dive?: InputMaybe<Scalars['UUID']['input']>;
+	diveSite?: InputMaybe<Scalars['UUID']['input']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	offset?: InputMaybe<Scalars['Int']['input']>;
+	orderByUpload?: InputMaybe<Scalars['Boolean']['input']>;
+	sealifeId?: InputMaybe<Scalars['UUID']['input']>;
+	userId?: InputMaybe<Scalars['UUID']['input']>;
+	username?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QuerySealifeArgs = {
-	categoryValues?: InputMaybe<Array<Scalars['UUID']>>;
-	id?: InputMaybe<Scalars['UUID']>;
-	name?: InputMaybe<Scalars['String']>;
-	scientificName?: InputMaybe<Scalars['String']>;
-	slug?: InputMaybe<Scalars['String']>;
+	categoryValues?: InputMaybe<Array<Scalars['UUID']['input']>>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	scientificName?: InputMaybe<Scalars['String']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QuerySearchArgs = {
-	offset?: InputMaybe<Scalars['Int']>;
-	query: Scalars['String'];
+	offset?: InputMaybe<Scalars['Int']['input']>;
+	query: Scalars['String']['input'];
 };
 
 export type Region = {
 	__typename?: 'Region';
-	id: Scalars['UUID'];
-	latMax: Scalars['Float'];
-	latMin: Scalars['Float'];
-	lonMax: Scalars['Float'];
-	lonMin: Scalars['Float'];
-	name: Scalars['String'];
-	slug: Scalars['String'];
+	id: Scalars['UUID']['output'];
+	latMax: Scalars['Float']['output'];
+	latMin: Scalars['Float']['output'];
+	lonMax: Scalars['Float']['output'];
+	lonMin: Scalars['Float']['output'];
+	name: Scalars['String']['output'];
+	slug: Scalars['String']['output'];
 };
 
 export type Sealife = {
 	__typename?: 'Sealife';
-	categoryMap: Scalars['JSONObject'];
-	date: Scalars['DateTime'];
-	description: Scalars['String'];
-	hideLocation: Scalars['Boolean'];
-	id: Scalars['UUID'];
+	categoryMap: Scalars['JSONObject']['output'];
+	date: Scalars['DateTime']['output'];
+	description: Scalars['String']['output'];
+	hideLocation: Scalars['Boolean']['output'];
+	id: Scalars['UUID']['output'];
 	latestPhotos: Array<Photo>;
-	name: Scalars['String'];
+	name: Scalars['String']['output'];
 	photo?: Maybe<Photo>;
-	photoId?: Maybe<Scalars['UUID']>;
+	photoId?: Maybe<Scalars['UUID']['output']>;
 	references: Array<OgReference>;
-	scientificName?: Maybe<Scalars['String']>;
-	slug?: Maybe<Scalars['String']>;
-	summary: Scalars['String'];
+	scientificName?: Maybe<Scalars['String']['output']>;
+	slug?: Maybe<Scalars['String']['output']>;
+	summary: Scalars['String']['output'];
 };
 
 export type SearchResult = {
 	__typename?: 'SearchResult';
-	id: Scalars['String'];
+	id: Scalars['String']['output'];
 	kind: SearchResultKind;
-	name: Scalars['String'];
-	photoId?: Maybe<Scalars['String']>;
-	scientificName?: Maybe<Scalars['String']>;
-	slug: Scalars['String'];
-	summary: Scalars['String'];
+	name: Scalars['String']['output'];
+	photoId?: Maybe<Scalars['String']['output']>;
+	scientificName?: Maybe<Scalars['String']['output']>;
+	slug: Scalars['String']['output'];
+	summary: Scalars['String']['output'];
 };
 
 export enum SearchResultKind {
@@ -541,17 +551,17 @@ export enum SearchResultKind {
 
 export type SiteMetric = {
 	__typename?: 'SiteMetric';
-	diveCount: Scalars['Int'];
-	photoCount: Scalars['Int'];
+	diveCount: Scalars['Int']['output'];
+	photoCount: Scalars['Int']['output'];
 };
 
 export type UserInfo = {
 	__typename?: 'UserInfo';
-	displayName?: Maybe<Scalars['String']>;
-	email: Scalars['String'];
-	id: Scalars['UUID'];
+	displayName?: Maybe<Scalars['String']['output']>;
+	email: Scalars['String']['output'];
+	id: Scalars['UUID']['output'];
 	level: UserLevel;
-	username: Scalars['String'];
+	username: Scalars['String']['output'];
 };
 
 export enum UserLevel {
@@ -847,6 +857,74 @@ export type SiteFragment = {
 			displayName?: string | null;
 		};
 	}>;
+	latestDives: Array<{
+		__typename?: 'Dive';
+		id: string;
+		userId: string;
+		date: any;
+		depth: number;
+		duration: number;
+		number: number;
+		hasMetrics: boolean;
+		summary: string;
+		likes: number;
+		liked: boolean;
+		numComments: number;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		latestPhotos: Array<{
+			__typename?: 'Photo';
+			id: string;
+			userId: string;
+			filename: string;
+			date?: any | null;
+			size: number;
+			width: number;
+			height: number;
+			likes: number;
+			liked: boolean;
+			dive?: {
+				__typename?: 'Dive';
+				id: string;
+				date: any;
+				number: number;
+				numComments: number;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			sealife?: {
+				__typename?: 'Sealife';
+				id: string;
+				name: string;
+				scientificName?: string | null;
+				summary: string;
+				slug?: string | null;
+				photoId?: string | null;
+			} | null;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
+		user: {
+			__typename?: 'PublicUserInfo';
+			id: string;
+			username: string;
+			displayName?: string | null;
+		};
+	}>;
 	references: Array<{
 		__typename?: 'OgReference';
 		id: string;
@@ -1098,6 +1176,7 @@ export type CurrentUserTokenFragment = {
 	__typename?: 'LoginResponse';
 	id: string;
 	email: string;
+	username: string;
 	level: UserLevel;
 	token: string;
 };
@@ -1317,6 +1396,79 @@ export type AddDiveSiteMutation = {
 				displayName?: string | null;
 			};
 		}>;
+		latestDives: Array<{
+			__typename?: 'Dive';
+			id: string;
+			userId: string;
+			date: any;
+			depth: number;
+			duration: number;
+			number: number;
+			hasMetrics: boolean;
+			summary: string;
+			likes: number;
+			liked: boolean;
+			numComments: number;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			latestPhotos: Array<{
+				__typename?: 'Photo';
+				id: string;
+				userId: string;
+				filename: string;
+				date?: any | null;
+				size: number;
+				width: number;
+				height: number;
+				likes: number;
+				liked: boolean;
+				dive?: {
+					__typename?: 'Dive';
+					id: string;
+					date: any;
+					number: number;
+					numComments: number;
+					user: {
+						__typename?: 'PublicUserInfo';
+						id: string;
+						username: string;
+						displayName?: string | null;
+					};
+					diveSite?: {
+						__typename?: 'DiveSite';
+						name: string;
+						id: string;
+						slug?: string | null;
+					} | null;
+				} | null;
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+				sealife?: {
+					__typename?: 'Sealife';
+					id: string;
+					name: string;
+					scientificName?: string | null;
+					summary: string;
+					slug?: string | null;
+					photoId?: string | null;
+				} | null;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+			}>;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
 		references: Array<{
 			__typename?: 'OgReference';
 			id: string;
@@ -1330,7 +1482,7 @@ export type AddDiveSiteMutation = {
 };
 
 export type AddFeedbackMutationVariables = Exact<{
-	feedback: Scalars['String'];
+	feedback: Scalars['String']['input'];
 }>;
 
 export type AddFeedbackMutation = {
@@ -1339,9 +1491,9 @@ export type AddFeedbackMutation = {
 };
 
 export type NewReferenceMutationVariables = Exact<{
-	url: Scalars['String'];
-	sealifeId?: InputMaybe<Scalars['UUID']>;
-	diveSiteId?: InputMaybe<Scalars['UUID']>;
+	url: Scalars['String']['input'];
+	sealifeId?: InputMaybe<Scalars['UUID']['input']>;
+	diveSiteId?: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 export type NewReferenceMutation = {
@@ -1482,8 +1634,8 @@ export type AddSealifeMutation = {
 };
 
 export type AddCommentMutationVariables = Exact<{
-	diveId: Scalars['UUID'];
-	description: Scalars['String'];
+	diveId: Scalars['UUID']['input'];
+	description: Scalars['String']['input'];
 }>;
 
 export type AddCommentMutation = {
@@ -1504,20 +1656,20 @@ export type AddCommentMutation = {
 };
 
 export type RemoveCommentMutationVariables = Exact<{
-	commentId: Scalars['UUID'];
+	commentId: Scalars['UUID']['input'];
 }>;
 
 export type RemoveCommentMutation = { __typename?: 'Mutation'; removeComment: boolean };
 
 export type DeleteUserMutationVariables = Exact<{
-	password: Scalars['String'];
+	password: Scalars['String']['input'];
 }>;
 
 export type DeleteUserMutation = { __typename?: 'Mutation'; deleteUser: boolean };
 
 export type FbLoginUserMutationVariables = Exact<{
-	redirectUri: Scalars['String'];
-	code: Scalars['String'];
+	redirectUri: Scalars['String']['input'];
+	code: Scalars['String']['input'];
 }>;
 
 export type FbLoginUserMutation = {
@@ -1526,15 +1678,16 @@ export type FbLoginUserMutation = {
 		__typename?: 'LoginResponse';
 		id: string;
 		email: string;
+		username: string;
 		level: UserLevel;
 		token: string;
 	};
 };
 
 export type FbRegisterUserMutationVariables = Exact<{
-	username: Scalars['String'];
-	redirectUri: Scalars['String'];
-	code: Scalars['String'];
+	username: Scalars['String']['input'];
+	redirectUri: Scalars['String']['input'];
+	code: Scalars['String']['input'];
 }>;
 
 export type FbRegisterUserMutation = {
@@ -1543,38 +1696,39 @@ export type FbRegisterUserMutation = {
 		__typename?: 'LoginResponse';
 		id: string;
 		email: string;
+		username: string;
 		level: UserLevel;
 		token: string;
 	};
 };
 
 export type LikeDiveMutationVariables = Exact<{
-	diveId: Scalars['UUID'];
+	diveId: Scalars['UUID']['input'];
 }>;
 
 export type LikeDiveMutation = { __typename?: 'Mutation'; likeDive: boolean };
 
 export type UnlikeDiveMutationVariables = Exact<{
-	diveId: Scalars['UUID'];
+	diveId: Scalars['UUID']['input'];
 }>;
 
 export type UnlikeDiveMutation = { __typename?: 'Mutation'; unlikeDive: boolean };
 
 export type LikePhotoMutationVariables = Exact<{
-	photoId: Scalars['UUID'];
+	photoId: Scalars['UUID']['input'];
 }>;
 
 export type LikePhotoMutation = { __typename?: 'Mutation'; likePhoto: boolean };
 
 export type UnlikePhotoMutationVariables = Exact<{
-	photoId: Scalars['UUID'];
+	photoId: Scalars['UUID']['input'];
 }>;
 
 export type UnlikePhotoMutation = { __typename?: 'Mutation'; unlikePhoto: boolean };
 
 export type LoginUserMutationVariables = Exact<{
-	email: Scalars['String'];
-	password: Scalars['String'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
 }>;
 
 export type LoginUserMutation = {
@@ -1583,13 +1737,14 @@ export type LoginUserMutation = {
 		__typename?: 'LoginResponse';
 		id: string;
 		email: string;
+		username: string;
 		level: UserLevel;
 		token: string;
 	};
 };
 
 export type UpdateSettingsMutationVariables = Exact<{
-	displayName?: InputMaybe<Scalars['String']>;
+	displayName?: InputMaybe<Scalars['String']['input']>;
 	watermarkLocation: OverlayLocation;
 	copyrightLocation?: InputMaybe<OverlayLocation>;
 }>;
@@ -1609,22 +1764,22 @@ export type UpdateSettingsMutation = {
 };
 
 export type MergeDiveSitesMutationVariables = Exact<{
-	fromId: Scalars['UUID'];
-	toId: Scalars['UUID'];
+	fromId: Scalars['UUID']['input'];
+	toId: Scalars['UUID']['input'];
 }>;
 
 export type MergeDiveSitesMutation = { __typename?: 'Mutation'; mergeDiveSites: boolean };
 
 export type RequestResetTokenMutationVariables = Exact<{
-	email: Scalars['String'];
+	email: Scalars['String']['input'];
 }>;
 
 export type RequestResetTokenMutation = { __typename?: 'Mutation'; requestResetToken: boolean };
 
 export type ResetPasswordMutationVariables = Exact<{
-	email: Scalars['String'];
-	newPassword: Scalars['String'];
-	token: Scalars['UUID'];
+	email: Scalars['String']['input'];
+	newPassword: Scalars['String']['input'];
+	token: Scalars['UUID']['input'];
 }>;
 
 export type ResetPasswordMutation = {
@@ -1633,14 +1788,15 @@ export type ResetPasswordMutation = {
 		__typename?: 'LoginResponse';
 		id: string;
 		email: string;
+		username: string;
 		level: UserLevel;
 		token: string;
 	};
 };
 
 export type ChangePasswordMutationVariables = Exact<{
-	oldPassword: Scalars['String'];
-	newPassword: Scalars['String'];
+	oldPassword: Scalars['String']['input'];
+	newPassword: Scalars['String']['input'];
 }>;
 
 export type ChangePasswordMutation = { __typename?: 'Mutation'; changePassword: boolean };
@@ -1664,15 +1820,15 @@ export type NewRegionMutation = {
 };
 
 export type RemoveRegionMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemoveRegionMutation = { __typename?: 'Mutation'; removeRegion: boolean };
 
 export type RegisterUserMutationVariables = Exact<{
-	username: Scalars['String'];
-	email: Scalars['String'];
-	password: Scalars['String'];
+	username: Scalars['String']['input'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
 }>;
 
 export type RegisterUserMutation = {
@@ -1681,44 +1837,45 @@ export type RegisterUserMutation = {
 		__typename?: 'LoginResponse';
 		id: string;
 		email: string;
+		username: string;
 		level: UserLevel;
 		token: string;
 	};
 };
 
 export type RemoveDiveMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemoveDiveMutation = { __typename?: 'Mutation'; removeDive: boolean };
 
 export type RemoveDiveSiteMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemoveDiveSiteMutation = { __typename?: 'Mutation'; removeDiveSite: boolean };
 
 export type RemovePhotoMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemovePhotoMutation = { __typename?: 'Mutation'; removePhoto: boolean };
 
 export type RemoveReferenceMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemoveReferenceMutation = { __typename?: 'Mutation'; removeReference: boolean };
 
 export type RemoveSealifeMutationVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type RemoveSealifeMutation = { __typename?: 'Mutation'; removeSealife: boolean };
 
 export type SyncSubsurfaceMutationVariables = Exact<{
-	email: Scalars['String'];
-	password: Scalars['String'];
+	email: Scalars['String']['input'];
+	password: Scalars['String']['input'];
 }>;
 
 export type SyncSubsurfaceMutation = { __typename?: 'Mutation'; syncSubsurface: boolean };
@@ -1818,7 +1975,7 @@ export type FbAppIdQueryVariables = Exact<{ [key: string]: never }>;
 export type FbAppIdQuery = { __typename?: 'Query'; fbAppId: string };
 
 export type GetFeedbackQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
 }>;
 
 export type GetFeedbackQuery = {
@@ -1924,7 +2081,7 @@ export type FrontPageQuery = {
 };
 
 export type GetDiveQueryVariables = Exact<{
-	id: Scalars['UUID'];
+	id: Scalars['UUID']['input'];
 }>;
 
 export type GetDiveQuery = {
@@ -2015,10 +2172,10 @@ export type GetDiveQuery = {
 };
 
 export type GetDiveSitesQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
-	name?: InputMaybe<Scalars['String']>;
-	maxDepth?: InputMaybe<Scalars['Float']>;
-	slug?: InputMaybe<Scalars['String']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	maxDepth?: InputMaybe<Scalars['Float']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetDiveSitesQuery = {
@@ -2135,6 +2292,79 @@ export type GetDiveSitesQuery = {
 				displayName?: string | null;
 			};
 		}>;
+		latestDives: Array<{
+			__typename?: 'Dive';
+			id: string;
+			userId: string;
+			date: any;
+			depth: number;
+			duration: number;
+			number: number;
+			hasMetrics: boolean;
+			summary: string;
+			likes: number;
+			liked: boolean;
+			numComments: number;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			latestPhotos: Array<{
+				__typename?: 'Photo';
+				id: string;
+				userId: string;
+				filename: string;
+				date?: any | null;
+				size: number;
+				width: number;
+				height: number;
+				likes: number;
+				liked: boolean;
+				dive?: {
+					__typename?: 'Dive';
+					id: string;
+					date: any;
+					number: number;
+					numComments: number;
+					user: {
+						__typename?: 'PublicUserInfo';
+						id: string;
+						username: string;
+						displayName?: string | null;
+					};
+					diveSite?: {
+						__typename?: 'DiveSite';
+						name: string;
+						id: string;
+						slug?: string | null;
+					} | null;
+				} | null;
+				diveSite?: {
+					__typename?: 'DiveSite';
+					name: string;
+					id: string;
+					slug?: string | null;
+				} | null;
+				sealife?: {
+					__typename?: 'Sealife';
+					id: string;
+					name: string;
+					scientificName?: string | null;
+					summary: string;
+					slug?: string | null;
+					photoId?: string | null;
+				} | null;
+				user: {
+					__typename?: 'PublicUserInfo';
+					id: string;
+					username: string;
+					displayName?: string | null;
+				};
+			}>;
+			user: {
+				__typename?: 'PublicUserInfo';
+				id: string;
+				username: string;
+				displayName?: string | null;
+			};
+		}>;
 		references: Array<{
 			__typename?: 'OgReference';
 			id: string;
@@ -2158,10 +2388,10 @@ export type GetDiveSitesQuery = {
 };
 
 export type GetDiveSitesSummaryMetricsQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
-	name?: InputMaybe<Scalars['String']>;
-	maxDepth?: InputMaybe<Scalars['Float']>;
-	slug?: InputMaybe<Scalars['String']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	maxDepth?: InputMaybe<Scalars['Float']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetDiveSitesSummaryMetricsQuery = {
@@ -2180,7 +2410,9 @@ export type GetDiveSitesSummaryMetricsQuery = {
 };
 
 export type GetDivesQueryVariables = Exact<{
-	diveSite?: InputMaybe<Scalars['UUID']>;
+	diveSite?: InputMaybe<Scalars['UUID']['input']>;
+	username?: InputMaybe<Scalars['String']['input']>;
+	offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 export type GetDivesQuery = {
@@ -2256,13 +2488,14 @@ export type GetDivesQuery = {
 };
 
 export type GetPhotosQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
-	userId?: InputMaybe<Scalars['UUID']>;
-	diveSite?: InputMaybe<Scalars['UUID']>;
-	dive?: InputMaybe<Scalars['UUID']>;
-	sealifeId?: InputMaybe<Scalars['UUID']>;
-	offset?: InputMaybe<Scalars['Int']>;
-	orderByUpload?: InputMaybe<Scalars['Boolean']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	userId?: InputMaybe<Scalars['UUID']['input']>;
+	username?: InputMaybe<Scalars['String']['input']>;
+	diveSite?: InputMaybe<Scalars['UUID']['input']>;
+	dive?: InputMaybe<Scalars['UUID']['input']>;
+	sealifeId?: InputMaybe<Scalars['UUID']['input']>;
+	offset?: InputMaybe<Scalars['Int']['input']>;
+	orderByUpload?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 export type GetPhotosQuery = {
@@ -2313,11 +2546,11 @@ export type GetPhotosQuery = {
 };
 
 export type GetSealifeSummaryQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
-	name?: InputMaybe<Scalars['String']>;
-	scientificName?: InputMaybe<Scalars['String']>;
-	slug?: InputMaybe<Scalars['String']>;
-	categoryValues?: InputMaybe<Array<Scalars['UUID']> | Scalars['UUID']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	scientificName?: InputMaybe<Scalars['String']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
+	categoryValues?: InputMaybe<Array<Scalars['UUID']['input']> | Scalars['UUID']['input']>;
 }>;
 
 export type GetSealifeSummaryQuery = {
@@ -2334,10 +2567,10 @@ export type GetSealifeSummaryQuery = {
 };
 
 export type GetSealifeQueryVariables = Exact<{
-	id?: InputMaybe<Scalars['UUID']>;
-	name?: InputMaybe<Scalars['String']>;
-	scientificName?: InputMaybe<Scalars['String']>;
-	slug?: InputMaybe<Scalars['String']>;
+	id?: InputMaybe<Scalars['UUID']['input']>;
+	name?: InputMaybe<Scalars['String']['input']>;
+	scientificName?: InputMaybe<Scalars['String']['input']>;
+	slug?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetSealifeQuery = {
@@ -2478,8 +2711,8 @@ export type GetRegionsQuery = {
 };
 
 export type SearchQueryVariables = Exact<{
-	query: Scalars['String'];
-	offset?: InputMaybe<Scalars['Int']>;
+	query: Scalars['String']['input'];
+	offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 export type SearchQuery = {
@@ -2512,18 +2745,29 @@ export const CategoryNodeFragmentDoc = gql`
 		}
 	}
 `;
-export const SiteSummaryFragmentDoc = gql`
-	fragment SiteSummary on DiveSite {
-		name
-		id
-		slug
-	}
-`;
 export const UserSummaryFragmentDoc = gql`
 	fragment UserSummary on PublicUserInfo {
 		id
 		username
 		displayName
+	}
+`;
+export const CommentFragmentDoc = gql`
+	fragment Comment on DiveComment {
+		id
+		diveId
+		user {
+			...UserSummary
+		}
+		date
+		description
+	}
+`;
+export const SiteSummaryFragmentDoc = gql`
+	fragment SiteSummary on DiveSite {
+		name
+		id
+		slug
 	}
 `;
 export const DiveSummaryFragmentDoc = gql`
@@ -2575,41 +2819,6 @@ export const PhotoSummaryFragmentDoc = gql`
 		}
 	}
 `;
-export const DiveWithMetricsFragmentDoc = gql`
-	fragment DiveWithMetrics on Dive {
-		id
-		userId
-		date
-		depth
-		duration
-		number
-		hasMetrics
-		summary
-		likes
-		liked
-		numComments
-		diveSite {
-			...SiteSummary
-		}
-		latestPhotos {
-			...PhotoSummary
-		}
-		user {
-			...UserSummary
-		}
-	}
-`;
-export const CommentFragmentDoc = gql`
-	fragment Comment on DiveComment {
-		id
-		diveId
-		user {
-			...UserSummary
-		}
-		date
-		description
-	}
-`;
 export const DiveNodeFragmentDoc = gql`
 	fragment DiveNode on Dive {
 		id
@@ -2643,6 +2852,30 @@ export const SiteMetricNodeFragmentDoc = gql`
 	fragment SiteMetricNode on SiteMetric {
 		photoCount
 		diveCount
+	}
+`;
+export const DiveWithMetricsFragmentDoc = gql`
+	fragment DiveWithMetrics on Dive {
+		id
+		userId
+		date
+		depth
+		duration
+		number
+		hasMetrics
+		summary
+		likes
+		liked
+		numComments
+		diveSite {
+			...SiteSummary
+		}
+		latestPhotos {
+			...PhotoSummary
+		}
+		user {
+			...UserSummary
+		}
 	}
 `;
 export const ReferenceFragmentDoc = gql`
@@ -2679,6 +2912,9 @@ export const SiteFragmentDoc = gql`
 		}
 		latestPhotos {
 			...PhotoSummary
+		}
+		latestDives {
+			...DiveWithMetrics
 		}
 		references {
 			...Reference
@@ -2772,6 +3008,7 @@ export const CurrentUserTokenFragmentDoc = gql`
 	fragment CurrentUserToken on LoginResponse {
 		id
 		email
+		username
 		level
 		token
 	}
@@ -2803,6 +3040,7 @@ export const AddDiveSiteDocument = gql`
 	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
+	${DiveWithMetricsFragmentDoc}
 	${ReferenceFragmentDoc}
 `;
 export const AddFeedbackDocument = gql`
@@ -3086,6 +3324,7 @@ export const GetDiveSitesDocument = gql`
 	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
+	${DiveWithMetricsFragmentDoc}
 	${ReferenceFragmentDoc}
 	${RegionNodeFragmentDoc}
 `;
@@ -3099,8 +3338,8 @@ export const GetDiveSitesSummaryMetricsDocument = gql`
 	${SiteMetricNodeFragmentDoc}
 `;
 export const GetDivesDocument = gql`
-	query getDives($diveSite: UUID) {
-		dives(diveSite: $diveSite) {
+	query getDives($diveSite: UUID, $username: String, $offset: Int) {
+		dives(diveSite: $diveSite, username: $username, offset: $offset) {
 			...DiveWithMetrics
 		}
 	}
@@ -3115,6 +3354,7 @@ export const GetPhotosDocument = gql`
 	query getPhotos(
 		$id: UUID
 		$userId: UUID
+		$username: String
 		$diveSite: UUID
 		$dive: UUID
 		$sealifeId: UUID
@@ -3124,6 +3364,7 @@ export const GetPhotosDocument = gql`
 		photos(
 			id: $id
 			userId: $userId
+			username: $username
 			diveSite: $diveSite
 			dive: $dive
 			sealifeId: $sealifeId
@@ -3204,7 +3445,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 	return {
 		addDive(
 			variables: AddDiveMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<AddDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3218,7 +3459,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		addDiveSite(
 			variables: AddDiveSiteMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<AddDiveSiteMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3232,7 +3473,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		addFeedback(
 			variables: AddFeedbackMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<AddFeedbackMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3246,7 +3487,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		newReference(
 			variables: NewReferenceMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<NewReferenceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3260,7 +3501,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		addSealife(
 			variables: AddSealifeMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<AddSealifeMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3274,7 +3515,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		addComment(
 			variables: AddCommentMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<AddCommentMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3288,7 +3529,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeComment(
 			variables: RemoveCommentMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveCommentMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3302,7 +3543,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		deleteUser(
 			variables: DeleteUserMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<DeleteUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3316,7 +3557,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		fbLoginUser(
 			variables: FbLoginUserMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<FbLoginUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3330,7 +3571,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		fbRegisterUser(
 			variables: FbRegisterUserMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<FbRegisterUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3344,7 +3585,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		likeDive(
 			variables: LikeDiveMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<LikeDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3358,7 +3599,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		unlikeDive(
 			variables: UnlikeDiveMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<UnlikeDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3372,7 +3613,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		likePhoto(
 			variables: LikePhotoMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<LikePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3386,7 +3627,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		unlikePhoto(
 			variables: UnlikePhotoMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<UnlikePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3400,7 +3641,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		loginUser(
 			variables: LoginUserMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<LoginUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3414,7 +3655,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		updateSettings(
 			variables: UpdateSettingsMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<UpdateSettingsMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3428,7 +3669,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		mergeDiveSites(
 			variables: MergeDiveSitesMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<MergeDiveSitesMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3442,7 +3683,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		requestResetToken(
 			variables: RequestResetTokenMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RequestResetTokenMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3456,7 +3697,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		resetPassword(
 			variables: ResetPasswordMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<ResetPasswordMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3470,7 +3711,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		changePassword(
 			variables: ChangePasswordMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<ChangePasswordMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3484,7 +3725,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		newRegion(
 			variables: NewRegionMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<NewRegionMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3498,7 +3739,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeRegion(
 			variables: RemoveRegionMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveRegionMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3512,7 +3753,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		registerUser(
 			variables: RegisterUserMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RegisterUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3526,7 +3767,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeDive(
 			variables: RemoveDiveMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3540,7 +3781,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeDiveSite(
 			variables: RemoveDiveSiteMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveDiveSiteMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3554,7 +3795,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removePhoto(
 			variables: RemovePhotoMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemovePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3568,7 +3809,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeReference(
 			variables: RemoveReferenceMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveReferenceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3582,7 +3823,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		removeSealife(
 			variables: RemoveSealifeMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<RemoveSealifeMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3596,7 +3837,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		syncSubsurface(
 			variables: SyncSubsurfaceMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<SyncSubsurfaceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3610,7 +3851,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		updatePhoto(
 			variables: UpdatePhotoMutationVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<UpdatePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3624,7 +3865,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getCategories(
 			variables?: GetCategoriesQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetCategoriesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3638,7 +3879,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getCategoryValues(
 			variables?: GetCategoryValuesQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetCategoryValuesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3652,7 +3893,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getCurrentUser(
 			variables?: GetCurrentUserQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetCurrentUserQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3666,7 +3907,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		fbAppId(
 			variables?: FbAppIdQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<FbAppIdQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3680,7 +3921,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getFeedback(
 			variables?: GetFeedbackQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetFeedbackQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3694,7 +3935,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		frontPage(
 			variables?: FrontPageQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<FrontPageQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3708,7 +3949,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getDive(
 			variables: GetDiveQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetDiveQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3722,7 +3963,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getDiveSites(
 			variables?: GetDiveSitesQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetDiveSitesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3736,7 +3977,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getDiveSitesSummaryMetrics(
 			variables?: GetDiveSitesSummaryMetricsQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetDiveSitesSummaryMetricsQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3751,7 +3992,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getDives(
 			variables?: GetDivesQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetDivesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3765,7 +4006,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getPhotos(
 			variables?: GetPhotosQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetPhotosQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3779,7 +4020,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getSealifeSummary(
 			variables?: GetSealifeSummaryQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetSealifeSummaryQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3793,7 +4034,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getSealife(
 			variables?: GetSealifeQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetSealifeQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3807,7 +4048,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		getRegions(
 			variables?: GetRegionsQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<GetRegionsQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
@@ -3821,7 +4062,7 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 		},
 		search(
 			variables: SearchQueryVariables,
-			requestHeaders?: Dom.RequestInit['headers']
+			requestHeaders?: GraphQLClientRequestHeaders
 		): Promise<SearchQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>

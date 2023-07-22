@@ -1,5 +1,5 @@
-query getDives($diveSite: UUID) {
-	dives(diveSite: $diveSite) {
+query getDives($diveSite: UUID, $username: String, $offset: Int) {
+	dives(diveSite: $diveSite, username: $username, offset: $offset) {
 		...DiveWithMetrics
 	}
 }

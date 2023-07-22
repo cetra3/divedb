@@ -1,6 +1,7 @@
 query getPhotos(
 	$id: UUID
 	$userId: UUID
+	$username: String
 	$diveSite: UUID
 	$dive: UUID
 	$sealifeId: UUID
@@ -10,6 +11,7 @@ query getPhotos(
 	photos(
 		id: $id
 		userId: $userId
+		username: $username
 		diveSite: $diveSite
 		dive: $dive
 		sealifeId: $sealifeId

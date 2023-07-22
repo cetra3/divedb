@@ -11,7 +11,7 @@
 		date: new Date(),
 		depth: 0,
 		duration: 0,
-		description: "",
+		description: '',
 		published: false
 	};
 

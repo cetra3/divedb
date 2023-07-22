@@ -9,7 +9,6 @@
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import ImageList from '$lib/components/ImageList.svelte';
 	import formatMinutes from '$lib/util/formatMinutes';
-	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
 	import DiveLabels from '$lib/components/dives/DiveLabels.svelte';
 	import Comments from '$lib/components/Comments.svelte';
 
@@ -103,17 +102,4 @@
 			</div>
 		{/if}
 	</div>
-
-	{#if relatedDives && relatedDives.length > 0}
-		<div class="column col-12 col-sm-12">
-			<h1 class="page-title">
-				<DiveLogIcon size="66px" /> Related Dives <small />
-			</h1>
-		</div>
-		<div class="columns">
-			{#each relatedDives as dive}
-				<DiveSummary {dive} />
-			{/each}
-		</div>
-	{/if}
 </div>

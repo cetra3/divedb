@@ -12,4 +12,3 @@ query getDiveSitesSummaryMetrics($id: UUID, $name: String, $maxDepth: Float, $sl
 		...SiteSummaryMetrics
 	}
 }
-

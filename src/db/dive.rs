@@ -111,6 +111,13 @@ impl DbHandle {
             sql.add_param("user_id = ${}", user_id);
         }
 
+        if let Some(ref username) = query.username {
+            sql.add_param(
+                "user_id = ANY(select id from users where username = ${})",
+                username,
+            );
+        }
+
         if let Some(ref max_depth) = query.max_depth {
             sql.add_param("depth < ${}", max_depth);
         }
@@ -120,6 +127,12 @@ impl DbHandle {
         }
 
         sql.add_sql("order by \"date\" desc");
+
+        let limit = query.limit.unwrap_or(10) as i64;
+        let offset = query.offset.unwrap_or(0) as i64;
+
+        sql.add_statement("limit ${}", &limit);
+        sql.add_statement("offset ${}", &offset);
 
         Dive::from_rows(self.query(sql).await?)
     }

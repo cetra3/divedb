@@ -143,6 +143,7 @@ type DiveSite {
 	photoId: UUID
 	photo: Photo
 	latestPhotos: [Photo!]!
+	latestDives: [Dive!]!
 	references: [OgReference!]!
 }
 
@@ -256,12 +257,12 @@ type Query {
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
 	search(query: String!, offset: Int): [SearchResult!]!
-	dives(id: UUID, diveSite: UUID, maxDepth: Float, userId: UUID): [Dive!]!
+	dives(id: UUID, diveSite: UUID, maxDepth: Float, userId: UUID, username: String, offset: Int): [Dive!]!
 	recentDives: [Dive!]!
 	currentUser: LoginResponse
 	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!
 	popularDiveSites: [DiveSite!]!
-	photos(id: UUID, userId: UUID, diveSite: UUID, dive: UUID, sealifeId: UUID, offset: Int, orderByUpload: Boolean): [Photo!]!
+	photos(id: UUID, userId: UUID, username: String, diveSite: UUID, dive: UUID, sealifeId: UUID, offset: Int, orderByUpload: Boolean): [Photo!]!
 	regions: [Region!]!
 	sealife(id: UUID, name: String, scientificName: String, slug: String, categoryValues: [UUID!]): [Sealife!]!
 	feedback(id: UUID): [Feedback!]!

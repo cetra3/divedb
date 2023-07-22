@@ -143,6 +143,13 @@ impl DbHandle {
             sql.add_param("user_id = ${}", user_id);
         }
 
+        if let Some(ref username) = query.username {
+            sql.add_param(
+                "user_id = ANY(select id from users where username = ${})",
+                username,
+            );
+        }
+
         if let Some(ref dive_site) = query.dive_site {
             sql.add_param("dive_site_id = ${}", dive_site);
 

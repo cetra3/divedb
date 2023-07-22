@@ -367,7 +367,7 @@ fn parse_notes(line: &str, result: &mut String) -> bool {
             escaped = true;
         } else if ch == '"' {
             if within_quotes {
-                return true
+                return true;
             }
             within_quotes = true;
         } else if within_quotes {
@@ -375,7 +375,7 @@ fn parse_notes(line: &str, result: &mut String) -> bool {
         }
     }
 
-    return false
+    return false;
 }
 
 fn parse_metric(line: String) -> Result<DiveMetric, Error> {

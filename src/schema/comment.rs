@@ -1,13 +1,11 @@
-use crate::{
-    graphql::SchemaContext,
-};
+use crate::graphql::SchemaContext;
 use async_graphql::*;
 use chrono::prelude::*;
 use divedb_core::FromRow;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{Dive, PublicUserInfo, DiveQuery};
+use super::{Dive, DiveQuery, PublicUserInfo};
 
 #[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
 pub struct DiveComment {
@@ -67,11 +65,16 @@ impl DiveComment {
                 &DiveQuery {
                     id: Some(self.dive_id),
                     user_id: None,
+                    username: None,
+                    offset: None,
+                    limit: Some(1),
                     dive_site: None,
                     max_depth: None,
                 },
             )
-            .await?.pop().expect("There should always be a dive attached to a dive comment"))
+            .await?
+            .pop()
+            .expect("There should always be a dive attached to a dive comment"))
     }
 
     async fn date(&self) -> DateTime<Utc> {
