@@ -1,4 +1,3 @@
-extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Fields};
@@ -7,41 +6,36 @@ use syn::{parse_macro_input, DeriveInput, Fields};
 /// Requires that the query is in field order, as it just uses row indices
 #[proc_macro_derive(FromRow)]
 pub fn derive_from_row(input: TokenStream) -> TokenStream {
+    // Parse it as a proc macro
     let input = parse_macro_input!(input as DeriveInput);
-    let name = input.ident;
 
-    match input.data {
-        syn::Data::Struct(data) => match data.fields {
-            Fields::Named(ref fields) => {
-                let field_vals = fields.named.iter().enumerate().map(|(i, field)| {
-                    let name = &field.ident;
-                    quote!(#name: row.try_get(#i)?)
-                });
+    if let syn::Data::Struct(ref data) = input.data {
+        if let Fields::Named(ref fields) = data.fields {
+            // Collect up each field and index, and return it.
+            let field_vals = fields.named.iter().enumerate().map(|(i, field)| {
+                let name = &field.ident;
+                quote!(#name: row.try_get(#i)?)
+            });
 
-                let query_fragment = fields
-                    .named
-                    .iter()
-                    .filter_map(|val| val.ident.as_ref())
-                    .map(|val| val.to_string())
-                    .collect::<Vec<_>>();
+            let name = input.ident;
 
-                TokenStream::from(quote!(
-                impl divedb_core::FromRow for #name {
-                    fn from_row(row: tokio_postgres::Row) -> Result<Self, anyhow::Error> {
-                        Ok(Self {
-                            #(#field_vals),*
-                        })
-                    }
-                    fn fields() -> &'static [&'static str] {
-                        &[
-                            #(#query_fragment),*
-                        ]
-                    }
-                }))
-            }
-            _ => unimplemented!("Only structs can derive `FromRow`"),
-        },
-        syn::Data::Enum(_) => unimplemented!("Only structs can derive `FromRow`"),
-        syn::Data::Union(_) => unimplemented!("Only structs can derive `FromRow`"),
+            return TokenStream::from(quote!(
+            impl ::divedb_core::FromRow for #name {
+                fn from_row(row: ::tokio_postgres::Row) -> Result<Self, ::anyhow::Error> {
+                    Ok(Self {
+                        #(#field_vals),*
+                    })
+                }
+            }));
+        }
     }
+
+    // We don't care about any other variants, so emit an error here
+    TokenStream::from(
+        syn::Error::new(
+            input.ident.span(),
+            "Only structs with named fields can derive `FromRow`",
+        )
+        .to_compile_error(),
+    )
 }

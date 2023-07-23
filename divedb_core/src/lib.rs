@@ -4,7 +4,7 @@ use tokio_postgres::Row;
 
 /// Really simple ORM for `tokio_postgres`
 pub trait FromRow {
-    /// hydrate a struct a database `Row`
+    /// hydrate a struct from a database `Row`
     fn from_row(row: Row) -> Result<Self, Error>
     where
         Self: std::marker::Sized;
@@ -17,6 +17,4 @@ pub trait FromRow {
         rows.into_iter().map(Self::from_row).collect()
     }
 
-    /// Simple reflection to see what fields a struct has
-    fn fields() -> &'static [&'static str];
 }
