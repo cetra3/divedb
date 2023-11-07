@@ -2,6 +2,7 @@ use crate::{graphql::WebContext, schema::DiveMetric};
 use actix_web::{error::ErrorInternalServerError, web, Error as ActixError, HttpResponse};
 use anyhow::Error;
 use askama::Template;
+use resvg::{tiny_skia::{self, Color}, usvg::{fontdb, TreeParsing, TreeTextToPath}};
 use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
@@ -10,6 +11,41 @@ pub struct ChartRequest {
     width: Option<f64>,
     #[serde(default)]
     height: Option<f64>,
+}
+
+pub async fn png_chart(
+    context: web::Data<WebContext>,
+    query: web::Query<ChartRequest>,
+    dive_id: web::Path<Uuid>,
+) -> Result<HttpResponse, ActixError> {
+    let dive_metrics = context
+        .handle
+        .dive_metrics(*dive_id)
+        .await
+        .map_err(|err| ErrorInternalServerError(err.to_string()))?;
+
+    let ChartRequest { width, height } = query.into_inner();
+
+    let svg = render_dive(dive_metrics, width, height)
+        .map_err(|err| ErrorInternalServerError(err.to_string()))?;
+
+    let mut fontdb = fontdb::Database::new();
+    fontdb.load_system_fonts();
+
+    let mut tree = resvg::usvg::Tree::from_data(&svg.as_bytes(), &Default::default()).unwrap();
+    tree.convert_text(&fontdb);
+
+    let rtree = resvg::Tree::from_usvg(&tree);
+
+    let pixmap_size = rtree.size.to_int_size();
+    let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
+
+    pixmap.fill(Color::from_rgba8(48, 55, 66, 255));
+    rtree.render(tiny_skia::Transform::default(), &mut pixmap.as_mut());
+
+    let body = pixmap.encode_png().map_err(|err| ErrorInternalServerError(err))?;
+
+    Ok(HttpResponse::Ok().content_type("image/png").body(body))
 }
 
 pub async fn svg_chart(

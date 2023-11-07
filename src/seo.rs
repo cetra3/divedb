@@ -3,10 +3,11 @@ use actix_web::{error::ErrorInternalServerError, get, web, HttpResponse};
 use crate::{
     graphql::WebContext,
     schema::{DiveSiteQuery, SealifeQuery},
+    SITE_URL,
 };
 
 #[get("/robots.txt")]
-pub async fn robots(web_context: web::Data<WebContext>) -> HttpResponse {
+pub async fn robots() -> HttpResponse {
     HttpResponse::Ok().content_type("text/plain").body(format!(
         "User-agent: *
 Disallow: /login
@@ -18,7 +19,7 @@ Disallow: /dives
 
 Sitemap: {}/sitemap.xml
 ",
-        web_context.site_context.site_url
+        &*SITE_URL
     ))
 }
 
@@ -50,16 +51,17 @@ pub async fn sitemap_handler(
         .expect("Unable to write urlset");
 
     urlwriter
-        .url(UrlEntry::builder().loc(web_context.site_context.site_url.clone()))
+        .url(UrlEntry::builder().loc(&*SITE_URL))
         .expect("Could not write url");
 
     for site in sites {
         if let Some(slug) = site.slug {
             urlwriter
-                .url(UrlEntry::builder().lastmod(site.date.into()).loc(format!(
-                    "{}/sites/{}",
-                    web_context.site_context.site_url, slug
-                )))
+                .url(
+                    UrlEntry::builder()
+                        .lastmod(site.date.into())
+                        .loc(format!("{}/sites/{}", &*SITE_URL, slug)),
+                )
                 .expect("Could not write url");
         }
     }
@@ -67,10 +69,11 @@ pub async fn sitemap_handler(
     for entry in sealife_list {
         if let Some(slug) = entry.slug {
             urlwriter
-                .url(UrlEntry::builder().lastmod(entry.date.into()).loc(format!(
-                    "{}/sealife/{}",
-                    web_context.site_context.site_url, slug
-                )))
+                .url(
+                    UrlEntry::builder()
+                        .lastmod(entry.date.into())
+                        .loc(format!("{}/sealife/{}", &*SITE_URL, slug)),
+                )
                 .expect("Could not write url");
         }
     }

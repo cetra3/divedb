@@ -174,7 +174,7 @@ fn throttle_update(rx: Receiver<()>, duration: Duration) {
         tokio::pin!(throttled_stream);
         loop {
             throttled_stream.next().await;
-            if let Err(err) = tokio::fs::File::create("./svelte/build/notify.lock").await {
+            if let Err(err) = tokio::fs::File::create("./front/build/notify.lock").await {
                 error!("Error notifying svelte frontend: {}", err);
             }
         }

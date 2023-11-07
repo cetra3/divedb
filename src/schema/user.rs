@@ -19,7 +19,7 @@ pub struct LoginResponse {
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
 pub struct UserInfo {
     pub id: Uuid,
-    pub email: String,
+    pub email: Option<String>,
     pub level: UserLevel,
     pub username: String,
     pub display_name: Option<String>,
@@ -56,10 +56,10 @@ impl From<User> for UserInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow)]
 pub struct User {
     pub id: Uuid,
-    pub email: String,
+    pub email: Option<String>,
     pub password: Option<String>,
     pub level: UserLevel,
     pub username: String,
@@ -67,6 +67,11 @@ pub struct User {
     pub copyright_location: Option<OverlayLocation>,
     pub email_verified: bool,
     pub display_name: Option<String>,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub external: bool,
+    pub ap_id: Option<String>,
+    pub inbox: Option<String>,
 }
 
 impl User {

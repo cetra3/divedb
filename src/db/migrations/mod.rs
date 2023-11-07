@@ -9,6 +9,7 @@ use log::*;
 mod external_sql;
 
 mod fix_photo_dive_ids;
+mod create_apub_keys;
 
 use deadpool_postgres::Pool;
 use divedb_core::FromRow;
@@ -50,6 +51,8 @@ impl Migrator {
                 Box::new(fix_photo_dive_ids::FixPhotoDiveIds),
                 Box::new(external!("V018__regions_slug.sql")),
                 Box::new(external!("V019__social.sql")),
+                Box::new(create_apub_keys::CreateApubKeys),
+                Box::new(external!("V020__external_users.sql")),
             ],
         }
     }

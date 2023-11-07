@@ -1,3 +1,4 @@
+use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
     dev::ServiceRequest,
     dev::{ConnectionInfo, ServiceResponse},
@@ -13,15 +14,19 @@ use async_graphql::{
 };
 use facebook::FacebookOauth;
 use log::*;
+use once_cell::sync::Lazy;
 use photos::{open_photo, save_files};
 use rand::{thread_rng, Rng};
 use std::{
     cmp, env,
     net::{IpAddr, Ipv4Addr},
     str::FromStr,
+    sync::Arc,
 };
 use structopt::StructOpt;
 use token::Token;
+use url::Url;
+mod activitypub;
 pub mod db;
 // mod photos;
 pub mod chart;
@@ -46,7 +51,7 @@ use aes_gcm::Aes256Gcm;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 use crate::{
-    chart::svg_chart,
+    chart::{svg_chart, png_chart},
     email::Emailer,
     photos::{image_dims, resize_image},
     schema::{DiveSiteBatcher, Photo, PhotoQuery, SealifeBatcher},
@@ -88,11 +93,12 @@ pub struct ConfigContext {
 
 #[derive(StructOpt, Clone, Debug, PartialEq)]
 pub struct SiteContext {
-    #[structopt(env, default_value = "https://divedb.net")]
-    pub site_url: String,
     #[structopt(env)]
     pub secret_key: Option<String>,
 }
+
+pub static SITE_URL: Lazy<String> =
+    Lazy::new(|| std::env::var("SITE_URL").unwrap_or("https://divedb.net".into()));
 
 #[derive(StructOpt, Clone, Debug, PartialEq)]
 pub struct EmailSettings {
@@ -255,7 +261,9 @@ async fn main() -> Result<(), Error> {
     let cipher =
         Aes256Gcm::new_from_slice(&site_context.get_key()).map_err(|val| anyhow!("{}", val))?;
 
-    let web_context = web::Data::new(WebContext {
+    let site_url = Url::parse(&*SITE_URL)?;
+
+    let web_context = Arc::new(WebContext {
         handle,
         rate_limiter,
         cipher,
@@ -267,12 +275,30 @@ async fn main() -> Result<(), Error> {
         facebook: config.facebook,
     });
 
+    let domain = site_url
+        .domain()
+        .ok_or_else(|| anyhow!("No domain from url: {site_url}"))?;
+
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap()
+        .into();
+
+    let fed_config = FederationConfig::builder()
+        .domain(domain)
+        .app_data(web_context.clone())
+        .client(client)
+        .build()
+        .await?;
+
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(graphql::schema()))
-            .app_data(web_context.clone())
+            .app_data(Data::from(web_context.clone()))
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
+            .wrap(FederationMiddleware::new(fed_config.clone()))
             .service(robots)
             .service(sitemap_handler)
             .service(
@@ -287,11 +313,21 @@ async fn main() -> Result<(), Error> {
                     .route(web::get().to(svg_chart)),
             )
             .service(
+                web::resource("/api/chart/{dive_id}/png")
+                    .wrap(cache_header(604800))
+                    .route(web::get().to(png_chart)),
+            )
+            .service(
                 web::resource(["/api/photos/{kind}/{id}"])
                     .wrap(cache_header(604800))
                     .route(web::get().to(open_photo)),
             )
             .service(web::resource("/api/photos").route(web::post().to(save_files)))
+            .service(activitypub::configure())
+            .service(
+                web::resource("/.well-known/webfinger")
+                    .route(web::get().to(activitypub::webfinger)),
+            )
             .service(
                 web::scope("").wrap(cache_header(86400)).service(
                     Files::new("/", "./svelte/build")
@@ -340,6 +376,7 @@ async fn graphql(
     token: Token,
     web: web::Data<WebContext>,
     schema: web::Data<Schema>,
+    fed_data: activitypub_federation::config::Data<Arc<WebContext>>
 ) -> GraphQLResponse {
     let user: Option<User>;
 
@@ -358,6 +395,7 @@ async fn graphql(
     let schema_context = SchemaContext {
         con: ConnectionContext { user, remote_ip },
         web: web.into_inner(),
+        fed: fed_data
     };
 
     let mut request = gql_request.into_inner();
