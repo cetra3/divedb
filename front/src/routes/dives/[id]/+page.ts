@@ -7,7 +7,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 
-export const prerender = false;
+export const prerender = true;
 
 export const load: PageLoad = async ({ params }) => {
 	try {
