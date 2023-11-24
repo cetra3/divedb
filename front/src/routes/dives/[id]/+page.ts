@@ -36,7 +36,8 @@ export const load: PageLoad = async ({ params }) => {
 		return {
 			dive,
 			relatedDives,
-			mdDesc
+			mdDesc,
+			siteUrl: response.siteUrl
 		};
 	} catch (error) {
 		return {};

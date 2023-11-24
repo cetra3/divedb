@@ -3,13 +3,13 @@ use std::collections::HashSet;
 use anyhow::Error;
 use async_trait::async_trait;
 
-use log::*;
+use tracing::*;
 
 #[macro_use]
 mod external_sql;
 
-mod fix_photo_dive_ids;
 mod create_apub_keys;
+mod fix_photo_dive_ids;
 
 use deadpool_postgres::Pool;
 use divedb_core::FromRow;

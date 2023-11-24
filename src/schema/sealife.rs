@@ -9,8 +9,8 @@ use chrono::prelude::*;
 use dataloader::cached::Loader;
 use dataloader::BatchFn;
 use divedb_core::FromRow;
-use log::*;
 use serde::{Deserialize, Serialize};
+use tracing::*;
 use uuid::Uuid;
 
 #[derive(Clone)]

@@ -9,12 +9,12 @@ use async_graphql::*;
 use governor::clock::{Clock, DefaultClock};
 use governor::state::keyed::DefaultKeyedStateStore;
 use governor::{Quota, RateLimiter};
-use log::*;
 use scrypt::*;
 use std::net::IpAddr;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
+use tracing::*;
 use uuid::Uuid;
 
 pub type IpLimiter = RateLimiter<IpAddr, DefaultKeyedStateStore<IpAddr>, DefaultClock>;
@@ -157,6 +157,12 @@ impl Query {
         Ok(context.web.handle.recent_dives().await?)
     }
 
+    async fn user(&self, ctx: &Context<'_>, username: String) -> FieldResult<PublicUserInfo> {
+        let context = ctx.data::<SchemaContext>()?;
+
+        Ok(context.web.handle.user_by_username(&username).await?.into())
+    }
+
     async fn current_user(&self, ctx: &Context<'_>) -> FieldResult<Option<LoginResponse>> {
         let context = ctx.data::<SchemaContext>()?;
 
@@ -178,6 +184,8 @@ impl Query {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         }))
     }
 
@@ -394,6 +402,8 @@ impl Mutation {
                 display_name: user.display_name,
                 watermark_location: user.watermark_location,
                 copyright_location: user.copyright_location,
+                description: user.description,
+                photo_id: user.photo_id,
             })
         } else {
             Err(anyhow!("This Password Reset Token is invalid or is expired.  Please try resetting your password again").into())
@@ -433,6 +443,8 @@ impl Mutation {
             display_name: None,
             watermark_location: OverlayLocation::BottomRight,
             copyright_location: Some(OverlayLocation::BottomLeft),
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -468,6 +480,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -504,6 +518,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -539,6 +555,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -548,6 +566,8 @@ impl Mutation {
         display_name: Option<String>,
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
+        description: String,
+        photo_id: Option<Uuid>,
     ) -> FieldResult<Option<LoginResponse>> {
         let context = context.data::<SchemaContext>()?;
 
@@ -563,7 +583,7 @@ impl Mutation {
         let user = context
             .web
             .handle
-            .update_settings(&email, display_name, watermark_location, copyright_location)
+            .update_settings(&email, display_name, watermark_location, copyright_location, description, photo_id)
             .await?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
@@ -577,6 +597,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         }))
     }
 

@@ -6,20 +6,24 @@
 
 	export let data: PageData;
 	$: dives = data.dives;
+	$: username = data.username;
 </script>
 
 <svelte:head>
-	<title>DiveDB - Dives</title>
+	<title>DiveDB - Dives by @{username}</title>
 </svelte:head>
 <div class="container grid-lg">
 	<div class="columns">
 		<div class="column col-12 col-lg-12">
 			<h1 class="page-title">
 				<DiveLogIcon size="1.4em" />
-				Dives
+				Dives by @{username}
 
-				<a href="/users/{$session.user?.username}/dives">
-					<button class="btn btn-secondary btn-sm">Your Dives</button>
+				<a href="/dives">
+					<button class="btn btn-secondary btn-sm">All Dives</button>
+				</a>
+				<a href="/users/{username}">
+					<button class="btn btn-secondary btn-sm">View Profile</button>
 				</a>
 
 				<a href="/dives/new">
@@ -32,7 +36,7 @@
 		</div>
 	</div>
 	{#if dives !== undefined}
-		<DiveList {dives} />
+		<DiveList {dives} query={{ username }} />
 	{:else}
 		<div class="column col-12">
 			<div class="loading loading-lg" />

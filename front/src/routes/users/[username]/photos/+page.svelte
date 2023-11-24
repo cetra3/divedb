@@ -10,27 +10,20 @@
 </script>
 
 <svelte:head>
-	{#if username != undefined}
-		<title>DiveDB - Photos by @{username}</title>
-	{:else}
-		<title>DiveDB - Photos</title>
-	{/if}
+	<title>DiveDB - Photos by @{username}</title>
 </svelte:head>
 
 <div class="dive-sites container grid-lg">
 	<div class="columns">
 		<div class="column col-12 col-lg-12">
 			<h1 class="page-title">
-				<PhotoIcon size="22px" /> Photos {#if username != undefined}by @{username}{/if}
-				{#if username != undefined}
-					<a href="/photos">
-						<button class="btn btn-secondary btn-sm">All Photos</button>
-					</a>
-				{:else if $session.loggedIn}
-					<a href="/users/{$session.user?.username}/photos">
-						<button class="btn btn-secondary btn-sm">Your Photos</button>
-					</a>
-				{/if}
+				<PhotoIcon size="22px" /> Photos by @{username}
+				<a href="/photos">
+					<button class="btn btn-secondary btn-sm">All Photos</button>
+				</a>
+				<a href="/users/{username}">
+					<button class="btn btn-secondary btn-sm">View Profile</button>
+				</a>
 				<a href="/photos/new">
 					<button class="btn btn-secondary btn-sm">Add New</button>
 				</a>

@@ -3,11 +3,12 @@ use std::sync::Arc;
 use activitypub_federation::{
     actix_web::inbox::receive_activity,
     config::Data,
-    fetch::webfinger::{extract_webfinger_name, Webfinger, WebfingerLink},
+    fetch::webfinger::{Webfinger, WebfingerLink},
     protocol::context::WithContext,
     traits::Object,
     FEDERATION_CONTENT_TYPE,
 };
+use actix_files::NamedFile;
 use actix_web::{
     dev::HttpServiceFactory,
     error::{ErrorInternalServerError, ErrorNotFound},
@@ -15,9 +16,10 @@ use actix_web::{
     Error, HttpRequest, HttpResponse,
 };
 use bytes::Bytes;
-use log::{debug, warn};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use tracing::{debug, warn};
+use url::Url;
 
 use crate::{
     schema::{activitypub::OrderedCollection, DiveQuery, User},
@@ -40,6 +42,98 @@ pub struct WebfingerQuery {
     resource: String,
 }
 
+pub async fn node_info_well_known() -> Result<HttpResponse, Error> {
+    let node_info = NodeInfoWellKnown {
+        links: vec![NodeInfoWellKnownLinks {
+            rel: Url::parse("http://nodeinfo.diaspora.software/ns/schema/2.0").unwrap(),
+            href: Url::parse(&format!("{}/nodeinfo/2.0.json", &*SITE_URL)).unwrap(),
+        }],
+    };
+    Ok(HttpResponse::Ok().json(node_info))
+}
+
+pub async fn node_info() -> Result<HttpResponse, Error> {
+    let protocols = Some(vec!["activitypub".to_string()]);
+    // Since there are 3 registration options,
+    // we need to set open_registrations as true if RegistrationMode is not Closed.
+    let open_registrations = Some(true);
+    let json = NodeInfo {
+        version: Some("2.0".to_string()),
+        software: Some(NodeInfoSoftware {
+            name: Some("divedb".to_string()),
+            version: Some(env!("CARGO_PKG_VERSION").to_string()),
+        }),
+        protocols,
+        usage: None,
+        open_registrations,
+    };
+
+    Ok(HttpResponse::Ok().json(json))
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct NodeInfo {
+    pub version: Option<String>,
+    pub software: Option<NodeInfoSoftware>,
+    pub protocols: Option<Vec<String>>,
+    pub usage: Option<NodeInfoUsage>,
+    pub open_registrations: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct NodeInfoUsage {
+    pub users: Option<NodeInfoUsers>,
+    pub local_posts: Option<i64>,
+    pub local_comments: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct NodeInfoUsers {
+    pub total: Option<i64>,
+    pub active_halfyear: Option<i64>,
+    pub active_month: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(default)]
+pub struct NodeInfoSoftware {
+    pub name: Option<String>,
+    pub version: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct NodeInfoWellKnown {
+    pub links: Vec<NodeInfoWellKnownLinks>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct NodeInfoWellKnownLinks {
+    pub rel: Url,
+    pub href: Url,
+}
+
+// Given `acct:cetra@divedb.net`
+// Returns `cetra`
+
+fn extract_webfinger_name<'a>(
+    resource: &'a str,
+    data: &Data<Arc<WebContext>>,
+) -> Result<&'a str, Error> {
+
+    if let Some(val) = resource
+        .strip_suffix(data.domain())
+        .and_then(|val| val.strip_suffix("@"))
+        .and_then(|val| val.strip_prefix("acct:"))
+    {
+        return Ok(val);
+    }
+
+    Err(ErrorNotFound(format!("No resource found: {resource}")))
+}
+
 pub async fn webfinger(
     query: web::Query<WebfingerQuery>,
     data: Data<Arc<WebContext>>,
@@ -50,11 +144,7 @@ pub async fn webfinger(
         .handle
         .user_by_username(&name)
         .await
-        .map_err(ErrorNotFound)?;
-
-    let profile_url = format!("{}/dives?u={}", &*SITE_URL, user.username)
-        .parse()
-        .map_err(ErrorInternalServerError)?;
+        .map_err(|_| ErrorNotFound(format!("No resource found in db: {name}")))?;
 
     let apub_url = user.ap_id();
 
@@ -64,7 +154,7 @@ pub async fn webfinger(
             WebfingerLink {
                 rel: Some("http://webfinger.net/rel/profile-page".into()),
                 kind: Some("text/html".into()),
-                href: Some(profile_url),
+                href: Some(apub_url.clone()),
                 ..Default::default()
             },
             WebfingerLink {
@@ -82,6 +172,7 @@ pub async fn webfinger(
 }
 
 pub async fn get_user(
+    request: HttpRequest,
     username: web::Path<String>,
     data: Data<Arc<WebContext>>,
 ) -> Result<HttpResponse, Error> {
@@ -96,9 +187,26 @@ pub async fn get_user(
         .await
         .map_err(ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(FEDERATION_CONTENT_TYPE)
-        .json(WithContext::new_default(person)))
+    if let Some(header) = request
+        .headers()
+        .get("accept")
+        .and_then(|val| val.to_str().ok())
+    {
+        debug!("Accept Header: {header}");
+
+        if header.to_lowercase().contains(FEDERATION_CONTENT_TYPE) {
+            return Ok(HttpResponse::Ok()
+                .content_type(FEDERATION_CONTENT_TYPE)
+                .json(WithContext::new_default(person)));
+        }
+    }
+
+    let path = format!("./front/build{}.html", request.path().replace("../", ""));
+
+    let response =
+        NamedFile::open(path).or_else(|_| NamedFile::open("./front/build/fallback.html"))?;
+
+    Ok(response.into_response(&request))
 }
 
 /// Handles messages received in user inbox
@@ -107,8 +215,6 @@ pub async fn user_inbox(
     body: Bytes,
     data: Data<Arc<WebContext>>,
 ) -> Result<HttpResponse, Error> {
-
-
     let json_body: Value = serde_json::from_slice(&body)?;
 
     debug!("Inbox message received: {json_body}");
@@ -116,12 +222,10 @@ pub async fn user_inbox(
     receive_activity::<WithContext<PersonAcceptedActivities>, User, _>(request, body, &data)
         .await
         .map_err(|err| {
-
             warn!("Error with receiving activity: {err}");
 
             ErrorInternalServerError(err)
         })
-
 }
 
 pub async fn user_outbox(

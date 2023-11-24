@@ -15,6 +15,7 @@
 	$: dive = data.dive;
 	$: relatedDives = data.relatedDives;
 	$: mdDesc = data.mdDesc;
+	$: siteUrl = data.siteUrl;
 
 	$: isEditor =
 		$session.user?.level == 'ADMIN' ||
@@ -30,6 +31,16 @@
 
 <svelte:head>
 	<title>DiveDB - {title}</title>
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={title} />
+	{#if dive?.hasMetrics}
+		<meta property="og:image" content="{siteUrl}/api/chart/{dive.id}/png" />
+	{:else}
+		<meta property="og:image" content="{siteUrl}/logo.png" />
+	{/if}
+	<meta name="description" property="og:description" content={dive?.summary ?? ""} />
+	<meta property="og:url" content="{siteUrl}/dives/{dive?.id}" />
+	<meta property="og:site_name" content="DiveDB" />
 </svelte:head>
 
 <div class="container grid-lg">

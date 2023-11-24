@@ -1,6 +1,7 @@
 use activitypub_federation::http_signatures::generate_actor_keypair;
 use anyhow::Error;
 use divedb_core::FromRow;
+use url::Url;
 use uuid::Uuid;
 
 use crate::schema::*;
@@ -40,12 +41,14 @@ impl DbHandle {
     pub async fn new_external_user(
         &self,
         username: &str,
-        ap_id: &str,
+        ap_id: &Url,
         inbox: &str,
         public_key: &str,
     ) -> Result<User, Error> {
         let uuid = Uuid::new_v4();
         let client = self.pool.get().await?;
+
+        let username = format!("{}@{}", &username, ap_id.domain().unwrap_or_default());
 
         let query = "
             insert into users (
@@ -67,7 +70,7 @@ impl DbHandle {
                 true
             ) returning *";
         let result = client
-            .query_one(query, &[&uuid, &username, &ap_id, &inbox, &public_key])
+            .query_one(query, &[&uuid, &username, &ap_id.as_str(), &inbox, &public_key])
             .await?;
 
         User::from_row(result)
@@ -158,9 +161,11 @@ impl DbHandle {
         display_name: Option<String>,
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
+        description: String,
+        photo_id: Option<Uuid>
     ) -> Result<User, Error> {
         let client = self.pool.get().await?;
-        let query = "update users set display_name = $1, watermark_location = $2, copyright_location = $3 where lower(email) = lower($4) returning *";
+        let query = "update users set display_name = $1, watermark_location = $2, copyright_location = $3, description = $4, photo_id = $5 where lower(email) = lower($6) returning *";
         let result = client
             .query_one(
                 query,
@@ -168,6 +173,8 @@ impl DbHandle {
                     &display_name,
                     &watermark_location,
                     &copyright_location,
+                    &description,
+                    &photo_id,
                     &email,
                 ],
             )

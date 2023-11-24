@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Error};
 use divedb_core::FromRow;
-use log::*;
+use tracing::*;
 use uuid::Uuid;
 
 use crate::schema::*;
@@ -20,15 +20,16 @@ impl DbHandle {
         let client = self.pool.get().await?;
         let uuid = create_photo.id.unwrap_or_else(Uuid::new_v4);
 
-        let query = "insert into photos (id, user_id, filename, date, dive_id, size, dive_site_id)
-            values ($1, $2, $3, $4, $5, $6, $7)
+        let query = "insert into photos (id, user_id, filename, date, dive_id, size, dive_site_id, internal)
+            values ($1, $2, $3, $4, $5, $6, $7, $8)
             
             on conflict(id) do update
                 set filename = excluded.filename,
                     date = excluded.date,
                     dive_id = excluded.dive_id,
                     size = excluded.size,
-                    dive_site_id = excluded.dive_site_id
+                    dive_site_id = excluded.dive_site_id,
+                    internal = excluded.internal
             
             returning 
                 id,
@@ -43,7 +44,8 @@ impl DbHandle {
                 width,
                 height,
                 description,
-                copyright";
+                copyright,
+                internal";
 
         let result = client
             .query_one(
@@ -56,6 +58,7 @@ impl DbHandle {
                     &create_photo.dive_id,
                     &create_photo.size,
                     &create_photo.dive_site_id,
+                    &create_photo.internal.unwrap_or_default()
                 ],
             )
             .await?;
@@ -114,7 +117,8 @@ impl DbHandle {
                 width,
                 height,
                 description,
-                copyright
+                copyright,
+                internal
             from 
                 photos as p
             left join lateral 
@@ -137,6 +141,9 @@ impl DbHandle {
             self.photos.write().await.insert(*id, photo.clone());
 
             return Ok(vec![photo]);
+        } else {
+            // Filter out all internal stuff if we're not looking directly for it
+            sql.add_param("internal = ${}", &false);
         }
 
         if let Some(ref user_id) = query.user_id {
@@ -219,6 +226,16 @@ impl DbHandle {
         let query = "select count(*) from photo_likes where photo_id = $1";
 
         let result = client.query_one(query, &[&photo_id]).await?;
+        let count: i64 = result.get(0);
+
+        Ok(count)
+    }
+
+     pub async fn photo_count(&self, user_id: Uuid) -> Result<i64, Error> {
+        let client = self.pool.get().await?;
+        let query = "select count(*) from photos where user_id = $1";
+
+        let result = client.query_one(query, &[&user_id]).await?;
         let count: i64 = result.get(0);
 
         Ok(count)

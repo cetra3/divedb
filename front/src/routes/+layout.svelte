@@ -51,7 +51,7 @@
 			<a
 				on:click={hideMenu}
 				class="btn btn-link mobile-link text-left"
-				href="/dives?u={$session.user?.username}"
+				href="/users/{$session.user?.username}/dives"
 			>
 				Your Dives
 			</a>
@@ -80,7 +80,7 @@
 			<a
 				on:click={hideMenu}
 				class="btn btn-link mobile-link text-left"
-				href="/photos?u={$session.user?.username}"
+				href="/users/{$session.user?.username}/photos"
 			>
 				Your Photos
 			</a>
@@ -150,7 +150,7 @@
 						>Dives <i class="icon icon-caret" /></a
 					>
 					<ul class="menu menu-list">
-						<li class="menu-item"><a href="/dives?u={$session.user?.username}">Your Dives</a></li>
+						<li class="menu-item"><a href="/users/{$session.user?.username}/dives">Your Dives</a></li>
 						<li class="menu-item"><a href="/dives">All Dives</a></li>
 					</ul>
 				</div>
@@ -174,7 +174,7 @@
 						>Photos <i class="icon icon-caret" /></a
 					>
 					<ul class="menu menu-list">
-						<li class="menu-item"><a href="/photos?u={$session.user?.username}">Your Photos</a></li>
+						<li class="menu-item"><a href="/users/{$session.user?.username}/photos">Your Photos</a></li>
 						<li class="menu-item"><a href="/photos">All Photos</a></li>
 					</ul>
 				</div>
@@ -206,6 +206,20 @@
 </div>
 
 <slot />
+<footer class="container grid-lg">
+	<div class="columns">
+		<div class="column column-lg">
+			<div class="float-right">
+				<p>
+					<small>
+						DiveDB is an <a href="https://github.com/cetra3/divedb">open source project</a>, made
+						with ❤️ by <a href="https://cetra3.github.io/">cetra3</a>
+					</small>
+				</p>
+			</div>
+		</div>
+	</div>
+</footer>
 
 <style global lang="scss">
 	@import '../style/app.scss';

@@ -7,13 +7,13 @@ use actix_web::{
     web::{self, Data},
     App, HttpRequest, HttpResponse, HttpServer,
 };
+
 use anyhow::{anyhow, Error};
 use async_graphql::{
     http::{playground_source, GraphQLPlaygroundConfig},
     CacheControl,
 };
 use facebook::FacebookOauth;
-use log::*;
 use once_cell::sync::Lazy;
 use photos::{open_photo, save_files};
 use rand::{thread_rng, Rng};
@@ -25,6 +25,8 @@ use std::{
 };
 use structopt::StructOpt;
 use token::Token;
+use tracing::*;
+use tracing_subscriber::{prelude::*, EnvFilter};
 use url::Url;
 mod activitypub;
 pub mod db;
@@ -51,7 +53,7 @@ use aes_gcm::Aes256Gcm;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 use crate::{
-    chart::{svg_chart, png_chart},
+    chart::{png_chart, svg_chart},
     email::Emailer,
     photos::{image_dims, resize_image},
     schema::{DiveSiteBatcher, Photo, PhotoQuery, SealifeBatcher},
@@ -171,19 +173,26 @@ pub fn cache_header(max_age: usize) -> DefaultHeaders {
     DefaultHeaders::new().add(("Cache-Control", format!("public, max-age={max_age}")))
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<(), Error> {
     // Sets up default logging if none is set for this project & actix web
     if env::var("RUST_LOG").is_err() {
         env::set_var(
             "RUST_LOG",
-            "actix_web=INFO,divedb=DEBUG,async-graphql=DEBUG,tantivy=DEBUG",
+            "actix_web=INFO,divedb=DEBUG,async-graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG",
         );
     }
 
     dotenv::dotenv().ok();
 
-    pretty_env_logger::init_timed();
+    tracing_subscriber::registry()
+        .with(
+            EnvFilter::builder()
+                .with_env_var("RUST_LOG")
+                .from_env_lossy(),
+        )
+        .with(tracing_subscriber::fmt::layer().with_level(true))
+        .init();
 
     // Grab the connect_url from the args
     let config = ConfigContext::from_args();
@@ -282,19 +291,20 @@ async fn main() -> Result<(), Error> {
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
-        .unwrap()
-        .into();
+        .unwrap();
 
     let fed_config = FederationConfig::builder()
         .domain(domain)
         .app_data(web_context.clone())
-        .client(client)
+        .client(client.clone().into())
+        .http_signature_compat(true)
         .build()
         .await?;
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(graphql::schema()))
+            .app_data(Data::new(client.clone()))
             .app_data(Data::from(web_context.clone()))
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
@@ -328,15 +338,27 @@ async fn main() -> Result<(), Error> {
                 web::resource("/.well-known/webfinger")
                     .route(web::get().to(activitypub::webfinger)),
             )
+            .route(
+                "/nodeinfo/2.0.json",
+                web::get()
+                    .to(activitypub::node_info)
+                    .wrap(cache_header(3600)),
+            )
+            .route(
+                "/.well-known/nodeinfo",
+                web::get()
+                    .to(activitypub::node_info_well_known)
+                    .wrap(cache_header(86400)),
+            )
             .service(
                 web::scope("").wrap(cache_header(86400)).service(
-                    Files::new("/", "./svelte/build")
+                    Files::new("/", "./front/build")
                         .index_file("index.html")
                         .default_handler(|req: ServiceRequest| {
                             let (http_req, _payload) = req.into_parts();
 
                             let path = format!(
-                                "./svelte/build{}.html",
+                                "./front/build{}.html",
                                 http_req.path().replace("../", "")
                             );
 
@@ -344,7 +366,7 @@ async fn main() -> Result<(), Error> {
 
                             async {
                                 let response = NamedFile::open(path)
-                                    .or_else(|_| NamedFile::open("./svelte/build/fallback.html"))?
+                                    .or_else(|_| NamedFile::open("./front/build/fallback.html"))?
                                     .into_response(&http_req);
 
                                 Ok(ServiceResponse::new(http_req, response))
@@ -376,7 +398,7 @@ async fn graphql(
     token: Token,
     web: web::Data<WebContext>,
     schema: web::Data<Schema>,
-    fed_data: activitypub_federation::config::Data<Arc<WebContext>>
+    fed_data: activitypub_federation::config::Data<Arc<WebContext>>,
 ) -> GraphQLResponse {
     let user: Option<User>;
 
@@ -395,7 +417,7 @@ async fn graphql(
     let schema_context = SchemaContext {
         con: ConnectionContext { user, remote_ip },
         web: web.into_inner(),
-        fed: fed_data
+        fed: fed_data,
     };
 
     let mut request = gql_request.into_inner();

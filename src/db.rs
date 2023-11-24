@@ -10,7 +10,7 @@ use tokio_postgres::{NoTls, Row};
 use uuid::Uuid;
 
 use crate::{db::migrations::Migrator, schema::*};
-use log::*;
+use tracing::*;
 
 mod migrations;
 

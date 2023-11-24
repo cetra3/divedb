@@ -24,7 +24,7 @@
 
 	<DiveComment diveId={dive.id} numComments={dive.numComments} />
 
-	<a href={`/dives?u=${dive.user.username}`}>
+	<a href={`/users/${dive.user.username}`}>
 		<UserLabel user={dive.user} />
 	</a>
 	{#if dive.diveSite}

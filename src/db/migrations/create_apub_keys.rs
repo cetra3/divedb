@@ -19,10 +19,12 @@ impl Migration for CreateApubKeys {
         let mut client = pool.get().await?;
 
         client
-            .batch_execute("
+            .batch_execute(
+                "
                 alter table users add column public_key text;
                 alter table users add column private_key text;
-            ")
+            ",
+            )
             .await?;
 
         let result = client.query("select id from users", &[]).await?;
@@ -48,9 +50,11 @@ impl Migration for CreateApubKeys {
         transaction.commit().await?;
 
         client
-            .batch_execute("
+            .batch_execute(
+                "
                 alter table users alter column public_key set not null;
-            ")
+            ",
+            )
             .await?;
 
         Ok(())

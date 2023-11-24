@@ -8,11 +8,15 @@ mutation updateSettings(
 	$displayName: String
 	$watermarkLocation: OverlayLocation!
 	$copyrightLocation: OverlayLocation
+	$description: String!
+	$photoId: UUID
 ) {
 	updateSettings(
 		displayName: $displayName
 		watermarkLocation: $watermarkLocation
 		copyrightLocation: $copyrightLocation
+		description: $description
+		photoId: $photoId
 	) {
 		...CurrentUser
 	}

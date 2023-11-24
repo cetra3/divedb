@@ -13,11 +13,11 @@ use crate::{
         DiveSiteQuery,
     },
 };
-use log::*;
 use std::{
     fs::{read_dir, File},
     mem,
 };
+use tracing::*;
 use uuid::Uuid;
 
 use tempdir::TempDir;

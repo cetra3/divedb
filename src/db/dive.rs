@@ -208,6 +208,17 @@ impl DbHandle {
         Ok(count)
     }
 
+    pub async fn dive_count(&self, user_id: Uuid) -> Result<i64, Error> {
+        let client = self.pool.get().await?;
+        let query =
+            "select count(*) from dives where user_id = $1";
+        let result = client.query_one(query, &[&user_id]).await?;
+
+        let count: i64 = result.get(0);
+
+        Ok(count)
+    }
+
     pub async fn dive_metrics(&self, dive_id: Uuid) -> Result<Vec<DiveMetric>, Error> {
         let client = self.pool.get().await?;
         let query =

@@ -1,9 +1,29 @@
-use crate::{graphql::WebContext, schema::DiveMetric};
-use actix_web::{error::ErrorInternalServerError, web, Error as ActixError, HttpResponse};
+use std::io::Cursor;
+
+use crate::{
+    graphql::WebContext,
+    photos::{get_font_width, FONT, WATERMARK},
+    schema::{DiveMetric, DiveQuery, DiveSiteQuery},
+};
+use actix_web::{
+    error::{ErrorInternalServerError, ErrorNotFound},
+    web, Error as ActixError, HttpResponse,
+};
 use anyhow::Error;
 use askama::Template;
-use resvg::{tiny_skia::{self, Color}, usvg::{fontdb, TreeParsing, TreeTextToPath}};
+use image::{imageops::overlay, ImageOutputFormat, Rgba, RgbaImage};
+use imageproc::drawing::draw_text_mut;
+use once_cell::sync::Lazy;
+use resvg::{
+    tiny_skia::{self, Color},
+    usvg::{
+        fontdb::{self, Database},
+        TreeParsing, TreeTextToPath,
+    },
+};
+use rusttype::Scale;
 use uuid::Uuid;
+use std::fmt::Write;
 
 #[derive(Deserialize, Debug)]
 pub struct ChartRequest {
@@ -13,9 +33,15 @@ pub struct ChartRequest {
     height: Option<f64>,
 }
 
+static FONT_DB: Lazy<Database> = Lazy::new(|| {
+    let mut fontdb = fontdb::Database::new();
+    fontdb.load_system_fonts();
+
+    fontdb
+});
+
 pub async fn png_chart(
     context: web::Data<WebContext>,
-    query: web::Query<ChartRequest>,
     dive_id: web::Path<Uuid>,
 ) -> Result<HttpResponse, ActixError> {
     let dive_metrics = context
@@ -24,16 +50,50 @@ pub async fn png_chart(
         .await
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
-    let ChartRequest { width, height } = query.into_inner();
+    let dive = context
+        .handle
+        .dives(
+            None,
+            &DiveQuery {
+                id: Some(*dive_id),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(ErrorInternalServerError)?
+        .pop()
+        .ok_or_else(|| ErrorNotFound("No dive found"))?;
+
+    let user = context
+        .handle
+        .user_details(dive.user_id)
+        .await
+        .map_err(ErrorNotFound)?;
+
+    let dive_site = match dive.dive_site_id {
+        Some(site_id) => context
+            .handle
+            .dive_sites(
+                None,
+                &DiveSiteQuery {
+                    id: Some(site_id),
+                    ..Default::default()
+                },
+            )
+            .await
+            .map_err(ErrorInternalServerError)?
+            .pop(),
+        None => None,
+    };
+
+    let width = Some(800.0);
+    let height = Some(560.0);
 
     let svg = render_dive(dive_metrics, width, height)
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
-    let mut fontdb = fontdb::Database::new();
-    fontdb.load_system_fonts();
-
     let mut tree = resvg::usvg::Tree::from_data(&svg.as_bytes(), &Default::default()).unwrap();
-    tree.convert_text(&fontdb);
+    tree.convert_text(&FONT_DB);
 
     let rtree = resvg::Tree::from_usvg(&tree);
 
@@ -43,9 +103,59 @@ pub async fn png_chart(
     pixmap.fill(Color::from_rgba8(48, 55, 66, 255));
     rtree.render(tiny_skia::Transform::default(), &mut pixmap.as_mut());
 
-    let body = pixmap.encode_png().map_err(|err| ErrorInternalServerError(err))?;
+    let img = RgbaImage::from_raw(pixmap.width(), pixmap.height(), pixmap.take())
+        .ok_or_else(|| ErrorInternalServerError("Not enough pixels"))?;
 
-    Ok(HttpResponse::Ok().content_type("image/png").body(body))
+    static EXTRA_HEIGHT: u32 = 40;
+
+    let mut out_img = RgbaImage::from_pixel(
+        img.width(),
+        img.height() + EXTRA_HEIGHT,
+        Rgba([48, 55, 66, 255]),
+    );
+
+    overlay(&mut out_img, &img, 0, EXTRA_HEIGHT as i64);
+
+    let mut output_text = format!("{} - #{}", user.display_name.unwrap_or(user.username), dive.dive_number );
+
+    if let Some(site) = dive_site {
+        write!(&mut output_text, " - {}", site.name).ok();
+    }
+
+
+    let font_height = 30.0;
+    let scale = Scale {
+        x: font_height,
+        y: font_height,
+    };
+
+    let font_width = get_font_width(&output_text, scale);
+
+    let logo_x = img.width() / 2 - (WATERMARK.width() / 2);
+
+    overlay(&mut out_img, &*WATERMARK, logo_x as i64, 10);
+
+    let font_x = img.width() / 2 - (font_width / 2);
+
+    draw_text_mut(
+        &mut out_img,
+        Rgba([255, 255, 255, 255]),
+        font_x as i32,
+        15 + WATERMARK.height() as i32,
+        scale,
+        &FONT,
+        &output_text,
+    );
+
+    let mut output_body = Cursor::new(Vec::<u8>::new());
+
+    out_img
+        .write_to(&mut output_body, ImageOutputFormat::Png)
+        .map_err(ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok()
+        .content_type("image/png")
+        .body(output_body.into_inner()))
 }
 
 pub async fn svg_chart(
@@ -67,8 +177,8 @@ pub async fn svg_chart(
     Ok(HttpResponse::Ok().content_type("image/svg+xml").body(svg))
 }
 
-use log::*;
 use serde::{Deserialize, Serialize};
+use tracing::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Copy)]
 struct Point {
@@ -161,7 +271,9 @@ fn render_dive(
     let max_point = points.iter().find(|val| val.y == max_y).unwrap();
     let max_depth = max_point.y;
 
-    let max_y = ((max_y + 5.0) / 5.0).round() * 5.0;
+    let divider_depth = 5.0;
+
+    let max_y = ((max_y + divider_depth) / divider_depth).round() * divider_depth;
 
     let max_point = Point {
         x: (max_point.x / max_x * width) + offset,
@@ -207,11 +319,14 @@ fn render_dive(
 
 mod filters {
     pub fn minutes(val: &f64) -> ::askama::Result<String> {
-        let h = (val / 3600.0).floor() as usize;
-        let m = (val % 3600.0 / 60.0).floor() as usize;
-
-        Ok(format!("{}:{:0>2}", h, m))
+        Ok(super::minutes(val))
     }
+}
+
+pub fn minutes(val: &f64) -> String {
+    let h = (val / 3600.0).floor() as usize;
+    let m: usize = (val % 3600.0 / 60.0).floor() as usize;
+    format!("{}:{:0>2}", h, m)
 }
 
 #[derive(Template)]

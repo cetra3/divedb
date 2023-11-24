@@ -4,18 +4,25 @@ use activitypub_federation::{
     activity_sending::SendActivityTask,
     config::Data,
     fetch::object_id::ObjectId,
-    kinds::activity::{AcceptType, CreateType, DeleteType, FollowType, UndoType, UpdateType, LikeType},
+    kinds::activity::{
+        AcceptType, CreateType, DeleteType, FollowType, LikeType, UndoType, UpdateType,
+    },
     protocol::{context::WithContext, helpers::deserialize_one_or_many},
     traits::{ActivityHandler, Actor, Object},
 };
 use anyhow::Error;
-use log::debug;
+use kuchiki::traits::TendrilSink;
+use kuchikiki as kuchiki;
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 use url::Url;
 
 use crate::{
     graphql::WebContext,
-    schema::{activitypub::Note, Dive, User},
+    schema::{
+        activitypub::{Note, NoteReply},
+        Dive, User,
+    },
     SITE_URL,
 };
 
@@ -27,6 +34,7 @@ pub enum PersonAcceptedActivities {
     UndoFollow(UndoFollow),
     Like(Like),
     UndoLike(UndoLike),
+    CreateDiveComment(CreateDiveComment),
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -179,6 +187,49 @@ impl ActivityHandler for Accept {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct CreateDiveComment {
+    actor: ObjectId<User>,
+    object: NoteReply,
+    #[serde(rename = "type")]
+    kind: CreateOrUpdateType,
+    id: Url,
+}
+
+#[async_trait::async_trait]
+impl ActivityHandler for CreateDiveComment {
+    type DataType = Arc<WebContext>;
+    type Error = Error;
+
+    fn id(&self) -> &Url {
+        &self.id
+    }
+
+    fn actor(&self) -> &Url {
+        self.actor.inner()
+    }
+
+    async fn verify(&self, _data: &Data<Self::DataType>) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    async fn receive(self, data: &Data<Self::DataType>) -> Result<(), Self::Error> {
+        let note = self.object;
+
+        let dive = note.in_reply_to.dereference_local(data).await?;
+        let user = self.actor.dereference(data).await?;
+
+        let plain_text = kuchiki::parse_html().one(note.content).text_contents();
+
+        data.handle
+            .new_external_comment(dive.id, user.id, &plain_text, note.id.inner().as_str())
+            .await?;
+
+        Ok(())
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct CreatePost {
     actor: ObjectId<User>,
     #[serde(deserialize_with = "deserialize_one_or_many")]
@@ -239,15 +290,15 @@ impl CreatePost {
     ) -> Result<(), Error> {
         let user = data.handle.user_details(dive.user_id).await?;
 
-        let note = dive.into_json(data).await?;
+        let dive_id = dive.id;
 
-        let id = format!(
-            "{}/dives/{}/upsert",
-            &*SITE_URL,
-            note.id
-        )
-        .parse::<Url>()?
-        .into();
+        let mut note = dive.into_json(data).await?;
+
+        let id = format!("{}/dives/{}/upsert", &*SITE_URL, dive_id)
+            .parse::<Url>()?
+            .into();
+
+        note.to.append(&mut inboxes.clone());
 
         let create = CreatePost {
             actor: note.attributed_to.clone(),
@@ -276,7 +327,6 @@ impl CreatePost {
     }
 }
 
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Like {
@@ -290,13 +340,12 @@ pub struct Like {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UndoLike {
-  actor: ObjectId<User>,
-  object: Like,
-  #[serde(rename = "type")]
-  kind: UndoType,
-  id: Url,
+    actor: ObjectId<User>,
+    object: Like,
+    #[serde(rename = "type")]
+    kind: UndoType,
+    id: Url,
 }
-
 
 #[async_trait::async_trait]
 impl ActivityHandler for Like {
@@ -316,12 +365,10 @@ impl ActivityHandler for Like {
     }
 
     async fn receive(self, data: &Data<Self::DataType>) -> Result<(), Self::Error> {
-
         let user = self.actor.dereference(data).await?;
         let dive = self.object.dereference_local(data).await?;
 
         data.handle.like_dive(user.id, dive.id).await?;
-
 
         Ok(())
     }
@@ -345,7 +392,6 @@ impl ActivityHandler for UndoLike {
     }
 
     async fn receive(self, data: &Data<Self::DataType>) -> Result<(), Self::Error> {
-
         let user = self.actor.dereference(data).await?;
         let dive = self.object.object.dereference_local(data).await?;
 
