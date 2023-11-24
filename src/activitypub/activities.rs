@@ -86,7 +86,7 @@ impl ActivityHandler for Follow {
     }
 
     async fn receive(self, data: &Data<Self::DataType>) -> Result<(), Self::Error> {
-        let local_user = self.object.dereference_local(&data).await?;
+        let local_user = self.object.dereference_local(data).await?;
         let follower = self.actor.dereference(data).await?;
 
         let id =
@@ -131,7 +131,7 @@ impl ActivityHandler for UndoFollow {
     }
 
     async fn receive(self, data: &Data<Self::DataType>) -> Result<(), Self::Error> {
-        let local_user = self.object.object.dereference_local(&data).await?;
+        let local_user = self.object.object.dereference_local(data).await?;
         let follower = self.actor.dereference(data).await?;
 
         data.handle
@@ -294,9 +294,7 @@ impl CreatePost {
 
         let mut note = dive.into_json(data).await?;
 
-        let id = format!("{}/dives/{}/upsert", &*SITE_URL, dive_id)
-            .parse::<Url>()?
-            .into();
+        let id = format!("{}/dives/{}/upsert", &*SITE_URL, dive_id).parse::<Url>()?;
 
         note.to.append(&mut inboxes.clone());
 

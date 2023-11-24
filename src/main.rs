@@ -270,7 +270,7 @@ async fn main() -> Result<(), Error> {
     let cipher =
         Aes256Gcm::new_from_slice(&site_context.get_key()).map_err(|val| anyhow!("{}", val))?;
 
-    let site_url = Url::parse(&*SITE_URL)?;
+    let site_url = Url::parse(&SITE_URL)?;
 
     let web_context = Arc::new(WebContext {
         handle,
@@ -357,10 +357,8 @@ async fn main() -> Result<(), Error> {
                         .default_handler(|req: ServiceRequest| {
                             let (http_req, _payload) = req.into_parts();
 
-                            let path = format!(
-                                "./front/build{}.html",
-                                http_req.path().replace("../", "")
-                            );
+                            let path =
+                                format!("./front/build{}.html", http_req.path().replace("../", ""));
 
                             debug!("Request uri:{}, path:{path}", http_req.path());
 

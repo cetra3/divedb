@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::graphql::SchemaContext;
 
-use super::{PhotoQuery, Photo, DiveQuery, Dive};
+use super::{Dive, DiveQuery, Photo, PhotoQuery};
 
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
 pub struct LoginResponse {
@@ -20,7 +20,7 @@ pub struct LoginResponse {
     pub watermark_location: OverlayLocation,
     pub copyright_location: Option<OverlayLocation>,
     pub description: String,
-    pub photo_id: Option<Uuid>
+    pub photo_id: Option<Uuid>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
@@ -39,7 +39,7 @@ pub struct PublicUserInfo {
     pub username: String,
     pub display_name: Option<String>,
     pub description: String,
-    pub photo_id: Option<Uuid>
+    pub photo_id: Option<Uuid>,
 }
 
 #[Object]
@@ -87,7 +87,6 @@ impl PublicUserInfo {
             .await?)
     }
 
-
     async fn dive_count(&self, context: &Context<'_>) -> FieldResult<i64> {
         Ok(context
             .data::<SchemaContext>()?
@@ -126,7 +125,6 @@ impl PublicUserInfo {
             .photos(None, &query)
             .await?)
     }
-
 }
 
 impl From<User> for PublicUserInfo {
@@ -136,7 +134,7 @@ impl From<User> for PublicUserInfo {
             username: value.username,
             display_name: value.display_name,
             description: value.description,
-            photo_id: value.photo_id
+            photo_id: value.photo_id,
         }
     }
 }

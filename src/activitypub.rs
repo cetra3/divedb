@@ -122,10 +122,9 @@ fn extract_webfinger_name<'a>(
     resource: &'a str,
     data: &Data<Arc<WebContext>>,
 ) -> Result<&'a str, Error> {
-
     if let Some(val) = resource
         .strip_suffix(data.domain())
-        .and_then(|val| val.strip_suffix("@"))
+        .and_then(|val| val.strip_suffix('@'))
         .and_then(|val| val.strip_prefix("acct:"))
     {
         return Ok(val);
@@ -142,7 +141,7 @@ pub async fn webfinger(
 
     let user = data
         .handle
-        .user_by_username(&name)
+        .user_by_username(name)
         .await
         .map_err(|_| ErrorNotFound(format!("No resource found in db: {name}")))?;
 

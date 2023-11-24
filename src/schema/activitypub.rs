@@ -129,7 +129,7 @@ impl Object for User {
         let preferred_username = self.username;
 
         let name = self.display_name;
-        let summary = if self.description != "" {
+        let summary = if !self.description.is_empty() {
             Some(self.description)
         } else {
             None
@@ -181,20 +181,18 @@ impl Object for User {
             return Self::read_from_id(json.id.into(), data)
                 .await?
                 .ok_or_else(|| anyhow!("No user found!"));
+        } else if let Ok(user) = data.handle.user_by_ap_id(json.id.inner().as_str()).await {
+            return Ok(user);
         } else {
-            if let Ok(user) = data.handle.user_by_ap_id(json.id.inner().as_str()).await {
-                return Ok(user);
-            } else {
-                return data
-                    .handle
-                    .new_external_user(
-                        &json.preferred_username,
-                        &json.id.inner(),
-                        json.inbox.as_str(),
-                        &json.public_key.public_key_pem,
-                    )
-                    .await;
-            }
+            return data
+                .handle
+                .new_external_user(
+                    &json.preferred_username,
+                    json.id.inner(),
+                    json.inbox.as_str(),
+                    &json.public_key.public_key_pem,
+                )
+                .await;
         }
     }
 }
@@ -298,9 +296,9 @@ impl Object for Dive {
         content_builder.push_str("**\n");
 
         if self.depth > 0. && self.duration > 0 {
-            write!(
+            writeln!(
                 &mut content_builder,
-                " *Depth: {:.2}m, Duration: {}* \n",
+                " *Depth: {:.2}m, Duration: {}* ",
                 self.depth,
                 minutes(&(self.duration as f64))
             )?;
@@ -333,7 +331,7 @@ impl Object for Dive {
         }
 
         let tag = if let Some(ref site) = dive_site {
-            vec![Tag::from_site(&site)]
+            vec![Tag::from_site(site)]
         } else {
             vec![]
         };
@@ -478,20 +476,18 @@ impl Object for DiveComment {
             return Self::read_from_id(json.id.into(), data)
                 .await?
                 .ok_or_else(|| anyhow!("No user found!"));
+        } else if let Ok(comment) = data.handle.comment_by_ap_id(json.id.inner().as_str()).await {
+            return Ok(comment);
         } else {
-            if let Ok(comment) = data.handle.comment_by_ap_id(json.id.inner().as_str()).await {
-                return Ok(comment);
-            } else {
-                let dive = json.in_reply_to.dereference_local(data).await?;
-                let user = json.attributed_to.dereference(data).await?;
+            let dive = json.in_reply_to.dereference_local(data).await?;
+            let user = json.attributed_to.dereference(data).await?;
 
-                let plain_text = kuchiki::parse_html().one(json.content).text_contents();
+            let plain_text = kuchiki::parse_html().one(json.content).text_contents();
 
-                return data
-                    .handle
-                    .new_external_comment(dive.id, user.id, &plain_text, &json.id.inner().as_str())
-                    .await;
-            }
+            return data
+                .handle
+                .new_external_comment(dive.id, user.id, &plain_text, json.id.inner().as_str())
+                .await;
         }
     }
 }
@@ -525,7 +521,7 @@ impl Tag {
         Self {
             kind: "Hashtag".into(),
             href: format!("{}/sites/{}", &*SITE_URL, slug),
-            name: format!("#{}", site.name.replace(" ", "")),
+            name: format!("#{}", site.name.replace(' ', "")),
         }
     }
 }

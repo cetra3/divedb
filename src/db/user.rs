@@ -70,7 +70,10 @@ impl DbHandle {
                 true
             ) returning *";
         let result = client
-            .query_one(query, &[&uuid, &username, &ap_id.as_str(), &inbox, &public_key])
+            .query_one(
+                query,
+                &[&uuid, &username, &ap_id.as_str(), &inbox, &public_key],
+            )
             .await?;
 
         User::from_row(result)
@@ -162,7 +165,7 @@ impl DbHandle {
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
         description: String,
-        photo_id: Option<Uuid>
+        photo_id: Option<Uuid>,
     ) -> Result<User, Error> {
         let client = self.pool.get().await?;
         let query = "update users set display_name = $1, watermark_location = $2, copyright_location = $3, description = $4, photo_id = $5 where lower(email) = lower($6) returning *";

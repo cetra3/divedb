@@ -290,7 +290,7 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
                     dive_site_id = Some(dive_id_from_hex(&line[("divesiteid".len() + 1)..])?);
                 }
                 if in_notes {
-                    in_notes = !parse_notes(&line.trim_start_matches('\t'), &mut description);
+                    in_notes = !parse_notes(line.trim_start_matches('\t'), &mut description);
                     if in_notes {
                         description.push('\n');
                     }
@@ -355,11 +355,11 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
 
 /// Will return `true` if it's at the end of the notes
 fn parse_notes(line: &str, result: &mut String) -> bool {
-    let mut chars = line.chars();
+    let chars = line.chars();
     let mut escaped = false;
     let mut within_quotes = true;
 
-    while let Some(ch) = chars.next() {
+    for ch in chars {
         if escaped {
             result.push(ch);
             escaped = false;
@@ -375,7 +375,7 @@ fn parse_notes(line: &str, result: &mut String) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 fn parse_metric(line: String) -> Result<DiveMetric, Error> {

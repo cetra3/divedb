@@ -22,8 +22,8 @@ use resvg::{
     },
 };
 use rusttype::Scale;
-use uuid::Uuid;
 use std::fmt::Write;
+use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 pub struct ChartRequest {
@@ -92,7 +92,7 @@ pub async fn png_chart(
     let svg = render_dive(dive_metrics, width, height)
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
-    let mut tree = resvg::usvg::Tree::from_data(&svg.as_bytes(), &Default::default()).unwrap();
+    let mut tree = resvg::usvg::Tree::from_data(svg.as_bytes(), &Default::default()).unwrap();
     tree.convert_text(&FONT_DB);
 
     let rtree = resvg::Tree::from_usvg(&tree);
@@ -116,12 +116,15 @@ pub async fn png_chart(
 
     overlay(&mut out_img, &img, 0, EXTRA_HEIGHT as i64);
 
-    let mut output_text = format!("{} - #{}", user.display_name.unwrap_or(user.username), dive.dive_number );
+    let mut output_text = format!(
+        "{} - #{}",
+        user.display_name.unwrap_or(user.username),
+        dive.dive_number
+    );
 
     if let Some(site) = dive_site {
         write!(&mut output_text, " - {}", site.name).ok();
     }
-
 
     let font_height = 30.0;
     let scale = Scale {

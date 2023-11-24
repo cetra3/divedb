@@ -58,7 +58,7 @@ impl DbHandle {
                     &create_photo.dive_id,
                     &create_photo.size,
                     &create_photo.dive_site_id,
-                    &create_photo.internal.unwrap_or_default()
+                    &create_photo.internal.unwrap_or_default(),
                 ],
             )
             .await?;
@@ -231,7 +231,7 @@ impl DbHandle {
         Ok(count)
     }
 
-     pub async fn photo_count(&self, user_id: Uuid) -> Result<i64, Error> {
+    pub async fn photo_count(&self, user_id: Uuid) -> Result<i64, Error> {
         let client = self.pool.get().await?;
         let query = "select count(*) from photos where user_id = $1";
 

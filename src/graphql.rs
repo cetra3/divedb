@@ -357,14 +357,14 @@ impl Mutation {
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Existing Password"))?;
 
-        scrypt_check(&old_password, &existing_password)
+        scrypt_check(&old_password, existing_password)
             .map_err(|_| anyhow!("Invalid Existing Password"))?;
 
         let params = ScryptParams::recommended();
 
         let hash = scrypt_simple(&new_password, &params)?;
 
-        context.web.handle.update_password(&email, &hash).await?;
+        context.web.handle.update_password(email, &hash).await?;
 
         Ok(true)
     }
@@ -505,7 +505,7 @@ impl Mutation {
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Password"))?;
 
-        scrypt_check(&password, &existing_password).map_err(|_| anyhow!("Invalid Password"))?;
+        scrypt_check(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -583,7 +583,14 @@ impl Mutation {
         let user = context
             .web
             .handle
-            .update_settings(&email, display_name, watermark_location, copyright_location, description, photo_id)
+            .update_settings(
+                &email,
+                display_name,
+                watermark_location,
+                copyright_location,
+                description,
+                photo_id,
+            )
             .await?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;

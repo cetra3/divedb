@@ -170,30 +170,14 @@ fn add_overlay(im: &mut DynamicImage, date: Option<DateTime<Local>>, user: &User
 }
 
 pub fn draw_shadowed_text(im: &mut DynamicImage, x: i32, y: i32, scale: Scale, text: &str) {
-    draw_text_mut(
-        im,
-        Rgba([59, 67, 81, 0]),
-        x as i32,
-        (y + 1) as i32,
-        scale,
-        &FONT,
-        &text,
-    );
-    draw_text_mut(
-        im,
-        Rgba([255, 255, 255, 255]),
-        x as i32,
-        y as i32,
-        scale,
-        &FONT,
-        &text,
-    );
+    draw_text_mut(im, Rgba([59, 67, 81, 0]), x, y + 1, scale, &FONT, text);
+    draw_text_mut(im, Rgba([255, 255, 255, 255]), x, y, scale, &FONT, text);
 }
 
 pub fn get_font_width(text: &str, scale: Scale) -> u32 {
     let v_metrics = &FONT.v_metrics(scale);
     let offset = point(0.0, v_metrics.ascent);
-    FONT.layout(&text, scale, offset)
+    FONT.layout(text, scale, offset)
         .filter_map(|val| val.pixel_bounding_box())
         .map(|val| val.max.x)
         .max()
