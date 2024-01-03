@@ -2,7 +2,7 @@ use actix_web::{error::ErrorInternalServerError, get, web, HttpResponse};
 
 use crate::{
     graphql::WebContext,
-    schema::{DiveSiteQuery, SealifeQuery},
+    schema::{DiveQuery, DiveSiteQuery, SealifeQuery},
     SITE_URL,
 };
 
@@ -15,7 +15,9 @@ Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /divesites/edit
-Disallow: /dives
+Disallow: /dives/edit
+Disallow: /sealife/edit
+Disallow: /photos/edit
 
 Sitemap: {}/sitemap.xml
 ",
@@ -36,6 +38,18 @@ pub async fn sitemap_handler(
     let sealife_list = web_context
         .handle
         .sealife(&SealifeQuery::default())
+        .await
+        .map_err(ErrorInternalServerError)?;
+
+    let dives = web_context
+        .handle
+        .dives(
+            None,
+            &DiveQuery {
+                limit: Some(i64::MAX as usize),
+                ..Default::default()
+            },
+        )
         .await
         .map_err(ErrorInternalServerError)?;
 
@@ -76,6 +90,16 @@ pub async fn sitemap_handler(
                 )
                 .expect("Could not write url");
         }
+    }
+
+    for dive in dives {
+        urlwriter
+            .url(
+                UrlEntry::builder()
+                    .lastmod(dive.date.into())
+                    .loc(format!("{}/dives/{}", &*SITE_URL, dive.id)),
+            )
+            .expect("Could not write url");
     }
 
     urlwriter.end().expect("Could not close");

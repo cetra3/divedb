@@ -1,6 +1,6 @@
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
-    dev::ServiceRequest,
+    dev::{ServiceRequest, HttpServiceFactory},
     dev::{ConnectionInfo, ServiceResponse},
     error::ErrorInternalServerError,
     middleware::{self, DefaultHeaders},
@@ -333,7 +333,8 @@ async fn main() -> Result<(), Error> {
                     .route(web::get().to(open_photo)),
             )
             .service(web::resource("/api/photos").route(web::post().to(save_files)))
-            .service(activitypub::configure())
+            .service(activitypub::configure_users())
+            .service(activitypub::configure_dives())
             .service(
                 web::resource("/.well-known/webfinger")
                     .route(web::get().to(activitypub::webfinger)),
@@ -350,28 +351,7 @@ async fn main() -> Result<(), Error> {
                     .to(activitypub::node_info_well_known)
                     .wrap(cache_header(86400)),
             )
-            .service(
-                web::scope("").wrap(cache_header(86400)).service(
-                    Files::new("/", "./front/build")
-                        .index_file("index.html")
-                        .default_handler(|req: ServiceRequest| {
-                            let (http_req, _payload) = req.into_parts();
-
-                            let path =
-                                format!("./front/build{}.html", http_req.path().replace("../", ""));
-
-                            debug!("Request uri:{}, path:{path}", http_req.path());
-
-                            async {
-                                let response = NamedFile::open(path)
-                                    .or_else(|_| NamedFile::open("./front/build/fallback.html"))?
-                                    .into_response(&http_req);
-
-                                Ok(ServiceResponse::new(http_req, response))
-                            }
-                        }),
-                ),
-            )
+            .service(frontend())
     })
     .bind(&config.listen_address)?
     .run()
@@ -388,6 +368,28 @@ pub async fn playground_handler() -> HttpResponse {
         )))
 }
 
+pub fn frontend() -> impl HttpServiceFactory {
+    web::scope("").wrap(cache_header(86400)).service(
+        Files::new("/", "./front/build")
+            .index_file("index.html")
+            .default_handler(|req: ServiceRequest| {
+                let (http_req, _payload) = req.into_parts();
+
+                let path = format!("./front/build{}.html", http_req.path().replace("../", ""));
+
+                debug!("Request uri:{}, path:{path}", http_req.path());
+
+                async {
+                    let response = NamedFile::open(path)
+                        .or_else(|_| NamedFile::open("./front/build/fallback.html"))?
+                        .into_response(&http_req);
+
+                    Ok(ServiceResponse::new(http_req, response))
+                }
+            }),
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn graphql(
     gql_request: GraphQLRequest,
@@ -398,6 +400,8 @@ async fn graphql(
     schema: web::Data<Schema>,
     fed_data: activitypub_federation::config::Data<Arc<WebContext>>,
 ) -> GraphQLResponse {
+    debug!("GraphQL Handler reached!");
+
     let user: Option<User>;
 
     if let Some(user_id) = token.user_id {

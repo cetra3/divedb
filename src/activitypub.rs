@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::{debug, warn};
 use url::Url;
+use uuid::Uuid;
 
 use crate::{
     schema::{activitypub::OrderedCollection, DiveQuery, User},
@@ -30,11 +31,18 @@ use self::activities::PersonAcceptedActivities;
 
 pub mod activities;
 
-pub fn configure() -> impl HttpServiceFactory {
+pub fn configure_users() -> impl HttpServiceFactory {
     web::scope("/users")
         .route("{username}", web::get().to(get_user))
         .route("{username}/inbox", web::post().to(user_inbox))
         .route("{username}/outbox", web::get().to(user_outbox))
+        .service(crate::frontend())
+}
+
+pub fn configure_dives() -> impl HttpServiceFactory {
+    web::scope("/dives")
+        .route("{dive_id}", web::get().to(get_dive))
+        .service(crate::frontend())
 }
 
 #[derive(Deserialize)]
@@ -175,17 +183,71 @@ pub async fn get_user(
     username: web::Path<String>,
     data: Data<Arc<WebContext>>,
 ) -> Result<HttpResponse, Error> {
-    let user = data
-        .handle
-        .user_by_username(&username)
-        .await
-        .map_err(ErrorNotFound)?;
+    if is_apub_request(&request) {
+        let user = data
+            .handle
+            .user_by_username(&username)
+            .await
+            .map_err(ErrorNotFound)?;
 
-    let person = user
-        .into_json(&data)
-        .await
-        .map_err(ErrorInternalServerError)?;
+        let person = user
+            .into_json(&data)
+            .await
+            .map_err(ErrorInternalServerError)?;
 
+        return Ok(HttpResponse::Ok()
+            .content_type(FEDERATION_CONTENT_TYPE)
+            .json(WithContext::new_default(person)));
+    }
+
+    file_response(&request)
+}
+
+pub async fn get_dive(
+    request: HttpRequest,
+    dive_id: web::Path<String>,
+    data: Data<Arc<WebContext>>,
+) -> Result<HttpResponse, Error> {
+    if is_apub_request(&request) {
+        let dive_id = Uuid::parse_str(&dive_id).map_err(ErrorInternalServerError)?;
+
+        let dive = data
+            .handle
+            .dives(
+                None,
+                &DiveQuery {
+                    id: Some(dive_id),
+                    ..Default::default()
+                },
+            )
+            .await
+            .map_err(ErrorInternalServerError)?
+            .pop()
+            .ok_or_else(|| ErrorNotFound("No dive found"))?;
+
+        let note = dive
+            .into_json(&data)
+            .await
+            .map_err(ErrorInternalServerError)?;
+
+        return Ok(HttpResponse::Ok()
+            .content_type(FEDERATION_CONTENT_TYPE)
+            .json(WithContext::new_default(note)));
+    }
+
+    file_response(&request)
+}
+
+pub fn file_response(request: &HttpRequest) -> Result<HttpResponse, Error> {
+    let path = format!("./front/build{}.html", request.path().replace("../", ""));
+
+    let response =
+        NamedFile::open(path).or_else(|_| NamedFile::open("./front/build/fallback.html"))?;
+
+    Ok(response.into_response(&request))
+}
+
+pub fn is_apub_request(request: &HttpRequest) -> bool {
     if let Some(header) = request
         .headers()
         .get("accept")
@@ -194,18 +256,11 @@ pub async fn get_user(
         debug!("Accept Header: {header}");
 
         if header.to_lowercase().contains(FEDERATION_CONTENT_TYPE) {
-            return Ok(HttpResponse::Ok()
-                .content_type(FEDERATION_CONTENT_TYPE)
-                .json(WithContext::new_default(person)));
+            return true;
         }
     }
 
-    let path = format!("./front/build{}.html", request.path().replace("../", ""));
-
-    let response =
-        NamedFile::open(path).or_else(|_| NamedFile::open("./front/build/fallback.html"))?;
-
-    Ok(response.into_response(&request))
+    false
 }
 
 /// Handles messages received in user inbox

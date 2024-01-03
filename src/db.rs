@@ -4,8 +4,8 @@ use postgres_types::ToSql;
 use reqwest::Client;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 use tokio::sync::mpsc::{self, error::TrySendError, Receiver, Sender};
+use tokio::sync::RwLock;
 use tokio::time::Duration;
-use tokio::{join, sync::RwLock};
 use tokio_postgres::{NoTls, Row};
 use uuid::Uuid;
 
@@ -102,19 +102,21 @@ impl DbHandle {
     }
 
     async fn clear_cache(&self) {
-        let (mut popular_sites, mut site_metrics, mut photos) = join!(
-            self.popular_sites.write(),
-            self.site_metrics.write(),
-            self.photos.write()
-        );
-
-        popular_sites.clear();
-        site_metrics.clear();
-        photos.clear();
+        {
+            self.popular_sites.write().await.clear();
+        }
+        {
+            self.site_metrics.write().await.clear();
+        }
+        {
+            self.photos.write().await.clear();
+        }
 
         if let Err(TrySendError::Full(())) = self.sender.try_send(()) {
             debug!("Svelte update throttled");
         }
+
+        debug!("Cleared cache");
     }
 }
 
