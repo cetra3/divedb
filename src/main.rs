@@ -179,7 +179,7 @@ async fn main() -> Result<(), Error> {
     if env::var("RUST_LOG").is_err() {
         env::set_var(
             "RUST_LOG",
-            "actix_web=INFO,divedb=DEBUG,async-graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG",
+            "actix_web=INFO,divedb=DEBUG,async_graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG",
         );
     }
 

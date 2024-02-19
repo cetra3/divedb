@@ -33,8 +33,9 @@ impl DbHandle {
     pub async fn create_dive(&self, user_id: Uuid, request: &CreateDive) -> Result<Dive, Error> {
         let uuid = request.id.unwrap_or_else(Uuid::new_v4);
 
-        let client = self.pool.get().await?;
-        let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published)
+        let result = {
+            let client = self.pool.get().await?;
+            let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published)
             values ($1, $2, $3, $4, $5, $6, $7, $8)
             
             on conflict(id) do update
@@ -47,33 +48,36 @@ impl DbHandle {
             
             returning *";
 
-        let depth = request.depth as f32;
+            let depth = request.depth as f32;
 
-        let result = client
-            .query_one(
-                query,
-                &[
-                    &uuid,
-                    &user_id,
-                    &request.date,
-                    &request.duration,
-                    &depth,
-                    &request.dive_site_id,
-                    &request.description,
-                    &request.published,
-                ],
-            )
-            .await?;
+            let result = client
+                .query_one(
+                    query,
+                    &[
+                        &uuid,
+                        &user_id,
+                        &request.date,
+                        &request.duration,
+                        &depth,
+                        &request.dive_site_id,
+                        &request.description,
+                        &request.published,
+                    ],
+                )
+                .await?;
 
-        //update photos
-        let photo_query = "update photos set dive_id = $1 where dive_id is null and user_id = $2 and ABS(extract(epoch from (date - $3))) < ($4 + 7200)";
+            //update photos
+            let photo_query = "update photos set dive_id = $1 where dive_id is null and user_id = $2 and ABS(extract(epoch from (date - $3))) < ($4 + 7200)";
 
-        client
-            .execute(
-                photo_query,
-                &[&uuid, &user_id, &request.date, &request.duration],
-            )
-            .await?;
+            client
+                .execute(
+                    photo_query,
+                    &[&uuid, &user_id, &request.date, &request.duration],
+                )
+                .await?;
+
+            result
+        };
 
         self.refresh_dives(user_id).await?;
 
@@ -238,9 +242,11 @@ impl DbHandle {
     }
 
     pub async fn remove_dive(&self, user_id: Uuid, id: Uuid) -> Result<(), Error> {
-        let client = self.pool.get().await?;
-        let query = "delete from dives where id = $1 and user_id = $2";
-        client.execute(query, &[&id, &user_id]).await?;
+        {
+            let client = self.pool.get().await?;
+            let query = "delete from dives where id = $1 and user_id = $2";
+            client.execute(query, &[&id, &user_id]).await?;
+        }
 
         self.refresh_dives(user_id).await?;
 

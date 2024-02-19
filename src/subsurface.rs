@@ -536,7 +536,6 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             Ok((dive, metrics.remove(&id)))
         })
         .try_for_each_concurrent(0, |(dive, metrics)| async move {
-            debug!("Syncing {:?}", dive);
 
             if let Some(existing_dive) = handle
                 .dives(
@@ -549,8 +548,9 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 .await?
                 .get(0)
             {
-                trace!("Site exists:{}, skipping", existing_dive.id);
+                debug!("Dive exists:{}, skipping", existing_dive.id);
             } else {
+                debug!("Syncing {:?}", dive);
                 let request = CreateDive {
                     id: Some(dive.id),
                     date: dive.date.into(),
@@ -573,6 +573,8 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             Ok(()) as Result<(), Error>
         })
         .await?;
+
+    debug!("Finished subsurface sync for {user_id}");
 
     Ok(())
 }

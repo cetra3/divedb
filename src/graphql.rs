@@ -1226,5 +1226,7 @@ impl Mutation {
 pub type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
 
 pub fn schema() -> Schema {
-    Schema::build(Query, Mutation, EmptySubscription).finish()
+    Schema::build(Query, Mutation, EmptySubscription)
+        .extension(async_graphql::extensions::Tracing)
+        .finish()
 }
