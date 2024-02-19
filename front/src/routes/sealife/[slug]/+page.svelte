@@ -46,7 +46,11 @@
 </script>
 
 <svelte:head>
-	<title>DiveDB - {sealife.name}</title>
+	{#if sealife.scientificName && sealife.scientificName != sealife.name}
+		<title>DiveDB - {sealife.name} - {sealife.scientificName}</title>
+	{:else}
+		<title>DiveDB - {sealife.name}</title>
+	{/if}
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={sealife.name} />
 	{#if sealife.photoId}
@@ -119,6 +123,7 @@
 		</div>
 		<div class="column col-12 col-sm-12">
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<ImageList {photos} query={{ sealifeId: sealife.id }}>
 				<svelte:fragment let:photo slot="photo-label">
 					{#if sealife.photoId !== photo}

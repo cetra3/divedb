@@ -58,6 +58,7 @@ input CreatePhoto {
 	date: DateTime!
 	diveId: UUID
 	size: Int!
+	internal: Boolean
 	diveSiteId: UUID
 	sealifeId: UUID
 }
@@ -172,6 +173,8 @@ type LoginResponse {
 	displayName: String
 	watermarkLocation: OverlayLocation!
 	copyrightLocation: OverlayLocation
+	description: String!
+	photoId: UUID
 }
 
 type Mutation {
@@ -182,7 +185,7 @@ type Mutation {
 	fbRegisterUser(username: String!, redirectUri: String!, code: String!): LoginResponse!
 	login(email: String!, password: String!): LoginResponse!
 	fbLogin(redirectUri: String!, code: String!): LoginResponse!
-	updateSettings(displayName: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation): LoginResponse
+	updateSettings(displayName: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation, description: String!, photoId: UUID): LoginResponse
 	syncSubsurface(email: String!, password: String!): Boolean!
 	addFeedback(feedback: String!): Feedback!
 	newCategory(category: CreateCategory!): Category!
@@ -246,9 +249,15 @@ type Photo {
 
 type PublicUserInfo {
 	id: UUID!
-	level: UserLevel!
 	username: String!
 	displayName: String
+	description: String!
+	photoId: UUID
+	photo: Photo
+	photoCount: Int!
+	diveCount: Int!
+	latestDives: [Dive!]!
+	latestPhotos: [Photo!]!
 }
 
 type Query {
@@ -259,6 +268,7 @@ type Query {
 	search(query: String!, offset: Int): [SearchResult!]!
 	dives(id: UUID, diveSite: UUID, maxDepth: Float, userId: UUID, username: String, offset: Int): [Dive!]!
 	recentDives: [Dive!]!
+	user(username: String!): PublicUserInfo!
 	currentUser: LoginResponse
 	diveSites(id: UUID, name: String, maxDepth: Float, slug: String): [DiveSite!]!
 	popularDiveSites: [DiveSite!]!
@@ -329,10 +339,11 @@ scalar UUID
 
 type UserInfo {
 	id: UUID!
-	email: String!
+	email: String
 	level: UserLevel!
 	username: String!
 	displayName: String
+	description: String!
 }
 
 enum UserLevel {

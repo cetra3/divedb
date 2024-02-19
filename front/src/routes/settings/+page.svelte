@@ -1,18 +1,21 @@
 <script lang="ts">
 	import FormRow from '$lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
-	import type { CurrentUserFragment } from '$lib/graphql/generated';
+	import type { CurrentUserFragment, PhotoSummaryFragment } from '$lib/graphql/generated';
 	import { OverlayLocation } from '$lib/graphql/generated';
 	import DeleteAccount from '$lib/components/forms/DeleteAccount.svelte';
 	import ChangePassword from '$lib/components/forms/ChangePassword.svelte';
 	import { onMount } from 'svelte';
 	import { client } from '$lib/graphql/client';
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
 	let currentUser: CurrentUserFragment | undefined;
 	let username = '';
 	let displayName = '';
 	let watermarkLocation = OverlayLocation.BottomRight;
 	let copyrightLocation: OverlayLocation | '' = OverlayLocation.BottomLeft;
+	let description = '';
+	let photoId: string | undefined = undefined;
 
 	onMount(async () => {
 		currentUser = (await client.getCurrentUser()).currentUser ?? undefined;
@@ -20,6 +23,8 @@
 		displayName = currentUser?.displayName ?? '';
 		watermarkLocation = currentUser?.watermarkLocation ?? OverlayLocation.BottomLeft;
 		copyrightLocation = currentUser?.copyrightLocation ?? ('' as OverlayLocation | '');
+		description = currentUser?.description ?? '';
+		photoId = currentUser?.photoId ?? undefined;
 	});
 
 	let pristine = true;
@@ -29,6 +34,30 @@
 	let loading = false;
 
 	let deleteModal = false;
+
+	let file: File | undefined = undefined;
+
+	const onUpload = (e: Event) => {
+		let files = (e.target as any).files;
+
+		if (files && files.length > 0) {
+			file = files.item(0);
+		}
+	};
+
+	const removePhoto = () => {
+		photoId = undefined;
+		pristine = false;
+	};
+
+	const onUploaded = (e: CustomEvent<{ photo: PhotoSummaryFragment; index: number }>) => {
+		const { photo } = e.detail;
+
+		file = undefined;
+
+		photoId = photo.id;
+		pristine = false;
+	};
 
 	const onInput = () => {
 		pristine = false;
@@ -44,7 +73,9 @@
 			.updateSettings({
 				displayName,
 				watermarkLocation,
-				copyrightLocation: copyrightLocation == '' ? undefined : copyrightLocation
+				copyrightLocation: copyrightLocation == '' ? undefined : copyrightLocation,
+				photoId,
+				description
 			})
 			.then((val) => {
 				loading = false;
@@ -95,6 +126,49 @@
 						This is the display name that will be displayed on watermarks and other places on DiveDB
 					</span>
 				</FormRow>
+				<FormRow name="Profile Photo">
+					<div class="columns">
+						{#if photoId}
+							<div class="column col-3 col-sm-6">
+								<!-- svelte-ignore a11y-missing-attribute -->
+								<img
+									src={`/api/photos/jpeg/${photoId}`}
+									class="img-edit img-responsive"
+									style="margin-bottom: 0.4rem;"
+								/>
+							</div>
+						{/if}
+						{#if file}
+							<ImageUpload index={0} internal={true} on:upload={onUploaded} {file} />
+						{/if}
+					</div>
+					<div class="columns">
+						{#if photoId}
+							<div class="column col-3 col-sm-6">
+								<button
+									class="btn btn-sm btn-secondary btn-block"
+									on:click={removePhoto}
+									type="button">Remove Photo</button
+								>
+							</div>
+						{/if}
+						<div class="column col-3 col-sm-6">
+							<input on:change={onUpload} id="fileupload" type="file" accept=".jpg,.jpeg" />
+						</div>
+					</div>
+				</FormRow>
+				<FormRow name="Description">
+					<textarea
+						placeholder="Enter in a description of yourself, your dive certifications, and what you like to do!"
+						bind:value={description}
+						on:input={onInput}
+						rows="8"
+						class="form-input"
+					/>
+					<span class="form-input-hint">
+						This description will be displayed on your public profile
+					</span>
+				</FormRow>
 				<FormRow name="Logo Location">
 					<select on:input={onInput} bind:value={watermarkLocation} class="form-select">
 						<option value={OverlayLocation.BottomRight}> Bottom Right </option>
@@ -126,6 +200,7 @@
 					<button class="btn btn-primary" type="submit" disabled={canSave == false}
 						>Save Changes</button
 					>
+					<a class="btn btn-secondary" href="/users/{username}">View Profile</a>
 				</FormRow>
 			</form>
 		</div>

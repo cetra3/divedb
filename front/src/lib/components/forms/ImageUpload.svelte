@@ -19,6 +19,7 @@
 
 	export let file: File;
 	export let index: number;
+	export let internal: boolean = false;
 
 	let uploading = false;
 	const dispatch = createEventDispatcher();
@@ -88,7 +89,7 @@
 			}
 		});
 
-		request.open('POST', '/api/photos');
+		request.open('POST', `/api/photos?internal=${internal}`);
 		request.setRequestHeader('DiveDB-Token', localStorage.getItem('token') ?? '');
 		request.send(formData);
 	};

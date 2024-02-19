@@ -43,6 +43,7 @@ fragment DiveNode on Dive {
 	number
 	hasMetrics
 	description
+	summary
 	published
 	likes
 	liked

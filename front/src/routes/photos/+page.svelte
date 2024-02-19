@@ -27,7 +27,7 @@
 						<button class="btn btn-secondary btn-sm">All Photos</button>
 					</a>
 				{:else if $session.loggedIn}
-					<a href="/photos?u={$session.user?.username}">
+					<a href="/users/{$session.user?.username}/photos">
 						<button class="btn btn-secondary btn-sm">Your Photos</button>
 					</a>
 				{/if}

@@ -7,15 +7,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
     
 
-WORKDIR /svelte
+WORKDIR /front
 
-COPY docker.sh package.json yarn.lock /svelte
+COPY docker.sh package.json yarn.lock /front
 
 
 RUN yarn install
 
-COPY svelte.config.js vite.config.ts tsconfig.json /svelte
-COPY static /svelte/static
-COPY src /svelte/src
+COPY svelte.config.js vite.config.ts tsconfig.json /front
+COPY static /front/static
+COPY src /front/src
 
-ENTRYPOINT ["/svelte/docker.sh"]
+ENTRYPOINT ["/front/docker.sh"]

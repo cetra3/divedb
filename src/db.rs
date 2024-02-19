@@ -4,13 +4,13 @@ use postgres_types::ToSql;
 use reqwest::Client;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
 use tokio::sync::mpsc::{self, error::TrySendError, Receiver, Sender};
+use tokio::sync::RwLock;
 use tokio::time::Duration;
-use tokio::{join, sync::RwLock};
 use tokio_postgres::{NoTls, Row};
 use uuid::Uuid;
 
 use crate::{db::migrations::Migrator, schema::*};
-use log::*;
+use tracing::*;
 
 mod migrations;
 
@@ -102,19 +102,21 @@ impl DbHandle {
     }
 
     async fn clear_cache(&self) {
-        let (mut popular_sites, mut site_metrics, mut photos) = join!(
-            self.popular_sites.write(),
-            self.site_metrics.write(),
-            self.photos.write()
-        );
-
-        popular_sites.clear();
-        site_metrics.clear();
-        photos.clear();
+        {
+            self.popular_sites.write().await.clear();
+        }
+        {
+            self.site_metrics.write().await.clear();
+        }
+        {
+            self.photos.write().await.clear();
+        }
 
         if let Err(TrySendError::Full(())) = self.sender.try_send(()) {
             debug!("Svelte update throttled");
         }
+
+        debug!("Cleared cache");
     }
 }
 
@@ -174,7 +176,7 @@ fn throttle_update(rx: Receiver<()>, duration: Duration) {
         tokio::pin!(throttled_stream);
         loop {
             throttled_stream.next().await;
-            if let Err(err) = tokio::fs::File::create("./svelte/build/notify.lock").await {
+            if let Err(err) = tokio::fs::File::create("./front/build/notify.lock").await {
                 error!("Error notifying svelte frontend: {}", err);
             }
         }

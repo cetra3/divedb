@@ -14,6 +14,8 @@ pub struct DiveComment {
     pub user_id: Uuid,
     pub description: String,
     pub date: DateTime<Local>,
+    pub external: bool,
+    pub ap_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject)]

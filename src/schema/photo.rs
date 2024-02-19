@@ -22,6 +22,7 @@ pub struct Photo {
     pub height: i32,
     pub description: String,
     pub copyright: Option<String>,
+    pub internal: bool,
 }
 
 impl Photo {
@@ -224,6 +225,7 @@ pub struct CreatePhoto {
     pub date: DateTime<Local>,
     pub dive_id: Option<Uuid>,
     pub size: i32,
+    pub internal: Option<bool>,
     pub dive_site_id: Option<Uuid>,
     pub sealife_id: Option<Uuid>,
 }

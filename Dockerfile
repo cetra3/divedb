@@ -32,7 +32,7 @@ RUN \
 
 FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y libssl1.1 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y fontconfig fonts-ubuntu fonts-liberation libssl1.1 ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /divedb /usr/local/bin/divedb
 
 EXPOSE 3333

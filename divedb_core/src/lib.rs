@@ -16,5 +16,4 @@ pub trait FromRow {
     {
         rows.into_iter().map(Self::from_row).collect()
     }
-
 }

@@ -1,4 +1,4 @@
-use crate::{schema::PasswordReset, ConfigContext, EmailSecurity};
+use crate::{schema::PasswordReset, ConfigContext, EmailSecurity, SITE_URL};
 use anyhow::{anyhow, Result};
 use askama::Template;
 use lettre::{
@@ -41,7 +41,7 @@ impl Emailer {
         Self {
             mailer,
             from_addr,
-            site_url: context.site_context.site_url.clone(),
+            site_url: SITE_URL.clone(),
         }
     }
 

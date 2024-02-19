@@ -2,10 +2,10 @@ use anyhow::{anyhow, Error};
 use async_graphql::*;
 use chrono::prelude::*;
 use divedb_core::FromRow;
-use log::debug;
 use reqwest::Client;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 use uuid::Uuid;
 
 use once_cell::sync::Lazy;

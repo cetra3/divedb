@@ -62,7 +62,6 @@ impl FromRequest for Token {
     type Future = Ready<Result<Token, ActixError>>;
 
     fn from_request(req: &HttpRequest, _pl: &mut Payload) -> Self::Future {
-
         if let Some(web) = req.app_data::<web::Data<WebContext>>() {
             if let Some(header) = req.headers().get("divedb-token") {
                 return ready(Ok(Token {

@@ -5,7 +5,7 @@ use divedb_core::FromRow;
 
 use crate::{db::DbHandle, schema::Photo};
 
-use log::*;
+use tracing::*;
 
 use super::Migration;
 

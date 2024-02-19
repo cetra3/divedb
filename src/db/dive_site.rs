@@ -4,7 +4,7 @@ use postgres_types::ToSql;
 use uuid::Uuid;
 
 use crate::schema::*;
-use log::*;
+use tracing::*;
 
 use super::{DbHandle, StatementBuilder};
 

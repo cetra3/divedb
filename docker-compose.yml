@@ -12,30 +12,39 @@ services:
       - "5432:5432"
   web:
     build: .
+    image: registry:5000/divedb-web
     environment:
       CONNECT_URL: postgres://divedb:divedb@database
+      SITE_URL: https://divedb.k3s.local
     ports:
       - "3333:3333"
+    labels:
+      kompose.service.expose: "divedb.k3s.local"
+      kompose.service.expose.ingress-class-name: "nginx"
     depends_on:
       - database
     volumes:
-      - svelte-build:/svelte/build
+      - svelte-build:/front/build
       - ./store:/store
       - ./thumbs:/thumbs
   front:
     build: front
+    image: registry:5000/divedb-front
     environment:
       VITE_BACKEND_URL: http://web:3333
     depends_on:
       - web
       - database
     volumes:
-      - svelte-build:/svelte/build
+      - svelte-build:/front/build
   maildev:
     image: maildev/maildev
+    labels:
+      kompose.service.expose: "maildev.k3s.local"
+      kompose.service.expose.ingress-class-name: "nginx"
     ports:
-      - "1025:1025"
       - "1080:1080"
+      - "1025:1025"
 
 volumes:
   divedb-db: {}
