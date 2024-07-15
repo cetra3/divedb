@@ -14,7 +14,7 @@ use anyhow::Error;
 use kuchiki::traits::TendrilSink;
 use kuchikiki as kuchiki;
 use serde::{Deserialize, Serialize};
-use tracing::debug;
+use tracing::*;
 use url::Url;
 
 use crate::{
@@ -319,7 +319,9 @@ impl CreatePost {
         let create_with_context = WithContext::new_default(create);
         let sends = SendActivityTask::prepare(&create_with_context, &user, inboxes, data).await?;
         for send in sends {
-            send.sign_and_send(data).await?;
+            if let Err(err) = send.sign_and_send(data).await {
+                warn!("Error trying to send: {err:?}");
+            }
         }
         Ok(())
     }
