@@ -327,7 +327,7 @@ impl Object for Dive {
 
         // Put the dive chart at the end of the photos
         if data.handle.has_metrics(self.id).await? {
-            attachment.insert(0, Image::dive_chart(self.id));
+            attachment.push(Image::dive_chart(self.id));
         }
 
         let tag = if let Some(ref site) = dive_site {
