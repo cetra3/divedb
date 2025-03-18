@@ -6,6 +6,8 @@ fragment CurrentUser on LoginResponse {
 	displayName
 	watermarkLocation
 	copyrightLocation
+	description
+	photoId
 }
 
 fragment CurrentUserToken on LoginResponse {
@@ -20,4 +22,20 @@ fragment UserSummary on PublicUserInfo {
 	id
 	username
 	displayName
+}
+
+fragment UserInfo on PublicUserInfo {
+	id
+	username
+	displayName
+	description
+	photoId
+	photoCount
+	diveCount
+	latestPhotos {
+		...PhotoSummary
+	}
+	latestDives {
+		...DiveWithMetrics
+	}
 }

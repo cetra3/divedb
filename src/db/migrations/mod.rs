@@ -3,11 +3,12 @@ use std::collections::HashSet;
 use anyhow::Error;
 use async_trait::async_trait;
 
-use log::*;
+use tracing::*;
 
 #[macro_use]
 mod external_sql;
 
+mod create_apub_keys;
 mod fix_photo_dive_ids;
 
 use deadpool_postgres::Pool;
@@ -50,6 +51,8 @@ impl Migrator {
                 Box::new(fix_photo_dive_ids::FixPhotoDiveIds),
                 Box::new(external!("V018__regions_slug.sql")),
                 Box::new(external!("V019__social.sql")),
+                Box::new(create_apub_keys::CreateApubKeys),
+                Box::new(external!("V020__external_users.sql")),
             ],
         }
     }

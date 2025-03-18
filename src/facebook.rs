@@ -3,8 +3,8 @@ use reqwest::Url;
 use serde::Deserialize;
 use structopt::StructOpt;
 
-use log::*;
 use serde_json::Value;
+use tracing::*;
 
 #[derive(StructOpt, Clone, Debug, PartialEq)]
 pub struct FacebookOauth {

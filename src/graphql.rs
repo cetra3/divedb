@@ -1,19 +1,20 @@
+use crate::activitypub::activities::CreatePost;
 use crate::email::Emailer;
 use crate::search::{SearchResult, Searcher};
-use crate::SiteContext;
 use crate::{db::DbHandle, facebook::FacebookOauth, schema::*, subsurface, token::TokenEncryptor};
+use crate::{SiteContext, SITE_URL};
 use aes_gcm::Aes256Gcm;
 use anyhow::anyhow;
 use async_graphql::*;
 use governor::clock::{Clock, DefaultClock};
 use governor::state::keyed::DefaultKeyedStateStore;
 use governor::{Quota, RateLimiter};
-use log::*;
 use scrypt::*;
 use std::net::IpAddr;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
+use tracing::*;
 use uuid::Uuid;
 
 pub type IpLimiter = RateLimiter<IpAddr, DefaultKeyedStateStore<IpAddr>, DefaultClock>;
@@ -21,6 +22,7 @@ pub type IpLimiter = RateLimiter<IpAddr, DefaultKeyedStateStore<IpAddr>, Default
 pub struct SchemaContext {
     pub con: ConnectionContext,
     pub web: Arc<WebContext>,
+    pub fed: activitypub_federation::config::Data<Arc<WebContext>>,
 }
 
 pub struct ConnectionContext {
@@ -66,10 +68,8 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    async fn site_url(&self, context: &Context<'_>) -> FieldResult<String> {
-        let context = context.data::<SchemaContext>()?;
-
-        Ok(context.web.site_context.site_url.clone())
+    async fn site_url(&self, _context: &Context<'_>) -> FieldResult<String> {
+        Ok(SITE_URL.clone())
     }
 
     async fn fb_app_id(&self, context: &Context<'_>) -> FieldResult<String> {
@@ -157,6 +157,12 @@ impl Query {
         Ok(context.web.handle.recent_dives().await?)
     }
 
+    async fn user(&self, ctx: &Context<'_>, username: String) -> FieldResult<PublicUserInfo> {
+        let context = ctx.data::<SchemaContext>()?;
+
+        Ok(context.web.handle.user_by_username(&username).await?.into())
+    }
+
     async fn current_user(&self, ctx: &Context<'_>) -> FieldResult<Option<LoginResponse>> {
         let context = ctx.data::<SchemaContext>()?;
 
@@ -171,13 +177,15 @@ impl Query {
 
         Ok(Some(LoginResponse {
             id: user.id,
-            email: user.email,
+            email: user.email.ok_or_else(|| anyhow!("No Email"))?,
             token,
             level: user.level,
             username: user.username,
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         }))
     }
 
@@ -339,23 +347,24 @@ impl Mutation {
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
 
+        let email = user
+            .email
+            .as_ref()
+            .ok_or_else(|| anyhow!("Email Required"))?;
+
         let existing_password = user
             .password
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Existing Password"))?;
 
-        scrypt_check(&old_password, &existing_password)
+        scrypt_check(&old_password, existing_password)
             .map_err(|_| anyhow!("Invalid Existing Password"))?;
 
         let params = ScryptParams::recommended();
 
         let hash = scrypt_simple(&new_password, &params)?;
 
-        context
-            .web
-            .handle
-            .update_password(&user.email, &hash)
-            .await?;
+        context.web.handle.update_password(email, &hash).await?;
 
         Ok(true)
     }
@@ -393,6 +402,8 @@ impl Mutation {
                 display_name: user.display_name,
                 watermark_location: user.watermark_location,
                 copyright_location: user.copyright_location,
+                description: user.description,
+                photo_id: user.photo_id,
             })
         } else {
             Err(anyhow!("This Password Reset Token is invalid or is expired.  Please try resetting your password again").into())
@@ -432,6 +443,8 @@ impl Mutation {
             display_name: None,
             watermark_location: OverlayLocation::BottomRight,
             copyright_location: Some(OverlayLocation::BottomLeft),
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -467,6 +480,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -490,7 +505,7 @@ impl Mutation {
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Password"))?;
 
-        scrypt_check(&password, &existing_password).map_err(|_| anyhow!("Invalid Password"))?;
+        scrypt_check(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -503,6 +518,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -538,6 +555,8 @@ impl Mutation {
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         })
     }
 
@@ -547,6 +566,8 @@ impl Mutation {
         display_name: Option<String>,
         watermark_location: OverlayLocation,
         copyright_location: Option<OverlayLocation>,
+        description: String,
+        photo_id: Option<Uuid>,
     ) -> FieldResult<Option<LoginResponse>> {
         let context = context.data::<SchemaContext>()?;
 
@@ -557,14 +578,18 @@ impl Mutation {
             }
         };
 
+        let email = user.email.ok_or_else(|| anyhow!("No email"))?;
+
         let user = context
             .web
             .handle
             .update_settings(
-                &user.email,
+                &email,
                 display_name,
                 watermark_location,
                 copyright_location,
+                description,
+                photo_id,
             )
             .await?;
 
@@ -572,13 +597,15 @@ impl Mutation {
 
         Ok(Some(LoginResponse {
             id: user.id,
-            email: user.email,
+            email,
             token,
             level: user.level,
             username: user.username,
             display_name: user.display_name,
             watermark_location: user.watermark_location,
             copyright_location: user.copyright_location,
+            description: user.description,
+            photo_id: user.photo_id,
         }))
     }
 
@@ -712,7 +739,40 @@ impl Mutation {
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
 
-        Ok(context.web.handle.create_dive(user.id, &dive).await?)
+        let was_published = if let Some(existing_id) = dive.id {
+            context
+                .web
+                .handle
+                .dives(
+                    Some(user.id),
+                    &DiveQuery {
+                        id: Some(existing_id),
+                        ..Default::default()
+                    },
+                )
+                .await
+                .ok()
+                .and_then(|mut dives| dives.pop())
+                .map(|dive| dive.published)
+                .unwrap_or_default()
+        } else {
+            false
+        };
+
+        let dive = context.web.handle.create_dive(user.id, &dive).await?;
+
+        let followers = context
+            .web
+            .handle
+            .followers(user.id)
+            .await?
+            .into_iter()
+            .map(|user| user.ap_inbox())
+            .collect::<Vec<_>>();
+
+        CreatePost::send(dive.clone(), followers, &context.fed, was_published).await?;
+
+        Ok(dive)
     }
 
     async fn remove_dive(&self, context: &Context<'_>, id: Uuid) -> FieldResult<bool> {
@@ -1166,5 +1226,7 @@ impl Mutation {
 pub type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
 
 pub fn schema() -> Schema {
-    Schema::build(Query, Mutation, EmptySubscription).finish()
+    Schema::build(Query, Mutation, EmptySubscription)
+        .extension(async_graphql::extensions::Tracing)
+        .finish()
 }

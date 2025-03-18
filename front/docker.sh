@@ -3,7 +3,7 @@ set -e
 
 while true
 do
-  yarn build || echo "fail"
+  yarn build
   # ISR one day... https://github.com/sveltejs/kit/issues/661
   # Make sure we have the file system notify lock
   touch build/notify.lock

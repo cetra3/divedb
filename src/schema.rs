@@ -1,3 +1,4 @@
+pub mod activitypub;
 mod categories;
 mod comment;
 mod dive;

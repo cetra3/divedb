@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use anyhow::Error;
 use divedb_core::FromRow;
-use log::*;
 use postgres_types::ToSql;
+use tracing::*;
 use uuid::Uuid;
 
 use crate::schema::*;

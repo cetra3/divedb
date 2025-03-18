@@ -6,4 +6,5 @@ thumbs/
 large/
 *.jpg
 deploy.sh
+chart/
 Justfile

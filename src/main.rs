@@ -1,27 +1,34 @@
+use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
-    dev::ServiceRequest,
+    dev::{ServiceRequest, HttpServiceFactory},
     dev::{ConnectionInfo, ServiceResponse},
     error::ErrorInternalServerError,
     middleware::{self, DefaultHeaders},
     web::{self, Data},
     App, HttpRequest, HttpResponse, HttpServer,
 };
+
 use anyhow::{anyhow, Error};
 use async_graphql::{
     http::{playground_source, GraphQLPlaygroundConfig},
     CacheControl,
 };
 use facebook::FacebookOauth;
-use log::*;
+use once_cell::sync::Lazy;
 use photos::{open_photo, save_files};
 use rand::{thread_rng, Rng};
 use std::{
     cmp, env,
     net::{IpAddr, Ipv4Addr},
     str::FromStr,
+    sync::Arc,
 };
 use structopt::StructOpt;
 use token::Token;
+use tracing::*;
+use tracing_subscriber::{prelude::*, EnvFilter};
+use url::Url;
+mod activitypub;
 pub mod db;
 // mod photos;
 pub mod chart;
@@ -46,7 +53,7 @@ use aes_gcm::Aes256Gcm;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 use crate::{
-    chart::svg_chart,
+    chart::{png_chart, svg_chart},
     email::Emailer,
     photos::{image_dims, resize_image},
     schema::{DiveSiteBatcher, Photo, PhotoQuery, SealifeBatcher},
@@ -88,11 +95,12 @@ pub struct ConfigContext {
 
 #[derive(StructOpt, Clone, Debug, PartialEq)]
 pub struct SiteContext {
-    #[structopt(env, default_value = "https://divedb.net")]
-    pub site_url: String,
     #[structopt(env)]
     pub secret_key: Option<String>,
 }
+
+pub static SITE_URL: Lazy<String> =
+    Lazy::new(|| std::env::var("SITE_URL").unwrap_or("https://divedb.net".into()));
 
 #[derive(StructOpt, Clone, Debug, PartialEq)]
 pub struct EmailSettings {
@@ -165,19 +173,26 @@ pub fn cache_header(max_age: usize) -> DefaultHeaders {
     DefaultHeaders::new().add(("Cache-Control", format!("public, max-age={max_age}")))
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<(), Error> {
     // Sets up default logging if none is set for this project & actix web
     if env::var("RUST_LOG").is_err() {
         env::set_var(
             "RUST_LOG",
-            "actix_web=INFO,divedb=DEBUG,async-graphql=DEBUG,tantivy=DEBUG",
+            "actix_web=INFO,divedb=DEBUG,async_graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG",
         );
     }
 
     dotenv::dotenv().ok();
 
-    pretty_env_logger::init_timed();
+    tracing_subscriber::registry()
+        .with(
+            EnvFilter::builder()
+                .with_env_var("RUST_LOG")
+                .from_env_lossy(),
+        )
+        .with(tracing_subscriber::fmt::layer().with_level(true))
+        .init();
 
     // Grab the connect_url from the args
     let config = ConfigContext::from_args();
@@ -255,7 +270,9 @@ async fn main() -> Result<(), Error> {
     let cipher =
         Aes256Gcm::new_from_slice(&site_context.get_key()).map_err(|val| anyhow!("{}", val))?;
 
-    let web_context = web::Data::new(WebContext {
+    let site_url = Url::parse(&SITE_URL)?;
+
+    let web_context = Arc::new(WebContext {
         handle,
         rate_limiter,
         cipher,
@@ -267,12 +284,31 @@ async fn main() -> Result<(), Error> {
         facebook: config.facebook,
     });
 
+    let domain = site_url
+        .domain()
+        .ok_or_else(|| anyhow!("No domain from url: {site_url}"))?;
+
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap();
+
+    let fed_config = FederationConfig::builder()
+        .domain(domain)
+        .app_data(web_context.clone())
+        .client(client.clone().into())
+        .http_signature_compat(true)
+        .build()
+        .await?;
+
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(graphql::schema()))
-            .app_data(web_context.clone())
+            .app_data(Data::new(client.clone()))
+            .app_data(Data::from(web_context.clone()))
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
+            .wrap(FederationMiddleware::new(fed_config.clone()))
             .service(robots)
             .service(sitemap_handler)
             .service(
@@ -287,35 +323,35 @@ async fn main() -> Result<(), Error> {
                     .route(web::get().to(svg_chart)),
             )
             .service(
+                web::resource("/api/chart/{dive_id}/png")
+                    .wrap(cache_header(604800))
+                    .route(web::get().to(png_chart)),
+            )
+            .service(
                 web::resource(["/api/photos/{kind}/{id}"])
                     .wrap(cache_header(604800))
                     .route(web::get().to(open_photo)),
             )
             .service(web::resource("/api/photos").route(web::post().to(save_files)))
+            .service(activitypub::configure_users())
+            .service(activitypub::configure_dives())
             .service(
-                web::scope("").wrap(cache_header(86400)).service(
-                    Files::new("/", "./svelte/build")
-                        .index_file("index.html")
-                        .default_handler(|req: ServiceRequest| {
-                            let (http_req, _payload) = req.into_parts();
-
-                            let path = format!(
-                                "./svelte/build{}.html",
-                                http_req.path().replace("../", "")
-                            );
-
-                            debug!("Request uri:{}, path:{path}", http_req.path());
-
-                            async {
-                                let response = NamedFile::open(path)
-                                    .or_else(|_| NamedFile::open("./svelte/build/fallback.html"))?
-                                    .into_response(&http_req);
-
-                                Ok(ServiceResponse::new(http_req, response))
-                            }
-                        }),
-                ),
+                web::resource("/.well-known/webfinger")
+                    .route(web::get().to(activitypub::webfinger)),
             )
+            .route(
+                "/nodeinfo/2.0.json",
+                web::get()
+                    .to(activitypub::node_info)
+                    .wrap(cache_header(3600)),
+            )
+            .route(
+                "/.well-known/nodeinfo",
+                web::get()
+                    .to(activitypub::node_info_well_known)
+                    .wrap(cache_header(86400)),
+            )
+            .service(frontend())
     })
     .bind(&config.listen_address)?
     .run()
@@ -332,6 +368,28 @@ pub async fn playground_handler() -> HttpResponse {
         )))
 }
 
+pub fn frontend() -> impl HttpServiceFactory {
+    web::scope("").wrap(cache_header(86400)).service(
+        Files::new("/", "./front/build")
+            .index_file("index.html")
+            .default_handler(|req: ServiceRequest| {
+                let (http_req, _payload) = req.into_parts();
+
+                let path = format!("./front/build{}.html", http_req.path().replace("../", ""));
+
+                debug!("Request uri:{}, path:{path}", http_req.path());
+
+                async {
+                    let response = NamedFile::open(path)
+                        .or_else(|_| NamedFile::open("./front/build/fallback.html"))?
+                        .into_response(&http_req);
+
+                    Ok(ServiceResponse::new(http_req, response))
+                }
+            }),
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn graphql(
     gql_request: GraphQLRequest,
@@ -340,7 +398,10 @@ async fn graphql(
     token: Token,
     web: web::Data<WebContext>,
     schema: web::Data<Schema>,
+    fed_data: activitypub_federation::config::Data<Arc<WebContext>>,
 ) -> GraphQLResponse {
+    debug!("GraphQL Handler reached!");
+
     let user: Option<User>;
 
     if let Some(user_id) = token.user_id {
@@ -358,6 +419,7 @@ async fn graphql(
     let schema_context = SchemaContext {
         con: ConnectionContext { user, remote_ip },
         web: web.into_inner(),
+        fed: fed_data,
     };
 
     let mut request = gql_request.into_inner();

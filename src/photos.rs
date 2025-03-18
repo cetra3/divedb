@@ -18,8 +18,8 @@ use image::{
     DynamicImage, Rgba,
 };
 use imageproc::drawing::draw_text_mut;
-use log::*;
 use tokio::{fs::File, io::AsyncWriteExt};
+use tracing::*;
 use twoway::find_bytes;
 use uuid::Uuid;
 
@@ -74,6 +74,10 @@ pub async fn open_photo(
         PhotoKind::JpegLarge => photo.jpg_large_location(),
         PhotoKind::WebpLarge => photo.webp_large_location(),
         PhotoKind::Full => {
+            if photo.internal {
+                return Ok(NamedFile::open(photo.orig_location())?);
+            }
+
             if let Some(user_id) = token.user_id {
                 let user = context
                     .handle
@@ -106,10 +110,10 @@ pub async fn open_photo(
 
 use once_cell::sync::Lazy;
 
-static WATERMARK: Lazy<DynamicImage> =
+pub static WATERMARK: Lazy<DynamicImage> =
     Lazy::new(|| image::load_from_memory(include_bytes!("../watermark.png")).unwrap());
 
-static FONT: Lazy<Font> =
+pub static FONT: Lazy<Font> =
     Lazy::new(|| Font::try_from_bytes(include_bytes!("./static/Asap-Bold.otf")).unwrap());
 
 pub fn image_dims<P: AsRef<Path>>(path: P) -> Result<(i32, i32), anyhow::Error> {
@@ -121,7 +125,7 @@ pub fn image_dims<P: AsRef<Path>>(path: P) -> Result<(i32, i32), anyhow::Error> 
 const THUMB_WIDTH: u32 = 1000;
 const LARGE_WIDTH: u32 = 2000;
 
-fn add_overlay(im: &mut DynamicImage, photo: &Photo, user: &User) {
+fn add_overlay(im: &mut DynamicImage, date: Option<DateTime<Local>>, user: &User) {
     use crate::schema::OverlayLocation::*;
 
     let (xl, yl) = match user.watermark_location {
@@ -147,19 +151,12 @@ fn add_overlay(im: &mut DynamicImage, photo: &Photo, user: &User) {
             copyright_notice.push_str(username);
         }
 
-        if let Some(date) = photo.date {
+        if let Some(date) = date {
             copyright_notice.push(' ');
             copyright_notice.push_str(&date.format("%Y").to_string())
         }
 
-        let v_metrics = &FONT.v_metrics(scale);
-        let offset = point(0.0, v_metrics.ascent);
-        let width = FONT
-            .layout(&copyright_notice, scale, offset)
-            .filter_map(|val| val.pixel_bounding_box())
-            .map(|val| val.max.x)
-            .max()
-            .unwrap_or_default() as u32;
+        let width = get_font_width(&copyright_notice, scale);
 
         let (xl, yl) = match location {
             TopLeft => (10, 10),
@@ -168,25 +165,23 @@ fn add_overlay(im: &mut DynamicImage, photo: &Photo, user: &User) {
             BottomRight => (im.width() - width - 10, im.height() - 40),
         };
 
-        draw_text_mut(
-            im,
-            Rgba([59, 67, 81, 0]),
-            xl as i32,
-            (yl + 1) as i32,
-            scale,
-            &FONT,
-            &copyright_notice,
-        );
-        draw_text_mut(
-            im,
-            Rgba([255, 255, 255, 255]),
-            xl as i32,
-            yl as i32,
-            scale,
-            &FONT,
-            &copyright_notice,
-        );
+        draw_shadowed_text(im, xl as i32, yl as i32, scale, &copyright_notice);
     }
+}
+
+pub fn draw_shadowed_text(im: &mut DynamicImage, x: i32, y: i32, scale: Scale, text: &str) {
+    draw_text_mut(im, Rgba([59, 67, 81, 0]), x, y + 1, scale, &FONT, text);
+    draw_text_mut(im, Rgba([255, 255, 255, 255]), x, y, scale, &FONT, text);
+}
+
+pub fn get_font_width(text: &str, scale: Scale) -> u32 {
+    let v_metrics = &FONT.v_metrics(scale);
+    let offset = point(0.0, v_metrics.ascent);
+    FONT.layout(text, scale, offset)
+        .filter_map(|val| val.pixel_bounding_box())
+        .map(|val| val.max.x)
+        .max()
+        .unwrap_or_default() as u32
 }
 
 pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<(), anyhow::Error> {
@@ -198,6 +193,19 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
     }
 
     let im = image::open(photo.orig_location())?;
+
+    if photo.internal {
+        let width = 512;
+
+        let im = im.resize(width, width, FilterType::Lanczos3);
+        std::fs::create_dir_all(jpg_location.parent().unwrap())?;
+        let mut file = BufWriter::new(std::fs::File::create(jpg_location)?);
+        let mut encoder = JpegEncoder::new_with_quality(&mut file, 80);
+        encoder.encode_image(&im)?;
+
+        return Ok(());
+    }
+
     for (width, jpg_location, webp_location) in [
         (
             THUMB_WIDTH,
@@ -212,7 +220,7 @@ pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<
     ] {
         let mut im = im.resize(width, width, FilterType::Lanczos3);
 
-        add_overlay(&mut im, photo, user);
+        add_overlay(&mut im, photo.date, user);
 
         let mut error_count = 0;
 
@@ -279,6 +287,8 @@ pub struct UploadQuery {
     dive_site_id: Option<Uuid>,
     #[serde(default)]
     sealife_id: Option<Uuid>,
+    #[serde(default)]
+    internal: Option<bool>,
 }
 
 pub async fn save_files(
@@ -369,15 +379,19 @@ pub async fn save_files(
 
         let mut dive_site_id = query_site_id;
 
-        if let Some(val) = date {
-            dive = context
-                .handle
-                .nearest_dive_by_time(user.id, val)
-                .await
-                .map_err(log_error)?;
+        let internal = query.internal.unwrap_or_default();
 
-            if dive_site_id.is_none() {
-                dive_site_id = dive.as_ref().and_then(|val| val.dive_site_id);
+        if !internal {
+            if let Some(val) = date {
+                dive = context
+                    .handle
+                    .nearest_dive_by_time(user.id, val)
+                    .await
+                    .map_err(log_error)?;
+
+                if dive_site_id.is_none() {
+                    dive_site_id = dive.as_ref().and_then(|val| val.dive_site_id);
+                }
             }
         }
 
@@ -390,6 +404,7 @@ pub async fn save_files(
             dive_site_id,
             size: bytes_written as i32,
             sealife_id: query.sealife_id,
+            internal: query.internal,
         };
 
         let user = context
