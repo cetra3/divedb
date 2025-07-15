@@ -1,4 +1,7 @@
-use crate::{schema::PasswordReset, ConfigContext, EmailSecurity, SITE_URL};
+use crate::{
+    schema::{EmailVerification, PasswordReset},
+    ConfigContext, EmailSecurity, SITE_URL,
+};
 use anyhow::{anyhow, Result};
 use askama::Template;
 use lettre::{
@@ -86,6 +89,52 @@ impl Emailer {
 
         Ok(())
     }
+
+    pub async fn email_verification(
+        &self,
+        email: String,
+        verification: EmailVerification,
+    ) -> Result<()> {
+        let mjml = HtmlVerification {
+            id: verification.id,
+            email: &email,
+            site_url: &self.site_url,
+        }
+        .render()?;
+        let text = TextVerification {
+            id: verification.id,
+            email: &email,
+            site_url: &self.site_url,
+        }
+        .render()?;
+
+        let root = mrml::parse(&mjml).map_err(|val| anyhow!("{:?}", val))?;
+        let opts = mrml::prelude::render::Options::default();
+
+        let html = root.render(&opts).map_err(|val| anyhow!("{:?}", val))?;
+
+        let email = Message::builder()
+            .from(self.from_addr.parse()?)
+            .to(email.parse()?)
+            .subject("DiveDB Email Verification")
+            .multipart(
+                MultiPart::alternative() // This is composed of two parts.
+                    .singlepart(
+                        SinglePart::builder()
+                            .header(header::ContentType::TEXT_PLAIN)
+                            .body(text), // Every message should have a plain text fallback.
+                    )
+                    .singlepart(
+                        SinglePart::builder()
+                            .header(header::ContentType::TEXT_HTML)
+                            .body(html),
+                    ),
+            )?;
+
+        self.mailer.send(email).await?;
+
+        Ok(())
+    }
 }
 
 #[derive(Template)]
@@ -99,6 +148,22 @@ struct HtmlReset<'a> {
 #[derive(Template)]
 #[template(path = "password_reset.txt", escape = "none")]
 struct TextReset<'a> {
+    id: Uuid,
+    email: &'a str,
+    site_url: &'a str,
+}
+
+#[derive(Template)]
+#[template(path = "email_verification.mjml", escape = "none")]
+struct HtmlVerification<'a> {
+    id: Uuid,
+    email: &'a str,
+    site_url: &'a str,
+}
+
+#[derive(Template)]
+#[template(path = "email_verification.txt", escape = "none")]
+struct TextVerification<'a> {
     id: Uuid,
     email: &'a str,
     site_url: &'a str,

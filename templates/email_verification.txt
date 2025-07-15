@@ -1,0 +1,9 @@
+Email Verification
+
+Welcome to DiveDB! Please verify your email address to complete your registration.
+
+To verify your email address, follow the link below:
+
+{{site_url}}/verify-email?token={{id}}&email={{email}}
+
+If you did not create an account with DiveDB, please ignore this email.

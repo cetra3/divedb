@@ -307,6 +307,12 @@ pub async fn save_files(
     };
 
     debug!("User ID:{}", user.id);
+
+    if !user.email_verified {
+        return Ok(HttpResponse::Unauthorized()
+            .body("Email Verification is required before Uploading Files"));
+    }
+
     let quota = context
         .handle
         .photo_quota_usage(user.id)
@@ -330,6 +336,8 @@ pub async fn save_files(
 
     // iterate over multipart stream
     while let Ok(Some(mut field)) = payload.try_next().await {
+        let user = user.clone();
+
         let content_type = field.content_disposition();
         let filename = content_type
             .get_filename()
@@ -350,7 +358,7 @@ pub async fn save_files(
 
         let mut bytes_written = 0;
 
-        let write_path = format!("{}/{}", write_folder, filename);
+        let write_path = format!("{write_folder}/{filename}");
 
         debug!("Writing to:{}", write_path);
 
@@ -406,12 +414,6 @@ pub async fn save_files(
             sealife_id: query.sealife_id,
             internal: query.internal,
         };
-
-        let user = context
-            .handle
-            .user_details(photo.user_id)
-            .await
-            .map_err(log_error)?;
 
         let mut new_photo = context.handle.add_photo(&photo).await.map_err(log_error)?;
 

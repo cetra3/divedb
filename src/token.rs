@@ -104,7 +104,7 @@ mod tests {
         )
         .expect("Decodes correctly");
 
-        eprintln!("Plain:{}", plaintext);
+        eprintln!("Plain:{plaintext}");
 
         assert_eq!(&plaintext, MESSAGE)
     }

@@ -175,13 +175,14 @@ type LoginResponse {
 	copyrightLocation: OverlayLocation
 	description: String!
 	photoId: UUID
+	emailVerified: Boolean!
 }
 
 type Mutation {
 	requestResetToken(email: String!): Boolean!
 	changePassword(oldPassword: String!, newPassword: String!): Boolean!
 	resetPassword(email: String!, newPassword: String!, token: UUID!): LoginResponse!
-	registerUser(username: String!, email: String!, password: String!): LoginResponse!
+	registerUser(username: String!, email: String!, password: String!): Boolean!
 	fbRegisterUser(username: String!, redirectUri: String!, code: String!): LoginResponse!
 	login(email: String!, password: String!): LoginResponse!
 	fbLogin(redirectUri: String!, code: String!): LoginResponse!
@@ -213,6 +214,8 @@ type Mutation {
 	removeReference(id: UUID!): Boolean!
 	newRegion(region: CreateRegion!): Region!
 	removeRegion(id: UUID!): Boolean!
+	verifyEmail(email: String!, token: UUID!): LoginResponse!
+	resendVerification(email: String!): Boolean!
 }
 
 type OgReference {
@@ -344,6 +347,7 @@ type UserInfo {
 	username: String!
 	displayName: String
 	description: String!
+	emailVerified: Boolean!
 }
 
 enum UserLevel {

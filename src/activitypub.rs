@@ -244,7 +244,7 @@ pub fn file_response(request: &HttpRequest) -> Result<HttpResponse, Error> {
     let response =
         NamedFile::open(path).or_else(|_| NamedFile::open("./front/build/fallback.html"))?;
 
-    Ok(response.into_response(&request))
+    Ok(response.into_response(request))
 }
 
 pub fn is_apub_request(request: &HttpRequest) -> bool {

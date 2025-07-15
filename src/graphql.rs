@@ -109,6 +109,7 @@ impl Query {
         Ok(results)
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn dives(
         &self,
         context: &Context<'_>,
@@ -186,6 +187,7 @@ impl Query {
             copyright_location: user.copyright_location,
             description: user.description,
             photo_id: user.photo_id,
+            email_verified: user.email_verified,
         }))
     }
 
@@ -404,6 +406,7 @@ impl Mutation {
                 copyright_location: user.copyright_location,
                 description: user.description,
                 photo_id: user.photo_id,
+                email_verified: user.email_verified,
             })
         } else {
             Err(anyhow!("This Password Reset Token is invalid or is expired.  Please try resetting your password again").into())
@@ -416,7 +419,7 @@ impl Mutation {
         username: String,
         email: String,
         password: String,
-    ) -> FieldResult<LoginResponse> {
+    ) -> FieldResult<bool> {
         let context = context.data::<SchemaContext>()?;
         if let Ok(_user) = context.web.handle.user(&email).await {
             return Err(anyhow!("Email address is already in use.  Try logging in instead").into());
@@ -432,20 +435,18 @@ impl Mutation {
             .new_user(&username, &email, Some(&hash))
             .await?;
 
-        let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
+        let verification = context
+            .web
+            .handle
+            .request_email_verification(user.id)
+            .await?;
+        context
+            .web
+            .emailer
+            .email_verification(email.clone(), verification)
+            .await?;
 
-        Ok(LoginResponse {
-            id: user.id,
-            email,
-            token,
-            level: UserLevel::User,
-            username: user.username,
-            display_name: None,
-            watermark_location: OverlayLocation::BottomRight,
-            copyright_location: Some(OverlayLocation::BottomLeft),
-            description: user.description,
-            photo_id: user.photo_id,
-        })
+        Ok(true)
     }
 
     async fn fb_register_user(
@@ -469,6 +470,8 @@ impl Mutation {
 
         let user = context.web.handle.new_user(&username, &email, None).await?;
 
+        context.web.handle.mark_email_verified(user.id).await?;
+
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
         Ok(LoginResponse {
@@ -482,6 +485,7 @@ impl Mutation {
             copyright_location: user.copyright_location,
             description: user.description,
             photo_id: user.photo_id,
+            email_verified: true,
         })
     }
 
@@ -520,6 +524,7 @@ impl Mutation {
             copyright_location: user.copyright_location,
             description: user.description,
             photo_id: user.photo_id,
+            email_verified: user.email_verified,
         })
     }
 
@@ -557,6 +562,7 @@ impl Mutation {
             copyright_location: user.copyright_location,
             description: user.description,
             photo_id: user.photo_id,
+            email_verified: user.email_verified,
         })
     }
 
@@ -606,6 +612,7 @@ impl Mutation {
             copyright_location: user.copyright_location,
             description: user.description,
             photo_id: user.photo_id,
+            email_verified: user.email_verified,
         }))
     }
 
@@ -739,6 +746,10 @@ impl Mutation {
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
 
+        if dive.published && !user.email_verified {
+            return Err(anyhow!("Email Verification required before Publishing dives").into());
+        }
+
         let was_published = if let Some(existing_id) = dive.id {
             context
                 .web
@@ -857,6 +868,12 @@ impl Mutation {
             .user
             .as_ref()
             .ok_or_else(|| anyhow!("Login Required"))?;
+
+        if site.published && !user.email_verified {
+            return Err(
+                anyhow!("Email Verification required before Editing/Publishing dive sites").into(),
+            );
+        }
 
         let dive_site = context.web.handle.create_dive_site(user.id, &site).await?;
 
@@ -1220,6 +1237,71 @@ impl Mutation {
         } else {
             Err(anyhow!("Admin user level required").into())
         }
+    }
+
+    async fn verify_email(
+        &self,
+        context: &Context<'_>,
+        email: String,
+        token: Uuid,
+    ) -> FieldResult<LoginResponse> {
+        let context = context.data::<SchemaContext>()?;
+
+        let user = context.web.handle.user(&email).await?;
+        let verifications = context
+            .web
+            .handle
+            .get_valid_email_verifications(user.id)
+            .await?;
+
+        if let Some(verification) = verifications.iter().find(|reset| reset.id == token) {
+            debug!("Valid verification found:{verification:?}");
+
+            context.web.handle.mark_email_verified(user.id).await?;
+            let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
+
+            Ok(LoginResponse {
+                id: user.id,
+                email,
+                token,
+                level: user.level,
+                username: user.username,
+                display_name: user.display_name,
+                watermark_location: user.watermark_location,
+                copyright_location: user.copyright_location,
+                description: user.description,
+                photo_id: user.photo_id,
+                email_verified: true,
+            })
+        } else {
+            Err(anyhow!("This Email Verification Token is invalid or is expired.").into())
+        }
+    }
+
+    async fn resend_verification(&self, context: &Context<'_>, email: String) -> FieldResult<bool> {
+        let context = context.data::<SchemaContext>()?;
+
+        // Get the user by email
+        let user = context.web.handle.user(&email).await?;
+
+        // Check if already verified
+        if user.email_verified {
+            return Err(anyhow!("Email is already verified").into());
+        }
+
+        // Create new verification token and send email
+        let verification = context
+            .web
+            .handle
+            .request_email_verification(user.id)
+            .await?;
+        context
+            .web
+            .emailer
+            .email_verification(email, verification)
+            .await?;
+
+        Ok(true)
     }
 }
 

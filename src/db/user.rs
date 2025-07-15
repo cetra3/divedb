@@ -59,7 +59,7 @@ impl DbHandle {
                 public_key,
                 level,
                 external
-            ) 
+            )
             values (
                 $1,
                 $2,
@@ -196,6 +196,6 @@ impl DbHandle {
             )
             .await?;
 
-        Ok(query.get(0).and_then(|row| row.get(0)).unwrap_or(0))
+        Ok(query.first().and_then(|row| row.get(0)).unwrap_or(0))
     }
 }

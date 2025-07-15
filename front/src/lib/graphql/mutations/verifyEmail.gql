@@ -1,0 +1,5 @@
+mutation verifyEmail($email: String!, $token: UUID!) {
+    verifyEmail(email: $email, token: $token) {
+		...CurrentUserToken
+	}
+}

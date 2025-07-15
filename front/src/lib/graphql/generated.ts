@@ -202,6 +202,7 @@ export type LoginResponse = {
 	description: Scalars['String']['output'];
 	displayName?: Maybe<Scalars['String']['output']>;
 	email: Scalars['String']['output'];
+	emailVerified: Scalars['Boolean']['output'];
 	id: Scalars['UUID']['output'];
 	level: UserLevel;
 	photoId?: Maybe<Scalars['UUID']['output']>;
@@ -230,7 +231,7 @@ export type Mutation = {
 	newReference: OgReference;
 	newRegion: Region;
 	newSealife: Sealife;
-	registerUser: LoginResponse;
+	registerUser: Scalars['Boolean']['output'];
 	removeCategory: Scalars['Boolean']['output'];
 	removeCategoryValue: Scalars['Boolean']['output'];
 	removeComment: Scalars['Boolean']['output'];
@@ -241,12 +242,14 @@ export type Mutation = {
 	removeRegion: Scalars['Boolean']['output'];
 	removeSealife: Scalars['Boolean']['output'];
 	requestResetToken: Scalars['Boolean']['output'];
+	resendVerification: Scalars['Boolean']['output'];
 	resetPassword: LoginResponse;
 	syncSubsurface: Scalars['Boolean']['output'];
 	unlikeDive: Scalars['Boolean']['output'];
 	unlikePhoto: Scalars['Boolean']['output'];
 	updatePhoto: Photo;
 	updateSettings?: Maybe<LoginResponse>;
+	verifyEmail: LoginResponse;
 };
 
 export type MutationAddFeedbackArgs = {
@@ -375,6 +378,10 @@ export type MutationRequestResetTokenArgs = {
 	email: Scalars['String']['input'];
 };
 
+export type MutationResendVerificationArgs = {
+	email: Scalars['String']['input'];
+};
+
 export type MutationResetPasswordArgs = {
 	email: Scalars['String']['input'];
 	newPassword: Scalars['String']['input'];
@@ -404,6 +411,11 @@ export type MutationUpdateSettingsArgs = {
 	displayName?: InputMaybe<Scalars['String']['input']>;
 	photoId?: InputMaybe<Scalars['UUID']['input']>;
 	watermarkLocation: OverlayLocation;
+};
+
+export type MutationVerifyEmailArgs = {
+	email: Scalars['String']['input'];
+	token: Scalars['UUID']['input'];
 };
 
 export type OgReference = {
@@ -576,6 +588,7 @@ export type UserInfo = {
 	description: Scalars['String']['output'];
 	displayName?: Maybe<Scalars['String']['output']>;
 	email?: Maybe<Scalars['String']['output']>;
+	emailVerified: Scalars['Boolean']['output'];
 	id: Scalars['UUID']['output'];
 	level: UserLevel;
 	username: Scalars['String']['output'];
@@ -1983,17 +1996,7 @@ export type RegisterUserMutationVariables = Exact<{
 	password: Scalars['String']['input'];
 }>;
 
-export type RegisterUserMutation = {
-	__typename?: 'Mutation';
-	registerUser: {
-		__typename?: 'LoginResponse';
-		id: string;
-		email: string;
-		username: string;
-		level: UserLevel;
-		token: string;
-	};
-};
+export type RegisterUserMutation = { __typename?: 'Mutation'; registerUser: boolean };
 
 export type RemoveDiveMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
@@ -2079,6 +2082,23 @@ export type UpdatePhotoMutation = {
 			username: string;
 			displayName?: string | null;
 		};
+	};
+};
+
+export type VerifyEmailMutationVariables = Exact<{
+	email: Scalars['String']['input'];
+	token: Scalars['UUID']['input'];
+}>;
+
+export type VerifyEmailMutation = {
+	__typename?: 'Mutation';
+	verifyEmail: {
+		__typename?: 'LoginResponse';
+		id: string;
+		email: string;
+		username: string;
+		level: UserLevel;
+		token: string;
 	};
 };
 
@@ -3508,11 +3528,8 @@ export const RemoveRegionDocument = gql`
 `;
 export const RegisterUserDocument = gql`
 	mutation registerUser($username: String!, $email: String!, $password: String!) {
-		registerUser(username: $username, email: $email, password: $password) {
-			...CurrentUserToken
-		}
+		registerUser(username: $username, email: $email, password: $password)
 	}
-	${CurrentUserTokenFragmentDoc}
 `;
 export const RemoveDiveDocument = gql`
 	mutation removeDive($id: UUID!) {
@@ -3555,6 +3572,14 @@ export const UpdatePhotoDocument = gql`
 	${UserSummaryFragmentDoc}
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
+`;
+export const VerifyEmailDocument = gql`
+	mutation verifyEmail($email: String!, $token: UUID!) {
+		verifyEmail(email: $email, token: $token) {
+			...CurrentUserToken
+		}
+	}
+	${CurrentUserTokenFragmentDoc}
 `;
 export const GetCategoriesDocument = gql`
 	query getCategories {
@@ -4195,6 +4220,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				'updatePhoto',
+				'mutation'
+			);
+		},
+		verifyEmail(
+			variables: VerifyEmailMutationVariables,
+			requestHeaders?: GraphQLClientRequestHeaders
+		): Promise<VerifyEmailMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<VerifyEmailMutation>(VerifyEmailDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				'verifyEmail',
 				'mutation'
 			);
 		},

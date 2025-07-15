@@ -479,7 +479,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     },
                 )
                 .await?
-                .get(0)
+                .first()
             {
                 trace!("Site exists:{}, skipping", existing_site.id);
             } else {
@@ -536,7 +536,6 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             Ok((dive, metrics.remove(&id)))
         })
         .try_for_each_concurrent(0, |(dive, metrics)| async move {
-
             if let Some(existing_dive) = handle
                 .dives(
                     Some(dive.user_id),
@@ -546,7 +545,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     },
                 )
                 .await?
-                .get(0)
+                .first()
             {
                 debug!("Dive exists:{}, skipping", existing_dive.id);
             } else {

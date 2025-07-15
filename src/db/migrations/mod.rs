@@ -53,6 +53,7 @@ impl Migrator {
                 Box::new(external!("V019__social.sql")),
                 Box::new(create_apub_keys::CreateApubKeys),
                 Box::new(external!("V020__external_users.sql")),
+                Box::new(external!("V021__email_verification.sql")),
             ],
         }
     }
@@ -64,8 +65,8 @@ impl Migrator {
         client
             .execute(
                 "
-                CREATE table if not exists migrations 
-                    (id serial primary key, 
+                CREATE table if not exists migrations
+                    (id serial primary key,
                      name text not null,
                      date timestamp with time zone not null default now()
                     )",

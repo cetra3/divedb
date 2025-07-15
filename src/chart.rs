@@ -329,7 +329,7 @@ mod filters {
 pub fn minutes(val: &f64) -> String {
     let h = (val / 3600.0).floor() as usize;
     let m: usize = (val % 3600.0 / 60.0).floor() as usize;
-    format!("{}:{:0>2}", h, m)
+    format!("{h}:{m:0>2}")
 }
 
 #[derive(Template)]

@@ -14,10 +14,7 @@
 
 <script lang="ts">
 	import FormRow from '$lib/components/FormRow.svelte';
-	import { goto } from '$app/navigation';
 	import type { ClientError } from 'graphql-request';
-	import { browser } from '$app/environment';
-	import { session } from '$lib/session';
 	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
 
 	import type { PageData } from './$types';
@@ -33,12 +30,11 @@
 	let password = '';
 	let confirmPassword = '';
 
-	let query = new URLSearchParams(browser ? location.search : '');
-	let redirect = query.get('redirect') || '/';
-
 	let errors: string | undefined = undefined;
 
 	let loading = false;
+
+	let registered = false;
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -48,10 +44,8 @@
 		client
 			.registerUser({ username, email, password })
 			.then((val) => {
-				localStorage.setItem('token', val.registerUser.token);
-				session.set({ loggedIn: true, user: val.registerUser });
 				loading = false;
-				goto(redirect);
+				registered = true;
 			})
 			.catch((reason: ClientError) => {
 				loading = false;
@@ -98,13 +92,30 @@
 					/>
 				</FormRow>
 				<FormRow name="">
-					<button class="btn btn-primary" type="submit" disabled={canSave == false}>Register</button
+					<button
+						class="btn btn-primary"
+						type="submit"
+						disabled={canSave == false || registered == true}>Register</button
 					>
 				</FormRow>
 			</form>
 		</div>
+		{#if registered}
+			<div class="column col-12">
+				<div class="toast">
+					<p>Registration Successful! Please check your email account to continue with email
+					verification.
+				    </p>
+					<p>If the email doesn't come within a couple of minutes, please check your spam
+					folder.
+					</p>
+				</div>
+			</div>
+		{/if}
 		{#if errors}
-			<div class="toast">{errors}</div>
+			<div class="column col-12">
+				<div class="toast">{errors}</div>
+			</div>
 		{/if}
 		{#if loading}
 			<div class="column col-12">

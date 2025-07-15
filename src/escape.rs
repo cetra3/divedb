@@ -1,14 +1,4 @@
 use pulldown_cmark::{Options, Parser};
-trait EscapeXml {
-    fn escape_xml(&self) -> String;
-}
-
-impl EscapeXml for String {
-    #[inline]
-    fn escape_xml(&self) -> String {
-        escape(&md_to_text(self))
-    }
-}
 
 #[inline]
 pub fn escape(input: &str) -> String {

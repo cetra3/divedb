@@ -67,7 +67,7 @@ impl DbHandle {
         {
             let metrics = self.site_metrics.read().await;
 
-            if metrics.len() > 0 {
+            if !metrics.is_empty() {
                 return Ok(metrics.get(&dive_site_id).cloned());
             }
         }
@@ -76,7 +76,7 @@ impl DbHandle {
 
         let mut metrics = self.site_metrics.write().await;
 
-        if metrics.len() > 0 {
+        if !metrics.is_empty() {
             return Ok(metrics.get(&dive_site_id).cloned());
         }
 
@@ -124,7 +124,7 @@ impl DbHandle {
             }
         }
 
-        return Ok(metrics.get(&dive_site_id).cloned());
+        Ok(metrics.get(&dive_site_id).cloned())
     }
 
     pub async fn dive_sites_batch(&self, uuids: &[Uuid]) -> Result<Vec<DiveSite>, Error> {

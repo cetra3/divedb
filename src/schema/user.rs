@@ -21,6 +21,7 @@ pub struct LoginResponse {
     pub copyright_location: Option<OverlayLocation>,
     pub description: String,
     pub photo_id: Option<Uuid>,
+    pub email_verified: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
@@ -31,6 +32,7 @@ pub struct UserInfo {
     pub username: String,
     pub display_name: Option<String>,
     pub description: String,
+    pub email_verified: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -148,6 +150,7 @@ impl From<User> for UserInfo {
             username: value.username,
             display_name: value.display_name,
             description: value.description,
+            email_verified: value.email_verified,
         }
     }
 }

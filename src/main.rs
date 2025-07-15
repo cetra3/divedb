@@ -1,7 +1,7 @@
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
-    dev::{ServiceRequest, HttpServiceFactory},
     dev::{ConnectionInfo, ServiceResponse},
+    dev::{HttpServiceFactory, ServiceRequest},
     error::ErrorInternalServerError,
     middleware::{self, DefaultHeaders},
     web::{self, Data},

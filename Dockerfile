@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -30,9 +30,9 @@ RUN \
   cargo build --release && cp target/release/divedb /divedb
 
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y fontconfig fonts-ubuntu fonts-liberation libssl1.1 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y fontconfig fonts-ubuntu fonts-liberation libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /divedb /usr/local/bin/divedb
 
 EXPOSE 3333

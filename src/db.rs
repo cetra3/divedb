@@ -18,6 +18,7 @@ mod categories;
 mod comment;
 mod dive;
 mod dive_site;
+mod email_verification;
 mod feedback;
 mod og_reference;
 mod password_reset;
