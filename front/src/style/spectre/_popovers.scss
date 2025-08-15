@@ -1,0 +1,73 @@
+@use 'functions/get-var' as *;
+@use 'mixins/shadow' as *;
+@use 'variables' as *;
+
+// Popovers
+.popover {
+	display: inline-block;
+	position: relative;
+
+	.popover-container {
+		left: 50%;
+		opacity: 0;
+		// padding: $layout-spacing; // old spectre.css
+		padding: get-var('layout-spacing', $unit: 1);
+		position: absolute;
+		top: 0;
+		transform: translate(-50%, -50%) scale(0);
+		// transition: transform 0.2s; // old spectre.css
+		transition: transform get-var('transition-duration');
+		// width: $control-width-sm; // old spectre.css
+		width: get-var('control-width', $suffix: 'sm');
+		// z-index: $zindex-3; // old spectre.css
+		z-index: get-var('z-index-3');
+	}
+
+	*:focus + .popover-container,
+	&:hover .popover-container {
+		display: block;
+		opacity: 1;
+		transform: translate(-50%, -100%) scale(1);
+	}
+
+	&.popover-right {
+		.popover-container {
+			left: 100%;
+			top: 50%;
+		}
+
+		*:focus + .popover-container,
+		&:hover .popover-container {
+			transform: translate(0, -50%) scale(1);
+		}
+	}
+
+	&.popover-bottom {
+		.popover-container {
+			left: 50%;
+			top: 100%;
+		}
+
+		*:focus + .popover-container,
+		&:hover .popover-container {
+			transform: translate(-50%, 0) scale(1);
+		}
+	}
+
+	&.popover-left {
+		.popover-container {
+			left: 0;
+			top: 50%;
+		}
+
+		*:focus + .popover-container,
+		&:hover .popover-container {
+			transform: translate(-100%, -50%) scale(1);
+		}
+	}
+
+	.card {
+		@include shadow-variant(0.2rem);
+		border: 0;
+	}
+}

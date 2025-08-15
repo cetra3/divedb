@@ -7,10 +7,11 @@ use serde_json::{Map, Value};
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::{
-    Field, IndexRecordOption, Schema, TextFieldIndexing, TextOptions, STORED, STRING, TEXT,
+    Field, IndexRecordOption, OwnedValue, Schema, TextFieldIndexing, TextOptions,
+    Value as DocValue, STORED, STRING, TEXT,
 };
-use tantivy::tokenizer::*;
 use tantivy::{doc, Document, Index, IndexReader, ReloadPolicy};
+use tantivy::{tokenizer::*, TantivyDocument};
 use uuid::Uuid;
 
 use crate::db::DbHandle;
@@ -60,13 +61,13 @@ impl Searcher {
 
         let idx = Index::create_in_ram(schema.clone());
 
-        let ngrams = LowerCaser.transform(NgramTokenizer::new(1, 4, false));
+        let ngrams = LowerCaser.transform(NgramTokenizer::new(1, 4, false).expect("always works"));
 
         idx.tokenizers().register("autosuggest", ngrams);
 
         let reader = idx
             .reader_builder()
-            .reload_policy(ReloadPolicy::OnCommit)
+            .reload_policy(ReloadPolicy::OnCommitWithDelay)
             .try_into()
             .expect("Could not build reader!");
 
@@ -131,12 +132,12 @@ impl Searcher {
             }
 
             if let Some(photo_id) = sealife.photo_id {
-                doc.add_text(self.photo_id, photo_id);
+                doc.add_text(self.photo_id, photo_id.to_string());
             }
 
             for cat_val in handle.category_map(sealife.id).await?.values().flatten() {
                 if let Some(value) = category_values.get(cat_val) {
-                    doc.add_text(self.category, cat_val);
+                    doc.add_text(self.category, cat_val.to_string());
                     doc.add_text(self.autosuggest, value);
                 }
             }
@@ -185,7 +186,7 @@ impl Searcher {
         let mut output = Vec::with_capacity(top_docs.len());
 
         for (_score, addr) in top_docs {
-            let doc = searcher.doc(addr)?;
+            let doc = searcher.doc::<TantivyDocument>(addr)?;
 
             let search_result: SearchResult =
                 serde_json::from_value(to_json_value(&doc, &self.schema)?)?;
@@ -223,14 +224,17 @@ pub enum SearchResultKind {
 
 // This is a little hack to use serde infrastructure to rehydrate a doc into something that can be deserialized.
 // Not sure if there is a way to do this without relying on serde_json or another deserializer
-pub fn to_json_value(doc: &Document, schema: &Schema) -> Result<Value, Error> {
+pub fn to_json_value<D: Document>(doc: &D, schema: &Schema) -> Result<Value, Error> {
     let mut json_map = Map::new();
 
-    for field_value in doc.field_values() {
-        let name = schema.get_field_name(field_value.field()).to_string();
-        let val = serde_json::to_value(field_value.value().clone())?;
+    for (field, mut field_values) in doc.get_sorted_field_values() {
+        let field_name = schema.get_field_name(field);
 
-        json_map.insert(name, val);
+        let value: Option<OwnedValue> = field_values
+            .pop()
+            .map(|val| OwnedValue::from(val.as_value()));
+
+        json_map.insert(field_name.to_string(), serde_json::to_value(&value)?);
     }
 
     Ok(Value::Object(json_map))

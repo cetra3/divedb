@@ -9,12 +9,14 @@
 	import { client } from '$lib/graphql/client';
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
+	import VerifyEmail from '$lib/components/forms/VerifyEmail.svelte';
 	let currentUser: CurrentUserFragment | undefined;
 	let username = '';
 	let displayName = '';
 	let watermarkLocation = OverlayLocation.BottomRight;
 	let copyrightLocation: OverlayLocation | '' = OverlayLocation.BottomLeft;
 	let description = '';
+	let emailVerified = false;
 	let photoId: string | undefined = undefined;
 
 	onMount(async () => {
@@ -25,6 +27,7 @@
 		copyrightLocation = currentUser?.copyrightLocation ?? ('' as OverlayLocation | '');
 		description = currentUser?.description ?? '';
 		photoId = currentUser?.photoId ?? undefined;
+		emailVerified = currentUser?.emailVerified ?? false;
 	});
 
 	let pristine = true;
@@ -107,6 +110,7 @@
 			<p>Adjust your user settings below</p>
 		</div>
 	</div>
+
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
 			<form class="form-horizontal" on:submit={onSubmit}>
@@ -164,7 +168,7 @@
 						on:input={onInput}
 						rows="8"
 						class="form-input"
-					/>
+					></textarea>
 					<span class="form-input-hint">
 						This description will be displayed on your public profile
 					</span>
@@ -209,10 +213,14 @@
 		{/if}
 		{#if loading}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 	</div>
+
+	{#if !emailVerified}
+		<VerifyEmail />
+	{/if}
 
 	<ChangePassword />
 

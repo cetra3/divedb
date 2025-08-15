@@ -1,7 +1,6 @@
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
-    dev::{ConnectionInfo, ServiceResponse},
-    dev::{HttpServiceFactory, ServiceRequest},
+    dev::ConnectionInfo,
     error::ErrorInternalServerError,
     middleware::{self, DefaultHeaders},
     web::{self, Data},
@@ -14,6 +13,7 @@ use async_graphql::{
     CacheControl,
 };
 use facebook::FacebookOauth;
+use foyer::{DirectFsDeviceOptions, Engine, HybridCacheBuilder, LargeEngineOptions};
 use once_cell::sync::Lazy;
 use photos::{open_photo, save_files};
 use rand::{thread_rng, Rng};
@@ -35,6 +35,7 @@ pub mod chart;
 pub mod email;
 pub mod escape;
 pub mod facebook;
+pub mod frontend;
 pub mod graphql;
 mod photos;
 pub mod schema;
@@ -42,7 +43,6 @@ pub mod search;
 mod seo;
 pub mod subsurface;
 pub mod token;
-use actix_files::{Files, NamedFile};
 
 use db::DbHandle;
 use graphql::*;
@@ -82,6 +82,15 @@ pub struct ConfigContext {
 
     #[structopt(short = "l", help = "Listen Address", default_value = "[::]:3333", env)]
     listen_address: String,
+
+    #[structopt(default_value = "cache", env)]
+    cache_dir: String,
+
+    #[structopt(default_value = "http://localhost:3000", env)]
+    frontend_url: String,
+
+    #[structopt(env)]
+    admin_email: Option<String>,
 
     #[structopt(flatten)]
     facebook: FacebookOauth,
@@ -201,8 +210,15 @@ async fn main() -> Result<(), Error> {
         tokio::fs::write("schema.graphql", schema().sdl()).await?;
     }
 
+    let frontend_cache = HybridCacheBuilder::new()
+        .memory(1024)
+        .storage(Engine::Large(LargeEngineOptions::default()))
+        .with_device_options(DirectFsDeviceOptions::new(&config.cache_dir))
+        .build()
+        .await?;
+
     // Starts up the db.  This can take time to timeout if there are issues connecting
-    let handle = DbHandle::new(&config.connect_url).await?;
+    let handle = DbHandle::new(&config.connect_url, frontend_cache.clone()).await?;
     if config.refresh_photos {
         let limit = Some(10);
         let mut offset = 0;
@@ -272,6 +288,11 @@ async fn main() -> Result<(), Error> {
 
     let site_url = Url::parse(&SITE_URL)?;
 
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap();
+
     let web_context = Arc::new(WebContext {
         handle,
         rate_limiter,
@@ -282,16 +303,15 @@ async fn main() -> Result<(), Error> {
         dive_batch,
         sealife_batch,
         facebook: config.facebook,
+        frontend_cache,
+        frontend_url: config.frontend_url,
+        client: client.clone(),
+        admin_email: config.admin_email,
     });
 
     let domain = site_url
         .domain()
         .ok_or_else(|| anyhow!("No domain from url: {site_url}"))?;
-
-    let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .build()
-        .unwrap();
 
     let fed_config = FederationConfig::builder()
         .domain(domain)
@@ -351,12 +371,11 @@ async fn main() -> Result<(), Error> {
                     .to(activitypub::node_info_well_known)
                     .wrap(cache_header(86400)),
             )
-            .service(frontend())
+            .service(frontend::frontend())
     })
     .bind(&config.listen_address)?
     .run()
     .await?;
-
     Ok(())
 }
 
@@ -366,28 +385,6 @@ pub async fn playground_handler() -> HttpResponse {
         .body(playground_source(GraphQLPlaygroundConfig::new(
             "/api/graphql",
         )))
-}
-
-pub fn frontend() -> impl HttpServiceFactory {
-    web::scope("").wrap(cache_header(86400)).service(
-        Files::new("/", "./front/build")
-            .index_file("index.html")
-            .default_handler(|req: ServiceRequest| {
-                let (http_req, _payload) = req.into_parts();
-
-                let path = format!("./front/build{}.html", http_req.path().replace("../", ""));
-
-                debug!("Request uri:{}, path:{path}", http_req.path());
-
-                async {
-                    let response = NamedFile::open(path)
-                        .or_else(|_| NamedFile::open("./front/build/fallback.html"))?
-                        .into_response(&http_req);
-
-                    Ok(ServiceResponse::new(http_req, response))
-                }
-            }),
-    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -400,8 +397,6 @@ async fn graphql(
     schema: web::Data<Schema>,
     fed_data: activitypub_federation::config::Data<Arc<WebContext>>,
 ) -> GraphQLResponse {
-    debug!("GraphQL Handler reached!");
-
     let user: Option<User>;
 
     if let Some(user_id) = token.user_id {

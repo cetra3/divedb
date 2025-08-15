@@ -37,7 +37,7 @@
 					class:btn-primary={values.some((val) => val == value.id)}
 				>
 					{#if category.name === 'Colour'}
-						<span class="colour-selection" style={'background-color:' + value.value} />
+						<span class="colour-selection" style={'background-color:' + value.value}></span>
 					{/if}
 					{value.value}
 				</button>

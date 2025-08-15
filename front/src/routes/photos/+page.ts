@@ -2,12 +2,9 @@ import { getClient } from '$lib/graphql/client';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
-	let username = url.searchParams.get('u') || undefined;
-
-	let photos = await getClient.getPhotos({ username });
+	let photos = await getClient.getPhotos();
 
 	return {
-		photos: photos.photos,
-		username
+		photos: photos.photos
 	};
 }) satisfies PageLoad;

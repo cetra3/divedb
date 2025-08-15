@@ -1,11 +1,10 @@
 use anyhow::Error;
 use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
+use foyer::HybridCache;
 use postgres_types::ToSql;
 use reqwest::Client;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
-use tokio::sync::mpsc::{self, error::TrySendError, Receiver, Sender};
 use tokio::sync::RwLock;
-use tokio::time::Duration;
 use tokio_postgres::{NoTls, Row};
 use uuid::Uuid;
 
@@ -34,13 +33,16 @@ pub struct DbHandle {
     site_metrics: Arc<RwLock<HashMap<Uuid, SiteMetric>>>,
     popular_sites: Arc<RwLock<Vec<DiveSite>>>,
     photos: Arc<RwLock<HashMap<Uuid, Photo>>>,
-    sender: Sender<()>,
+    cache: Option<HybridCache<String, crate::frontend::CacheEntry>>,
 }
 
 // Adds in all the SQL queries needed to persist Files and Parts
 impl DbHandle {
     // Sets up a new connection pool at the url specified.  If this can't connect within a timeout, it will error out.
-    pub async fn new(url: &str) -> Result<Self, Error> {
+    pub async fn new(
+        url: &str,
+        cache: HybridCache<String, crate::frontend::CacheEntry>,
+    ) -> Result<Self, Error> {
         debug!("Connecting to URL:{}", url);
 
         let pg_config = tokio_postgres::Config::from_str(url)?;
@@ -55,13 +57,9 @@ impl DbHandle {
 
         Migrator::new(pool.clone()).apply_migrations().await?;
 
-        let (sender, rx) = mpsc::channel::<()>(1);
-
         let site_metrics = Arc::new(RwLock::new(HashMap::new()));
         let popular_sites = Arc::new(RwLock::new(Vec::new()));
         let photos = Arc::new(RwLock::new(HashMap::new()));
-
-        throttle_update(rx, Duration::from_secs(3600));
 
         Ok(DbHandle {
             pool,
@@ -69,18 +67,14 @@ impl DbHandle {
             site_metrics,
             popular_sites,
             photos,
-            sender,
+            cache: Some(cache),
         })
     }
 
     pub fn from_pool(pool: &Pool) -> Self {
-        let (sender, rx) = mpsc::channel::<()>(1);
-
         let site_metrics = Arc::new(RwLock::new(HashMap::new()));
         let popular_sites = Arc::new(RwLock::new(Vec::new()));
         let photos = Arc::new(RwLock::new(HashMap::new()));
-
-        throttle_update(rx, Duration::from_secs(3600));
 
         DbHandle {
             pool: pool.clone(),
@@ -88,7 +82,7 @@ impl DbHandle {
             site_metrics,
             popular_sites,
             photos,
-            sender,
+            cache: None,
         }
     }
 
@@ -113,8 +107,8 @@ impl DbHandle {
             self.photos.write().await.clear();
         }
 
-        if let Err(TrySendError::Full(())) = self.sender.try_send(()) {
-            debug!("Svelte update throttled");
+        if let Some(ref cache) = self.cache {
+            cache.clear().await.ok();
         }
 
         debug!("Cleared cache");
@@ -164,22 +158,4 @@ impl<'a> StatementBuilder<'a> {
         self.statement.push_str(sql);
         self.statement.push(' ');
     }
-}
-
-// This throttles updates to svelte so it happens only once per-duration
-fn throttle_update(rx: Receiver<()>, duration: Duration) {
-    use tokio_stream::wrappers::ReceiverStream;
-    use tokio_stream::StreamExt;
-
-    tokio::spawn(async move {
-        let throttled_stream = ReceiverStream::new(rx).throttle(duration);
-
-        tokio::pin!(throttled_stream);
-        loop {
-            throttled_stream.next().await;
-            if let Err(err) = tokio::fs::File::create("./front/build/notify.lock").await {
-                error!("Error notifying svelte frontend: {}", err);
-            }
-        }
-    });
 }

@@ -8,6 +8,7 @@ fragment CurrentUser on LoginResponse {
 	copyrightLocation
 	description
 	photoId
+	emailVerified
 }
 
 fragment CurrentUserToken on LoginResponse {

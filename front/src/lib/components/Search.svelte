@@ -62,7 +62,7 @@
 		}
 	};
 
-	$: query, map, updateResult();
+	$: (query, map, updateResult());
 
 	const handleScroll = throttle(() => {
 		let scrollTop = window.scrollY;
@@ -97,7 +97,7 @@
 		{#if query != '' || hasValues}
 			{#if loading && !called}
 				<div class="column col-12">
-					<div class="loading loading-lg" />
+					<div class="loading loading-lg"></div>
 				</div>
 			{:else}
 				{#if results.length === 0}

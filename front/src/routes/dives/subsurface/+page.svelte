@@ -4,6 +4,7 @@
 	import type { ClientError } from 'graphql-request';
 	import { session } from '$lib/session';
 	import { client } from '$lib/graphql/client';
+	import CheckLogin from '$lib/components/CheckLogin.svelte';
 
 	let email = $session.user?.email ?? '';
 	let password = '';
@@ -34,6 +35,9 @@
 <svelte:head>
 	<title>DiveDB - Sync from Subsurface</title>
 </svelte:head>
+
+<CheckLogin />
+
 <div class="container grid-lg">
 	<div class="columns">
 		<div class="column">
@@ -62,7 +66,7 @@
 		{/if}
 		{#if loading}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 	</div>

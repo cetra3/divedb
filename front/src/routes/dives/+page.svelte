@@ -18,16 +18,18 @@
 				<DiveLogIcon size="1.4em" />
 				Dives
 
-				<a href="/users/{$session.user?.username}/dives">
-					<button class="btn btn-secondary btn-sm">Your Dives</button>
-				</a>
+				{#if $session.loggedIn}
+					<a href="/users/{$session.user?.username}/dives">
+						<button class="btn btn-secondary btn-sm">Your Dives</button>
+					</a>
 
-				<a href="/dives/new">
-					<button class="btn btn-secondary btn-sm">Add New</button>
-				</a>
-				<a href="/dives/subsurface">
-					<button class="btn btn-secondary btn-sm">Sync from Subsurface</button>
-				</a>
+					<a href="/dives/new">
+						<button class="btn btn-secondary btn-sm">Add New</button>
+					</a>
+					<a href="/dives/subsurface">
+						<button class="btn btn-secondary btn-sm">Sync from Subsurface</button>
+					</a>
+				{/if}
 			</h1>
 		</div>
 	</div>
@@ -35,7 +37,7 @@
 		<DiveList {dives} />
 	{:else}
 		<div class="column col-12">
-			<div class="loading loading-lg" />
+			<div class="loading loading-lg"></div>
 		</div>
 	{/if}
 </div>

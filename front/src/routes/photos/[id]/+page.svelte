@@ -53,7 +53,7 @@
 						<PhotoIcon size="33px" /> Other photos {relatedTitle}
 					</h1>
 				</div>
-				<div class="column col-12 col-sm-12" />
+				<div class="column col-12 col-sm-12"></div>
 			</div>
 			<div class="column col-12 col-sm-12">
 				{#if relatedPhotos}
@@ -62,7 +62,7 @@
 			</div>
 		{:else}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 	</div>

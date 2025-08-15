@@ -55,7 +55,7 @@
 		{#if showRemove}
 			<div class={`modal active`}>
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<span class="modal-overlay" aria-label="Close" on:click={onClose} />
+				<span class="modal-overlay" aria-label="Close" on:click={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
 						<!-- svelte-ignore a11y-missing-content -->
@@ -65,7 +65,7 @@
 							class="btn btn-clear float-right"
 							aria-label="Close"
 							on:click={onClose}
-						/>
+						></a>
 						<div class="modal-title h5">Remove Site</div>
 					</div>
 					<div class="modal-body">
@@ -80,7 +80,7 @@
 		{/if}
 	{:else}
 		<div class="column col-12">
-			<div class="loading loading-lg" />
+			<div class="loading loading-lg"></div>
 		</div>
 	{/if}
 </div>

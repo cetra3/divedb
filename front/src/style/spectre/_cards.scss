@@ -1,0 +1,63 @@
+@use 'functions/color' as *;
+@use 'functions/get-var' as *;
+@use 'mixins/shadow' as *;
+@use 'variables' as *;
+
+// Cards
+.card {
+	// background: $bg-color-light; // old spectre.css
+	background: color('bg-color-light');
+	// border: $border-width solid $border-color; // old spectre.css
+	border: get-var('border-width') solid color('border-color');
+	// border-radius: $border-radius; // old spectre.css
+	border-radius: get-var('border-radius');
+	display: flex;
+	flex-direction: column;
+
+	.card-header,
+	.card-body,
+	.card-footer {
+		// padding: $layout-spacing-lg; // old spectre.css
+		padding: get-var('layout-spacing', $suffix: 'lg', $unit: 1);
+		padding-bottom: 0;
+
+		&:last-child {
+			// padding-bottom: $layout-spacing-lg; // old spectre.css
+			padding-bottom: get-var('layout-spacing', $suffix: 'lg', $unit: 1);
+		}
+	}
+
+	.card-body {
+		flex: 1 1 auto;
+	}
+
+	.card-image {
+		// padding-top: $layout-spacing-lg; // old spectre.css
+		padding-top: get-var('layout-spacing', $suffix: 'lg', $unit: 1);
+
+		&:first-child {
+			padding-top: 0;
+
+			img {
+				// border-top-left-radius: $border-radius; // old spectre.css
+				border-top-left-radius: get-var('border-radius');
+				// border-top-right-radius: $border-radius; // old spectre.css
+				border-top-right-radius: get-var('border-radius');
+			}
+		}
+
+		&:last-child {
+			img {
+				// border-bottom-left-radius: $border-radius; // old spectre.css
+				border-bottom-left-radius: get-var('border-radius');
+				// border-bottom-right-radius: $border-radius; // old spectre.css
+				border-bottom-right-radius: get-var('border-radius');
+			}
+		}
+	}
+
+	&.card-shadow {
+		@include shadow-variant(0.1rem);
+		border: 0;
+	}
+}

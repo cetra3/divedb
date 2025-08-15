@@ -63,7 +63,7 @@
 		{/if}
 		{#if loading}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 		{#if submitted}

@@ -62,7 +62,7 @@
 </script>
 
 {#if showEdit || references.length > 0}
-	<div class="divider" />
+	<div class="divider"></div>
 
 	<h5>
 		References
@@ -96,7 +96,7 @@
 	<div class="toast">{errors}</div>
 {/if}
 {#if loading}
-	<div class="loading loading-lg" />
+	<div class="loading loading-lg"></div>
 {/if}
 
 <ul>

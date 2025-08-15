@@ -235,7 +235,7 @@
 			</div>
 		{/each}
 		{#if photos.length % 3 != 0}
-			<div class="condensed-spacer" />
+			<div class="condensed-spacer"></div>
 		{/if}
 	</div>
 {/if}

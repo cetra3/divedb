@@ -338,7 +338,10 @@ pub async fn save_files(
     while let Ok(Some(mut field)) = payload.try_next().await {
         let user = user.clone();
 
-        let content_type = field.content_disposition();
+        let content_type = field
+            .content_disposition()
+            .ok_or_else(|| ErrorBadRequest("No Filename found"))?;
+
         let filename = content_type
             .get_filename()
             .ok_or_else(|| ErrorBadRequest("No Filename found"))?

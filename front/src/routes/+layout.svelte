@@ -42,11 +42,11 @@
 <div class={showMenu ? 'mobile-view active' : 'mobile-view'}>
 	<div>
 		<button aria-label="Menu" class="btn btn-link mobile-link text-right" on:click={hideMenu}>
-			<i class="icon icon-menu" />
+			<i class="icon icon-menu"></i>
 		</button>
 	</div>
 	{#if $session.loggedIn}
-		<div class="divider" data-content="DIVES" />
+		<div class="divider" data-content="DIVES"></div>
 		<div>
 			<a
 				on:click={hideMenu}
@@ -65,7 +65,7 @@
 		</div>
 	{/if}
 
-	<div class="divider" data-content="SITES" />
+	<div class="divider" data-content="SITES"></div>
 	<div>
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/divesites">
 			View List
@@ -75,7 +75,7 @@
 		</a>
 	</div>
 	{#if $session.loggedIn}
-		<div class="divider" data-content="PHOTOS" />
+		<div class="divider" data-content="PHOTOS"></div>
 		<div>
 			<a
 				on:click={hideMenu}
@@ -88,9 +88,9 @@
 				All Photos
 			</a>
 		</div>
-		<div class="divider" />
+		<div class="divider"></div>
 	{:else}
-		<div class="divider" />
+		<div class="divider"></div>
 		<div>
 			<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/photos"> Photos </a>
 		</div>
@@ -99,7 +99,7 @@
 		<a on:click={hideMenu} class="btn btn-link mobile-link text-left" href="/sealife"> Sealife </a>
 	</div>
 
-	<div class="divider" />
+	<div class="divider"></div>
 
 	{#if $session.loggedIn}
 		<div>
@@ -140,17 +140,19 @@
 	<header class="navbar">
 		<section class="navbar-section">
 			<button aria-label="Menu" class="btn btn-link mobile-link hide-big" on:click={menuShow}>
-				<i class="icon icon-menu" />
+				<i class="icon icon-menu"></i>
 			</button>
 			{#if $session.user}
 				<div class="dropdown hide-small">
 					<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 					<!-- svelte-ignore a11y-missing-attribute -->
 					<a class="btn btn-link dropdown-toggle" tabindex="0"
-						>Dives <i class="icon icon-caret" /></a
+						>Dives <i class="icon icon-caret"></i></a
 					>
 					<ul class="menu menu-list">
-						<li class="menu-item"><a href="/users/{$session.user?.username}/dives">Your Dives</a></li>
+						<li class="menu-item">
+							<a href="/users/{$session.user?.username}/dives">Your Dives</a>
+						</li>
 						<li class="menu-item"><a href="/dives">All Dives</a></li>
 					</ul>
 				</div>
@@ -160,7 +162,9 @@
 			<div class="dropdown hide-small">
 				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<!-- svelte-ignore a11y-missing-attribute -->
-				<a class="btn btn-link dropdown-toggle" tabindex="0">Sites <i class="icon icon-caret" /></a>
+				<a class="btn btn-link dropdown-toggle" tabindex="0"
+					>Sites <i class="icon icon-caret"></i></a
+				>
 				<ul class="menu menu-list">
 					<li class="menu-item"><a href="/divesites">View List</a></li>
 					<li class="menu-item"><a href="/divesites/map">View Map</a></li>
@@ -171,10 +175,12 @@
 					<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 					<!-- svelte-ignore a11y-missing-attribute -->
 					<a class="btn btn-link dropdown-toggle" tabindex="0"
-						>Photos <i class="icon icon-caret" /></a
+						>Photos <i class="icon icon-caret"></i></a
 					>
 					<ul class="menu menu-list">
-						<li class="menu-item"><a href="/users/{$session.user?.username}/photos">Your Photos</a></li>
+						<li class="menu-item">
+							<a href="/users/{$session.user?.username}/photos">Your Photos</a>
+						</li>
 						<li class="menu-item"><a href="/photos">All Photos</a></li>
 					</ul>
 				</div>

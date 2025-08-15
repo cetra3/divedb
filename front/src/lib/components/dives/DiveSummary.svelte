@@ -21,7 +21,7 @@
 					{title}
 				</a>
 			</div>
-			<div class="card-subtitle title-center" />
+			<div class="card-subtitle title-center"></div>
 			<div class="card-subtitle title-center">
 				Max Depth: {dive.depth.toFixed(2)}m, Duration: {formatMinutes(dive.duration)}
 			</div>

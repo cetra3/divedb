@@ -3,7 +3,7 @@ import { getSdk } from './generated'; // THIS FILE IS THE GENERATED FILE
 import { browser } from '$app/environment';
 
 export const graphqlClient = new GraphQLClient(
-	browser ? '/api/graphql' : `${import.meta.env.VITE_BACKEND_URL}/api/graphql`
+	browser ? `${window.location.origin}/api/graphql` : `${process.env.BACKEND_URL}/api/graphql`
 );
 
 export const client = getSdk(graphqlClient, (action) => {
@@ -18,7 +18,7 @@ export const client = getSdk(graphqlClient, (action) => {
 
 /// For when you want to try and cache results
 export const graphqlGetClient = new GraphQLClient(
-	browser ? '/api/graphql' : `${import.meta.env.VITE_BACKEND_URL}/api/graphql`,
+	browser ? `${window.location.origin}/api/graphql` : `${process.env.BACKEND_URL}/api/graphql`,
 	{
 		method: 'GET',
 		jsonSerializer: JSON

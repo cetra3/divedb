@@ -1,0 +1,44 @@
+@use 'functions/color' as *;
+@use 'functions/get-var' as *;
+@use 'variables' as *;
+
+// Filters
+// The number of filter options
+$filter-number: 8 !default;
+
+%filter-checked-nav {
+	// background: $primary-color; // old spectre.css
+	background: color('primary-color');
+	// color: $light-color; // old spectre.css
+	color: color('light-color');
+}
+
+%filter-checked-body {
+	display: none;
+}
+
+.filter {
+	.filter-nav {
+		// margin: $layout-spacing 0; // old spectre.css
+		margin: get-var('layout-spacing', $unit: 1) 0;
+	}
+
+	.filter-body {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.filter-tag {
+		@for $i from 0 through ($filter-number) {
+			&#tag-#{$i}:checked ~ .filter-nav .chip[for='tag-#{$i}'] {
+				@extend %filter-checked-nav;
+			}
+		}
+
+		@for $i from 1 through ($filter-number) {
+			&#tag-#{$i}:checked ~ .filter-body .filter-item:not([data-tag~='tag-#{$i}']) {
+				@extend %filter-checked-body;
+			}
+		}
+	}
+}

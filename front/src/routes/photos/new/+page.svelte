@@ -61,9 +61,9 @@
 			<h1 class="page-title">
 				<PhotoIcon size="22px" /> Upload Photos
 				{#if filesToUpload.length != photosUploaded.length}
-					<span class="margin-left-30 loading loading-lg" />
+					<span class="margin-left-30 loading loading-lg"></span>
 				{:else if filesToUpload.length > 0}
-					<i class="icon icon-2x icon-check" />
+					<i class="icon icon-2x icon-check"></i>
 				{/if}
 			</h1>
 		</div>

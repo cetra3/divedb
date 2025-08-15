@@ -8,7 +8,6 @@ use activitypub_federation::{
     traits::Object,
     FEDERATION_CONTENT_TYPE,
 };
-use actix_files::NamedFile;
 use actix_web::{
     dev::HttpServiceFactory,
     error::{ErrorInternalServerError, ErrorNotFound},
@@ -36,13 +35,13 @@ pub fn configure_users() -> impl HttpServiceFactory {
         .route("{username}", web::get().to(get_user))
         .route("{username}/inbox", web::post().to(user_inbox))
         .route("{username}/outbox", web::get().to(user_outbox))
-        .service(crate::frontend())
+        .service(crate::frontend::frontend())
 }
 
 pub fn configure_dives() -> impl HttpServiceFactory {
     web::scope("/dives")
         .route("{dive_id}", web::get().to(get_dive))
-        .service(crate::frontend())
+        .service(crate::frontend::frontend())
 }
 
 #[derive(Deserialize)]
@@ -200,7 +199,7 @@ pub async fn get_user(
             .json(WithContext::new_default(person)));
     }
 
-    file_response(&request)
+    crate::frontend::frontend_proxy(request, &data).await
 }
 
 pub async fn get_dive(
@@ -235,16 +234,7 @@ pub async fn get_dive(
             .json(WithContext::new_default(note)));
     }
 
-    file_response(&request)
-}
-
-pub fn file_response(request: &HttpRequest) -> Result<HttpResponse, Error> {
-    let path = format!("./front/build{}.html", request.path().replace("../", ""));
-
-    let response =
-        NamedFile::open(path).or_else(|_| NamedFile::open("./front/build/fallback.html"))?;
-
-    Ok(response.into_response(request))
+    crate::frontend::frontend_proxy(request, &data).await
 }
 
 pub fn is_apub_request(request: &HttpRequest) -> bool {

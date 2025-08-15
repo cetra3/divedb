@@ -1,4 +1,5 @@
 /target
+/cache
 .env
 db_dump.gz
 store/

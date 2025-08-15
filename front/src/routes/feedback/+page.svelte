@@ -45,7 +45,7 @@
 					bind:value={feedback}
 					rows="8"
 					class="form-input"
-				/>
+				></textarea>
 			</div>
 			<div class="column col-12 col-sm-12 submit-button">
 				<button on:click={onSubmit} disabled={canSave == false} class="btn btn-primary">
@@ -60,7 +60,7 @@
 		{/if}
 		{#if loading}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 	</div>

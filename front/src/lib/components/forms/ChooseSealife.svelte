@@ -41,7 +41,7 @@
 		}
 	};
 
-	$: query, focused, updateResult();
+	$: (query, focused, updateResult());
 </script>
 
 <div class="has-icon-right">
@@ -95,7 +95,7 @@
 	/>
 
 	{#if sealifeLoading || loading}
-		<i class="form-icon loading" />
+		<i class="form-icon loading"></i>
 	{/if}
 </div>
 

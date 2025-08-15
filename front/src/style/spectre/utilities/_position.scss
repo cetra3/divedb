@@ -1,0 +1,64 @@
+@use '../mixins/clearfix' as *;
+@use '../mixins/position' as *;
+@use '../variables' as *;
+
+// Position
+.clearfix {
+	@include clearfix();
+}
+
+.float-left {
+	float: left !important;
+}
+
+.float-right {
+	float: right !important;
+}
+
+.p-relative {
+	position: relative !important;
+}
+
+.p-absolute {
+	position: absolute !important;
+}
+
+.p-fixed {
+	position: fixed !important;
+}
+
+.p-sticky {
+	position: sticky !important;
+}
+
+.p-centered {
+	display: block;
+	float: none;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.flex-centered {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+}
+
+// Spacing
+// @include margin-variant(0, 0); // old spectre.css
+@include margin-variant(0, 'unit-0');
+
+// @include margin-variant(1, $unit-1); // old spectre.css
+@include margin-variant(1, 'unit-1');
+
+// @include margin-variant(2, $unit-2); // old spectre.css
+@include margin-variant(2, 'unit-2');
+
+// @include padding-variant(0, 0); // old spectre.css
+@include padding-variant(0, 'unit-0'); // old spectre.css
+
+// @include padding-variant(1, $unit-1); // old spectre.css
+@include padding-variant(1, 'unit-1');
+
+// @include padding-variant(2, $unit-2); // old spectre.css
+@include padding-variant(2, 'unit-2');

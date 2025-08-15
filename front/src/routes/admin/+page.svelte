@@ -22,21 +22,26 @@
 					<div class="card-title h4">Regions</div>
 				</div>
 				<div class="card-body">
-					<ul>
-						{#each regions as region}
-							<li>
-								{region.name}
-								<a href="/divesites/map/{region.slug}"><button class="btn btn-sm">View</button></a>
-								<a href={`/admin/region/edit/${region.id}`}>
-									<button class="btn btn-sm">Edit</button>
-								</a>
-							</li>
-						{/each}
-					</ul>
+					{#if !regions}
+						<div class="loading loading-lg"></div>
+					{:else}
+						<ul>
+							{#each regions as region}
+								<li>
+									{region.name}
+									<a href="/divesites/map/{region.slug}"><button class="btn btn-sm">View</button></a
+									>
+									<a href={`/admin/region/edit/${region.id}`}>
+										<button class="btn btn-sm">Edit</button>
+									</a>
+								</li>
+							{/each}
+						</ul>
 
-					<a href="/admin/region/new">
-						<button class="btn btn-sm btn-primary">Add New</button>
-					</a>
+						<a href="/admin/region/new">
+							<button class="btn btn-sm btn-primary">Add New</button>
+						</a>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -46,17 +51,21 @@
 		</div>
 
 		<div class="column col-12 col-sm-12">
-			{#each feedback as fb}
-				<div class="card">
-					<div class="card-body">
-						<strong>User: </strong>{fb.user.email}
-						<strong>Date: </strong>
-						{new Date(fb.date).toLocaleString()}<br />
-						<strong>Message:</strong>
-						{fb.feedback}
+			{#if !feedback}
+				<div class="loading loading-lg"></div>
+			{:else}
+				{#each feedback as fb}
+					<div class="card">
+						<div class="card-body">
+							<strong>User: </strong>{fb.user.email}
+							<strong>Date: </strong>
+							{new Date(fb.date).toLocaleString()}<br />
+							<strong>Message:</strong>
+							{fb.feedback}
+						</div>
 					</div>
-				</div>
-			{/each}
+				{/each}
+			{/if}
 		</div>
 	</div>
 </div>

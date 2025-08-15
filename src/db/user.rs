@@ -158,6 +158,14 @@ impl DbHandle {
         User::from_row(result)
     }
 
+    pub async fn set_user_level(&self, email: &str, level: UserLevel) -> Result<User, Error> {
+        let client = self.pool.get().await?;
+        let query = "update users set level = $2 where lower(email) = lower($1) returning *";
+        let result = client.query_one(query, &[&email, &level]).await?;
+
+        User::from_row(result)
+    }
+
     pub async fn update_settings(
         &self,
         email: &str,

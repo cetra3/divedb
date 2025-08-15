@@ -25,7 +25,7 @@
 	$: title = dive
 		? `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
 				dive.diveSite ? ` - ${dive.diveSite.name}` : ''
-		  }`
+			}`
 		: '';
 </script>
 
@@ -38,7 +38,7 @@
 	{:else}
 		<meta property="og:image" content="{siteUrl}/logo.png" />
 	{/if}
-	<meta name="description" property="og:description" content={dive?.summary ?? ""} />
+	<meta name="description" property="og:description" content={dive?.summary ?? ''} />
 	<meta property="og:url" content="{siteUrl}/dives/{dive?.id}" />
 	<meta property="og:site_name" content="DiveDB" />
 </svelte:head>
@@ -109,7 +109,7 @@
 			{/if}
 		{:else}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 	</div>

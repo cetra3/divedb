@@ -128,7 +128,7 @@
 				<svelte:fragment let:photo slot="photo-label">
 					{#if sealife.photoId !== photo}
 						{#if loading}
-							<span class="loading padding-20" />
+							<span class="loading padding-20"></span>
 						{:else}
 							<span
 								class="label pointer"
@@ -138,7 +138,7 @@
 							>
 						{/if}
 					{:else if changed}
-						<i class="icon icon-check" />
+						<i class="icon icon-check"></i>
 					{/if}
 				</svelte:fragment>
 			</ImageList>

@@ -100,7 +100,7 @@
 		<div class="img-holder">
 			<!-- svelte-ignore a11y-missing-attribute -->
 			<img src={dataUrl} class:incomplete={!completed} class="img-edit img-responsive" />
-			<div class="img-overlay" style={`margin-left:${percentComplete}%`} />
+			<div class="img-overlay" style={`margin-left:${percentComplete}%`}></div>
 		</div>
 	</div>
 {/if}

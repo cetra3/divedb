@@ -39,7 +39,7 @@
 		<DiveList {dives} query={{ username }} />
 	{:else}
 		<div class="column col-12">
-			<div class="loading loading-lg" />
+			<div class="loading loading-lg"></div>
 		</div>
 	{/if}
 </div>

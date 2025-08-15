@@ -26,13 +26,13 @@
 </script>
 
 <div class="modal active">
-	<div class="modal-overlay" />
+	<div class="modal-overlay"></div>
 	<div class="modal-container">
 		<div class="modal-header">
 			<!-- svelte-ignore a11y-missing-attribute -->
 			<!-- svelte-ignore a11y-missing-content -->
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<a class="btn btn-clear float-right" aria-label="Close" on:click={onClose} />
+			<a class="btn btn-clear float-right" aria-label="Close" on:click={onClose}></a>
 			<div class="modal-title h5">Delete Account</div>
 		</div>
 		<div class="modal-body">
@@ -51,7 +51,7 @@
 				{/if}
 				{#if loading}
 					<div class="column col-12">
-						<div class="loading loading-lg" />
+						<div class="loading loading-lg"></div>
 					</div>
 				{/if}
 			</div>

@@ -1,20 +1,28 @@
-import type { GraphQLClient } from 'graphql-request';
-import type { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
+import type { GraphQLClient, RequestOptions } from 'graphql-request';
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type Exact<T extends { [key: string]: unknown }> = {
+	[K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
+	[SubKey in K]?: Maybe<T[SubKey]>;
+};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
+	[SubKey in K]: Maybe<T[SubKey]>;
+};
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
 	[_ in K]?: never;
 };
 export type Incremental<T> =
 	| T
-	| { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+	| {
+			[P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never;
+	  };
+type GraphQLClientRequestHeaders = RequestOptions['requestHeaders'];
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-	ID: { input: string | number; output: string };
+	ID: { input: string; output: string };
 	String: { input: string; output: string };
 	Boolean: { input: boolean; output: boolean };
 	Int: { input: number; output: number };
@@ -35,7 +43,7 @@ export type Scalars = {
 	 * # References
 	 *
 	 * * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
-	 * * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+	 * * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 	 */
 	UUID: { input: string; output: string };
 };
@@ -378,10 +386,6 @@ export type MutationRequestResetTokenArgs = {
 	email: Scalars['String']['input'];
 };
 
-export type MutationResendVerificationArgs = {
-	email: Scalars['String']['input'];
-};
-
 export type MutationResetPasswordArgs = {
 	email: Scalars['String']['input'];
 	newPassword: Scalars['String']['input'];
@@ -604,7 +608,12 @@ export type CategoryNodeFragment = {
 	__typename?: 'Category';
 	id: string;
 	name: string;
-	values: Array<{ __typename?: 'CategoryValue'; id: string; categoryId: string; value: string }>;
+	values: Array<{
+		__typename?: 'CategoryValue';
+		id: string;
+		categoryId: string;
+		value: string;
+	}>;
 };
 
 export type CategoryValueNodeFragment = {
@@ -640,7 +649,12 @@ export type DiveSummaryFragment = {
 		username: string;
 		displayName?: string | null;
 	};
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+	diveSite?: {
+		__typename?: 'DiveSite';
+		name: string;
+		id: string;
+		slug?: string | null;
+	} | null;
 };
 
 export type DiveWithMetricsFragment = {
@@ -656,7 +670,12 @@ export type DiveWithMetricsFragment = {
 	likes: number;
 	liked: boolean;
 	numComments: number;
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+	diveSite?: {
+		__typename?: 'DiveSite';
+		name: string;
+		id: string;
+		slug?: string | null;
+	} | null;
 	latestPhotos: Array<{
 		__typename?: 'Photo';
 		id: string;
@@ -680,9 +699,19 @@ export type DiveWithMetricsFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -765,9 +794,19 @@ export type DiveNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -784,7 +823,12 @@ export type DiveNodeFragment = {
 			displayName?: string | null;
 		};
 	}>;
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+	diveSite?: {
+		__typename?: 'DiveSite';
+		name: string;
+		id: string;
+		slug?: string | null;
+	} | null;
 };
 
 export type SiteFragment = {
@@ -803,7 +847,11 @@ export type SiteFragment = {
 	slug?: string | null;
 	date: any;
 	photoId?: string | null;
-	siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+	siteMetrics: {
+		__typename?: 'SiteMetric';
+		photoCount: number;
+		diveCount: number;
+	};
 	photo?: {
 		__typename?: 'Photo';
 		id: string;
@@ -827,9 +875,19 @@ export type SiteFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -869,9 +927,19 @@ export type SiteFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -901,7 +969,12 @@ export type SiteFragment = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -932,7 +1005,12 @@ export type SiteFragment = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -989,7 +1067,11 @@ export type SiteSummaryMetricsFragment = {
 	lat: number;
 	lon: number;
 	photoId?: string | null;
-	siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+	siteMetrics: {
+		__typename?: 'SiteMetric';
+		photoCount: number;
+		diveCount: number;
+	};
 };
 
 export type FeedbackNodeFragment = {
@@ -1029,9 +1111,19 @@ export type PhotoSummaryFragment = {
 			username: string;
 			displayName?: string | null;
 		};
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 	} | null;
-	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+	diveSite?: {
+		__typename?: 'DiveSite';
+		name: string;
+		id: string;
+		slug?: string | null;
+	} | null;
 	sealife?: {
 		__typename?: 'Sealife';
 		id: string;
@@ -1105,9 +1197,19 @@ export type SealifeNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1147,9 +1249,19 @@ export type SealifeNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1209,6 +1321,7 @@ export type CurrentUserFragment = {
 	copyrightLocation?: OverlayLocation | null;
 	description: string;
 	photoId?: string | null;
+	emailVerified: boolean;
 };
 
 export type CurrentUserTokenFragment = {
@@ -1259,9 +1372,19 @@ export type UserInfoFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1291,7 +1414,12 @@ export type UserInfoFragment = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -1322,7 +1450,12 @@ export type UserInfoFragment = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1419,7 +1552,12 @@ export type AddDiveMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1436,7 +1574,12 @@ export type AddDiveMutation = {
 				displayName?: string | null;
 			};
 		}>;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 	};
 };
 
@@ -1462,7 +1605,11 @@ export type AddDiveSiteMutation = {
 		slug?: string | null;
 		date: any;
 		photoId?: string | null;
-		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+		siteMetrics: {
+			__typename?: 'SiteMetric';
+			photoCount: number;
+			diveCount: number;
+		};
 		photo?: {
 			__typename?: 'Photo';
 			id: string;
@@ -1493,7 +1640,12 @@ export type AddDiveSiteMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1540,7 +1692,12 @@ export type AddDiveSiteMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1570,7 +1727,12 @@ export type AddDiveSiteMutation = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -1718,7 +1880,12 @@ export type AddSealifeMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1765,7 +1932,12 @@ export type AddSealifeMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1820,13 +1992,19 @@ export type RemoveCommentMutationVariables = Exact<{
 	commentId: Scalars['UUID']['input'];
 }>;
 
-export type RemoveCommentMutation = { __typename?: 'Mutation'; removeComment: boolean };
+export type RemoveCommentMutation = {
+	__typename?: 'Mutation';
+	removeComment: boolean;
+};
 
 export type DeleteUserMutationVariables = Exact<{
 	password: Scalars['String']['input'];
 }>;
 
-export type DeleteUserMutation = { __typename?: 'Mutation'; deleteUser: boolean };
+export type DeleteUserMutation = {
+	__typename?: 'Mutation';
+	deleteUser: boolean;
+};
 
 export type FbLoginUserMutationVariables = Exact<{
 	redirectUri: Scalars['String']['input'];
@@ -1873,7 +2051,10 @@ export type UnlikeDiveMutationVariables = Exact<{
 	diveId: Scalars['UUID']['input'];
 }>;
 
-export type UnlikeDiveMutation = { __typename?: 'Mutation'; unlikeDive: boolean };
+export type UnlikeDiveMutation = {
+	__typename?: 'Mutation';
+	unlikeDive: boolean;
+};
 
 export type LikePhotoMutationVariables = Exact<{
 	photoId: Scalars['UUID']['input'];
@@ -1885,7 +2066,10 @@ export type UnlikePhotoMutationVariables = Exact<{
 	photoId: Scalars['UUID']['input'];
 }>;
 
-export type UnlikePhotoMutation = { __typename?: 'Mutation'; unlikePhoto: boolean };
+export type UnlikePhotoMutation = {
+	__typename?: 'Mutation';
+	unlikePhoto: boolean;
+};
 
 export type LoginUserMutationVariables = Exact<{
 	email: Scalars['String']['input'];
@@ -1925,6 +2109,7 @@ export type UpdateSettingsMutation = {
 		copyrightLocation?: OverlayLocation | null;
 		description: string;
 		photoId?: string | null;
+		emailVerified: boolean;
 	} | null;
 };
 
@@ -1933,13 +2118,19 @@ export type MergeDiveSitesMutationVariables = Exact<{
 	toId: Scalars['UUID']['input'];
 }>;
 
-export type MergeDiveSitesMutation = { __typename?: 'Mutation'; mergeDiveSites: boolean };
+export type MergeDiveSitesMutation = {
+	__typename?: 'Mutation';
+	mergeDiveSites: boolean;
+};
 
 export type RequestResetTokenMutationVariables = Exact<{
 	email: Scalars['String']['input'];
 }>;
 
-export type RequestResetTokenMutation = { __typename?: 'Mutation'; requestResetToken: boolean };
+export type RequestResetTokenMutation = {
+	__typename?: 'Mutation';
+	requestResetToken: boolean;
+};
 
 export type ResetPasswordMutationVariables = Exact<{
 	email: Scalars['String']['input'];
@@ -1964,7 +2155,10 @@ export type ChangePasswordMutationVariables = Exact<{
 	newPassword: Scalars['String']['input'];
 }>;
 
-export type ChangePasswordMutation = { __typename?: 'Mutation'; changePassword: boolean };
+export type ChangePasswordMutation = {
+	__typename?: 'Mutation';
+	changePassword: boolean;
+};
 
 export type NewRegionMutationVariables = Exact<{
 	region: CreateRegion;
@@ -1988,7 +2182,10 @@ export type RemoveRegionMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveRegionMutation = { __typename?: 'Mutation'; removeRegion: boolean };
+export type RemoveRegionMutation = {
+	__typename?: 'Mutation';
+	removeRegion: boolean;
+};
 
 export type RegisterUserMutationVariables = Exact<{
 	username: Scalars['String']['input'];
@@ -1996,44 +2193,74 @@ export type RegisterUserMutationVariables = Exact<{
 	password: Scalars['String']['input'];
 }>;
 
-export type RegisterUserMutation = { __typename?: 'Mutation'; registerUser: boolean };
+export type RegisterUserMutation = {
+	__typename?: 'Mutation';
+	registerUser: boolean;
+};
 
 export type RemoveDiveMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveDiveMutation = { __typename?: 'Mutation'; removeDive: boolean };
+export type RemoveDiveMutation = {
+	__typename?: 'Mutation';
+	removeDive: boolean;
+};
 
 export type RemoveDiveSiteMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveDiveSiteMutation = { __typename?: 'Mutation'; removeDiveSite: boolean };
+export type RemoveDiveSiteMutation = {
+	__typename?: 'Mutation';
+	removeDiveSite: boolean;
+};
 
 export type RemovePhotoMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemovePhotoMutation = { __typename?: 'Mutation'; removePhoto: boolean };
+export type RemovePhotoMutation = {
+	__typename?: 'Mutation';
+	removePhoto: boolean;
+};
 
 export type RemoveReferenceMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveReferenceMutation = { __typename?: 'Mutation'; removeReference: boolean };
+export type RemoveReferenceMutation = {
+	__typename?: 'Mutation';
+	removeReference: boolean;
+};
 
 export type RemoveSealifeMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveSealifeMutation = { __typename?: 'Mutation'; removeSealife: boolean };
+export type RemoveSealifeMutation = {
+	__typename?: 'Mutation';
+	removeSealife: boolean;
+};
+
+export type ResendVerificationMutationVariables = Exact<{
+	[key: string]: never;
+}>;
+
+export type ResendVerificationMutation = {
+	__typename?: 'Mutation';
+	resendVerification: boolean;
+};
 
 export type SyncSubsurfaceMutationVariables = Exact<{
 	email: Scalars['String']['input'];
 	password: Scalars['String']['input'];
 }>;
 
-export type SyncSubsurfaceMutation = { __typename?: 'Mutation'; syncSubsurface: boolean };
+export type SyncSubsurfaceMutation = {
+	__typename?: 'Mutation';
+	syncSubsurface: boolean;
+};
 
 export type UpdatePhotoMutationVariables = Exact<{
 	photo: CreatePhoto;
@@ -2064,9 +2291,19 @@ export type UpdatePhotoMutation = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -2110,7 +2347,12 @@ export type GetCategoriesQuery = {
 		__typename?: 'Category';
 		id: string;
 		name: string;
-		values: Array<{ __typename?: 'CategoryValue'; id: string; categoryId: string; value: string }>;
+		values: Array<{
+			__typename?: 'CategoryValue';
+			id: string;
+			categoryId: string;
+			value: string;
+		}>;
 	}>;
 };
 
@@ -2141,6 +2383,7 @@ export type GetCurrentUserQuery = {
 		copyrightLocation?: OverlayLocation | null;
 		description: string;
 		photoId?: string | null;
+		emailVerified: boolean;
 	} | null;
 };
 
@@ -2182,7 +2425,11 @@ export type FrontPageQuery = {
 		lat: number;
 		lon: number;
 		photoId?: string | null;
-		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+		siteMetrics: {
+			__typename?: 'SiteMetric';
+			photoCount: number;
+			diveCount: number;
+		};
 	}>;
 	recentDives: Array<{
 		__typename?: 'Dive';
@@ -2197,7 +2444,12 @@ export type FrontPageQuery = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -2228,7 +2480,12 @@ export type FrontPageQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2326,7 +2583,12 @@ export type GetDiveQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2343,7 +2605,12 @@ export type GetDiveQuery = {
 				displayName?: string | null;
 			};
 		}>;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 	}>;
 };
 
@@ -2373,7 +2640,11 @@ export type GetDiveSitesQuery = {
 		slug?: string | null;
 		date: any;
 		photoId?: string | null;
-		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+		siteMetrics: {
+			__typename?: 'SiteMetric';
+			photoCount: number;
+			diveCount: number;
+		};
 		photo?: {
 			__typename?: 'Photo';
 			id: string;
@@ -2404,7 +2675,12 @@ export type GetDiveSitesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2451,7 +2727,12 @@ export type GetDiveSitesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2481,7 +2762,12 @@ export type GetDiveSitesQuery = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -2581,7 +2867,11 @@ export type GetDiveSitesSummaryMetricsQuery = {
 		lat: number;
 		lon: number;
 		photoId?: string | null;
-		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
+		siteMetrics: {
+			__typename?: 'SiteMetric';
+			photoCount: number;
+			diveCount: number;
+		};
 	}>;
 };
 
@@ -2606,7 +2896,12 @@ export type GetDivesQuery = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -2637,7 +2932,12 @@ export type GetDivesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2700,9 +3000,19 @@ export type GetPhotosQuery = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 		} | null;
-		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+		diveSite?: {
+			__typename?: 'DiveSite';
+			name: string;
+			id: string;
+			slug?: string | null;
+		} | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -2794,7 +3104,12 @@ export type GetSealifeQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2841,7 +3156,12 @@ export type GetSealifeQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2916,7 +3236,12 @@ export type GetUserQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2946,7 +3271,12 @@ export type GetUserQuery = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
+			diveSite?: {
+				__typename?: 'DiveSite';
+				name: string;
+				id: string;
+				slug?: string | null;
+			} | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -3320,6 +3650,7 @@ export const CurrentUserFragmentDoc = gql`
 		copyrightLocation
 		description
 		photoId
+		emailVerified
 	}
 `;
 export const CurrentUserTokenFragmentDoc = gql`
@@ -3554,6 +3885,11 @@ export const RemoveReferenceDocument = gql`
 export const RemoveSealifeDocument = gql`
 	mutation removeSealife($id: UUID!) {
 		removeSealife(id: $id)
+	}
+`;
+export const ResendVerificationDocument = gql`
+	mutation resendVerification {
+		resendVerification
 	}
 `;
 export const SyncSubsurfaceDocument = gql`
@@ -3796,670 +4132,877 @@ export const SearchDocument = gql`
 export type SdkFunctionWrapper = <T>(
 	action: (requestHeaders?: Record<string, string>) => Promise<T>,
 	operationName: string,
-	operationType?: string
+	operationType?: string,
+	variables?: any
 ) => Promise<T>;
 
-const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
+const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) =>
+	action();
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
 	return {
 		addDive(
 			variables: AddDiveMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<AddDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<AddDiveMutation>(AddDiveDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<AddDiveMutation>({
+						document: AddDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'addDive',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		addDiveSite(
 			variables: AddDiveSiteMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<AddDiveSiteMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<AddDiveSiteMutation>(AddDiveSiteDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<AddDiveSiteMutation>({
+						document: AddDiveSiteDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'addDiveSite',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		addFeedback(
 			variables: AddFeedbackMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<AddFeedbackMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<AddFeedbackMutation>(AddFeedbackDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<AddFeedbackMutation>({
+						document: AddFeedbackDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'addFeedback',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		newReference(
 			variables: NewReferenceMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<NewReferenceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<NewReferenceMutation>(NewReferenceDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<NewReferenceMutation>({
+						document: NewReferenceDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'newReference',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		addSealife(
 			variables: AddSealifeMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<AddSealifeMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<AddSealifeMutation>(AddSealifeDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<AddSealifeMutation>({
+						document: AddSealifeDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'addSealife',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		addComment(
 			variables: AddCommentMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<AddCommentMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<AddCommentMutation>(AddCommentDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<AddCommentMutation>({
+						document: AddCommentDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'addComment',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeComment(
 			variables: RemoveCommentMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveCommentMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveCommentMutation>(RemoveCommentDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveCommentMutation>({
+						document: RemoveCommentDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeComment',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		deleteUser(
 			variables: DeleteUserMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<DeleteUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<DeleteUserMutation>(DeleteUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<DeleteUserMutation>({
+						document: DeleteUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'deleteUser',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		fbLoginUser(
 			variables: FbLoginUserMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<FbLoginUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<FbLoginUserMutation>(FbLoginUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<FbLoginUserMutation>({
+						document: FbLoginUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'fbLoginUser',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		fbRegisterUser(
 			variables: FbRegisterUserMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<FbRegisterUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<FbRegisterUserMutation>(FbRegisterUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<FbRegisterUserMutation>({
+						document: FbRegisterUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'fbRegisterUser',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		likeDive(
 			variables: LikeDiveMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<LikeDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<LikeDiveMutation>(LikeDiveDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<LikeDiveMutation>({
+						document: LikeDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'likeDive',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		unlikeDive(
 			variables: UnlikeDiveMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<UnlikeDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<UnlikeDiveMutation>(UnlikeDiveDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<UnlikeDiveMutation>({
+						document: UnlikeDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'unlikeDive',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		likePhoto(
 			variables: LikePhotoMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<LikePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<LikePhotoMutation>(LikePhotoDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<LikePhotoMutation>({
+						document: LikePhotoDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'likePhoto',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		unlikePhoto(
 			variables: UnlikePhotoMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<UnlikePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<UnlikePhotoMutation>(UnlikePhotoDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<UnlikePhotoMutation>({
+						document: UnlikePhotoDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'unlikePhoto',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		loginUser(
 			variables: LoginUserMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<LoginUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<LoginUserMutation>(LoginUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<LoginUserMutation>({
+						document: LoginUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'loginUser',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		updateSettings(
 			variables: UpdateSettingsMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<UpdateSettingsMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<UpdateSettingsMutation>(UpdateSettingsDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<UpdateSettingsMutation>({
+						document: UpdateSettingsDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'updateSettings',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		mergeDiveSites(
 			variables: MergeDiveSitesMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<MergeDiveSitesMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<MergeDiveSitesMutation>(MergeDiveSitesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<MergeDiveSitesMutation>({
+						document: MergeDiveSitesDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'mergeDiveSites',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		requestResetToken(
 			variables: RequestResetTokenMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RequestResetTokenMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RequestResetTokenMutation>(RequestResetTokenDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RequestResetTokenMutation>({
+						document: RequestResetTokenDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'requestResetToken',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		resetPassword(
 			variables: ResetPasswordMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<ResetPasswordMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<ResetPasswordMutation>(ResetPasswordDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<ResetPasswordMutation>({
+						document: ResetPasswordDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'resetPassword',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		changePassword(
 			variables: ChangePasswordMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<ChangePasswordMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<ChangePasswordMutation>(ChangePasswordDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<ChangePasswordMutation>({
+						document: ChangePasswordDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'changePassword',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		newRegion(
 			variables: NewRegionMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<NewRegionMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<NewRegionMutation>(NewRegionDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<NewRegionMutation>({
+						document: NewRegionDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'newRegion',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeRegion(
 			variables: RemoveRegionMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveRegionMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveRegionMutation>(RemoveRegionDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveRegionMutation>({
+						document: RemoveRegionDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeRegion',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		registerUser(
 			variables: RegisterUserMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RegisterUserMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RegisterUserMutation>(RegisterUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RegisterUserMutation>({
+						document: RegisterUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'registerUser',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeDive(
 			variables: RemoveDiveMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveDiveMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveDiveMutation>(RemoveDiveDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveDiveMutation>({
+						document: RemoveDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeDive',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeDiveSite(
 			variables: RemoveDiveSiteMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveDiveSiteMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveDiveSiteMutation>(RemoveDiveSiteDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveDiveSiteMutation>({
+						document: RemoveDiveSiteDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeDiveSite',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removePhoto(
 			variables: RemovePhotoMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemovePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemovePhotoMutation>(RemovePhotoDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemovePhotoMutation>({
+						document: RemovePhotoDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removePhoto',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeReference(
 			variables: RemoveReferenceMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveReferenceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveReferenceMutation>(RemoveReferenceDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveReferenceMutation>({
+						document: RemoveReferenceDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeReference',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		removeSealife(
 			variables: RemoveSealifeMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<RemoveSealifeMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<RemoveSealifeMutation>(RemoveSealifeDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<RemoveSealifeMutation>({
+						document: RemoveSealifeDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'removeSealife',
-				'mutation'
+				'mutation',
+				variables
+			);
+		},
+		resendVerification(
+			variables?: ResendVerificationMutationVariables,
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
+		): Promise<ResendVerificationMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<ResendVerificationMutation>({
+						document: ResendVerificationDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
+				'resendVerification',
+				'mutation',
+				variables
 			);
 		},
 		syncSubsurface(
 			variables: SyncSubsurfaceMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<SyncSubsurfaceMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<SyncSubsurfaceMutation>(SyncSubsurfaceDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<SyncSubsurfaceMutation>({
+						document: SyncSubsurfaceDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'syncSubsurface',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		updatePhoto(
 			variables: UpdatePhotoMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<UpdatePhotoMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<UpdatePhotoMutation>(UpdatePhotoDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<UpdatePhotoMutation>({
+						document: UpdatePhotoDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'updatePhoto',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		verifyEmail(
 			variables: VerifyEmailMutationVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<VerifyEmailMutation> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<VerifyEmailMutation>(VerifyEmailDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<VerifyEmailMutation>({
+						document: VerifyEmailDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'verifyEmail',
-				'mutation'
+				'mutation',
+				variables
 			);
 		},
 		getCategories(
 			variables?: GetCategoriesQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetCategoriesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetCategoriesQuery>(GetCategoriesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetCategoriesQuery>({
+						document: GetCategoriesDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getCategories',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getCategoryValues(
 			variables?: GetCategoryValuesQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetCategoryValuesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetCategoryValuesQuery>(GetCategoryValuesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetCategoryValuesQuery>({
+						document: GetCategoryValuesDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getCategoryValues',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getCurrentUser(
 			variables?: GetCurrentUserQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetCurrentUserQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetCurrentUserQuery>(GetCurrentUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetCurrentUserQuery>({
+						document: GetCurrentUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getCurrentUser',
-				'query'
+				'query',
+				variables
 			);
 		},
 		fbAppId(
 			variables?: FbAppIdQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<FbAppIdQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<FbAppIdQuery>(FbAppIdDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<FbAppIdQuery>({
+						document: FbAppIdDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'fbAppId',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getFeedback(
 			variables?: GetFeedbackQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetFeedbackQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetFeedbackQuery>(GetFeedbackDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetFeedbackQuery>({
+						document: GetFeedbackDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getFeedback',
-				'query'
+				'query',
+				variables
 			);
 		},
 		frontPage(
 			variables?: FrontPageQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<FrontPageQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<FrontPageQuery>(FrontPageDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<FrontPageQuery>({
+						document: FrontPageDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'frontPage',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getDive(
 			variables: GetDiveQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetDiveQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetDiveQuery>(GetDiveDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetDiveQuery>({
+						document: GetDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getDive',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getDiveSites(
 			variables?: GetDiveSitesQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetDiveSitesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetDiveSitesQuery>(GetDiveSitesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetDiveSitesQuery>({
+						document: GetDiveSitesDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getDiveSites',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getDiveSitesSummaryMetrics(
 			variables?: GetDiveSitesSummaryMetricsQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetDiveSitesSummaryMetricsQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetDiveSitesSummaryMetricsQuery>(
-						GetDiveSitesSummaryMetricsDocument,
+					client.request<GetDiveSitesSummaryMetricsQuery>({
+						document: GetDiveSitesSummaryMetricsDocument,
 						variables,
-						{ ...requestHeaders, ...wrappedRequestHeaders }
-					),
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
 				'getDiveSitesSummaryMetrics',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getDives(
 			variables?: GetDivesQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetDivesQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetDivesQuery>(GetDivesDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetDivesQuery>({
+						document: GetDivesDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getDives',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getPhotos(
 			variables?: GetPhotosQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetPhotosQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetPhotosQuery>(GetPhotosDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetPhotosQuery>({
+						document: GetPhotosDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getPhotos',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getSealifeSummary(
 			variables?: GetSealifeSummaryQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetSealifeSummaryQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetSealifeSummaryQuery>(GetSealifeSummaryDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetSealifeSummaryQuery>({
+						document: GetSealifeSummaryDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getSealifeSummary',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getSealife(
 			variables?: GetSealifeQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetSealifeQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetSealifeQuery>(GetSealifeDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetSealifeQuery>({
+						document: GetSealifeDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getSealife',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getUser(
 			variables: GetUserQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetUserQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetUserQuery>(GetUserDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetUserQuery>({
+						document: GetUserDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getUser',
-				'query'
+				'query',
+				variables
 			);
 		},
 		getRegions(
 			variables?: GetRegionsQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<GetRegionsQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<GetRegionsQuery>(GetRegionsDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<GetRegionsQuery>({
+						document: GetRegionsDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'getRegions',
-				'query'
+				'query',
+				variables
 			);
 		},
 		search(
 			variables: SearchQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
 		): Promise<SearchQuery> {
 			return withWrapper(
 				(wrappedRequestHeaders) =>
-					client.request<SearchQuery>(SearchDocument, variables, {
-						...requestHeaders,
-						...wrappedRequestHeaders
+					client.request<SearchQuery>({
+						document: SearchDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
 					}),
 				'search',
-				'query'
+				'query',
+				variables
 			);
 		}
 	};

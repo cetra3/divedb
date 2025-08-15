@@ -1,0 +1,41 @@
+@use 'functions/get-var' as *;
+@use 'variables' as *;
+
+// Dropdown
+.dropdown {
+	display: inline-block;
+	position: relative;
+
+	.menu {
+		animation: slide-down 0.15s ease 1;
+		display: none;
+		left: 0;
+		max-height: 50vh;
+		overflow-y: auto;
+		position: absolute;
+		top: 100%;
+	}
+
+	&.dropdown-right {
+		.menu {
+			left: auto;
+			right: 0;
+		}
+	}
+
+	&.active .menu,
+	.dropdown-toggle:focus + .menu,
+	.menu:hover {
+		display: block;
+	}
+
+	// Fix dropdown-toggle border radius in button groups
+	.btn-group {
+		.dropdown-toggle:nth-last-child(2) {
+			// border-bottom-right-radius: $border-radius; // old spectre.css
+			border-bottom-right-radius: get-var('border-radius'); // old spectre.css
+			// border-top-right-radius: $border-radius; // old spectre.css
+			border-top-right-radius: get-var('border-radius');
+		}
+	}
+}

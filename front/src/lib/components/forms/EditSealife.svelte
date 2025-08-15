@@ -50,7 +50,7 @@
 				<FormRow name="Hide Location">
 					<label class="form-switch">
 						<input type="checkbox" bind:checked={sealife.hideLocation} />
-						<i class="form-icon" />Keep locations of sightings hidden (i.e, this is a protected
+						<i class="form-icon"></i>Keep locations of sightings hidden (i.e, this is a protected
 						species)
 					</label>
 				</FormRow>

@@ -1,21 +1,27 @@
-FROM node:16
-
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && \
-    apt-get install -y inotify-tools && \
-    rm -rf /var/lib/apt/lists/*
-    
+# Build stage
+FROM node:22 AS builder
 
 WORKDIR /front
 
-COPY docker.sh package.json yarn.lock /front
+COPY package.json yarn.lock /front/
 
+RUN yarn install --frozen-lockfile
 
-RUN yarn install
-
-COPY svelte.config.js vite.config.ts tsconfig.json /front
+COPY svelte.config.js vite.config.ts tsconfig.json /front/
 COPY static /front/static
 COPY src /front/src
 
-ENTRYPOINT ["/front/docker.sh"]
+RUN yarn build
+
+FROM node:22-slim AS production
+
+WORKDIR /front
+
+COPY package.json yarn.lock /front/
+
+RUN yarn install --frozen-lockfile --production && yarn cache clean
+
+COPY --from=builder /front/build /front/build
+COPY --from=builder /front/static /front/static
+
+ENTRYPOINT ["node", "build"]

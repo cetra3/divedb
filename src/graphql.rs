@@ -4,11 +4,13 @@ use crate::search::{SearchResult, Searcher};
 use crate::{db::DbHandle, facebook::FacebookOauth, schema::*, subsurface, token::TokenEncryptor};
 use crate::{SiteContext, SITE_URL};
 use aes_gcm::Aes256Gcm;
-use anyhow::anyhow;
+use anyhow::{anyhow, Context as AnyhowContext};
 use async_graphql::*;
+use foyer::HybridCache;
 use governor::clock::{Clock, DefaultClock};
 use governor::state::keyed::DefaultKeyedStateStore;
 use governor::{Quota, RateLimiter};
+use reqwest::Client;
 use scrypt::*;
 use std::net::IpAddr;
 use std::num::NonZeroU32;
@@ -40,6 +42,10 @@ pub struct WebContext {
     pub dive_batch: DiveSiteLoader,
     pub sealife_batch: SealifeLoader,
     pub facebook: FacebookOauth,
+    pub frontend_cache: HybridCache<String, crate::frontend::CacheEntry>,
+    pub frontend_url: String,
+    pub admin_email: Option<String>,
+    pub client: Client,
 }
 
 impl SchemaContext {
@@ -435,16 +441,28 @@ impl Mutation {
             .new_user(&username, &email, Some(&hash))
             .await?;
 
+        if let Some(ref admin_email) = context.web.admin_email {
+            if admin_email.to_lowercase() == email.to_lowercase() {
+                context
+                    .web
+                    .handle
+                    .set_user_level(&email, UserLevel::Admin)
+                    .await?;
+            }
+        }
+
         let verification = context
             .web
             .handle
             .request_email_verification(user.id)
             .await?;
+
         context
             .web
             .emailer
             .email_verification(email.clone(), verification)
-            .await?;
+            .await
+            .context("Failed to send email verification")?;
 
         Ok(true)
     }
@@ -870,9 +888,10 @@ impl Mutation {
             .ok_or_else(|| anyhow!("Login Required"))?;
 
         if site.published && !user.email_verified {
-            return Err(
-                anyhow!("Email Verification required before Editing/Publishing dive sites").into(),
-            );
+            return Err(anyhow!(
+                "Email Verification required before Editing/Publishing dive sites"
+            )
+            .into());
         }
 
         let dive_site = context.web.handle.create_dive_site(user.id, &site).await?;
@@ -1278,11 +1297,20 @@ impl Mutation {
         }
     }
 
-    async fn resend_verification(&self, context: &Context<'_>, email: String) -> FieldResult<bool> {
-        let context = context.data::<SchemaContext>()?;
+    async fn resend_verification(&self, ctx: &Context<'_>) -> FieldResult<bool> {
+        let context = ctx.data::<SchemaContext>()?;
 
-        // Get the user by email
-        let user = context.web.handle.user(&email).await?;
+        let user = match context.con.user {
+            Some(ref user) => user,
+            None => {
+                return Err(anyhow!("You must be logged in to resend a verification email").into())
+            }
+        };
+
+        let email = user
+            .email
+            .as_ref()
+            .ok_or_else(|| anyhow!("No email associated with user"))?;
 
         // Check if already verified
         if user.email_verified {
@@ -1298,7 +1326,7 @@ impl Mutation {
         context
             .web
             .emailer
-            .email_verification(email, verification)
+            .email_verification(email.to_string(), verification)
             .await?;
 
         Ok(true)

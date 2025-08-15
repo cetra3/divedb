@@ -7,8 +7,6 @@ import remarkRehype from 'remark-rehype';
 import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 
-export const prerender = true;
-
 export const load: PageLoad = async ({ params }) => {
 	try {
 		let response = await client.getDive({ id: params.id });
@@ -28,7 +26,9 @@ export const load: PageLoad = async ({ params }) => {
 
 			mdDesc = await mdProc.process(dive.description);
 
-			let relatedResponse = await client.getDives({ diveSite: dive.diveSiteId });
+			let relatedResponse = await client.getDives({
+				diveSite: dive.diveSiteId
+			});
 
 			relatedDives = relatedResponse.dives.filter((val) => val.id != dive.id);
 		}

@@ -37,7 +37,7 @@
 		siteToSelect !== undefined
 			? [siteToSelect.lat, siteToSelect.lon]
 			: // We started in South Australia, so should the map!
-			  [-34.696, 137.726];
+				[-34.696, 137.726];
 
 	const mapOptions = {
 		center,
@@ -79,7 +79,7 @@
 		<div class="map-options">
 			<label class="form-checkbox pointer">
 				<input type="checkbox" bind:checked={showOnlyDived} />
-				<i class="form-icon" /> Show only sites with logged dives
+				<i class="form-icon"></i> Show only sites with logged dives
 			</label>
 		</div>
 		<LeafletMap options={mapOptions} fitBounds={bounds}>
@@ -145,7 +145,13 @@
 		.card {
 			border: none;
 			margin-bottom: 0;
-			font-family: 'Asap', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto;
+			font-family:
+				'Asap',
+				-apple-system,
+				system-ui,
+				BlinkMacSystemFont,
+				'Segoe UI',
+				Roboto;
 			font-size: 16px;
 			color: #3b4351;
 		}

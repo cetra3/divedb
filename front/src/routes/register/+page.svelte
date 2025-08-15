@@ -103,11 +103,12 @@
 		{#if registered}
 			<div class="column col-12">
 				<div class="toast">
-					<p>Registration Successful! Please check your email account to continue with email
-					verification.
-				    </p>
-					<p>If the email doesn't come within a couple of minutes, please check your spam
-					folder.
+					<p>
+						Registration Successful! Please check your email account to continue with email
+						verification.
+					</p>
+					<p>
+						If the email doesn't come within a couple of minutes, please check your spam folder.
 					</p>
 				</div>
 			</div>
@@ -119,7 +120,7 @@
 		{/if}
 		{#if loading}
 			<div class="column col-12">
-				<div class="loading loading-lg" />
+				<div class="loading loading-lg"></div>
 			</div>
 		{/if}
 		{#if fbAppId != ''}

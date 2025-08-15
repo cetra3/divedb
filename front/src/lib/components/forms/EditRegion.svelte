@@ -15,7 +15,7 @@
 		? [
 				[region.latMin, region.lonMin],
 				[region.latMax, region.lonMax]
-		  ]
+			]
 		: undefined;
 
 	$: canSave = name != '' && bounds !== undefined;

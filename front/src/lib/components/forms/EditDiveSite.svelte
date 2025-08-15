@@ -78,15 +78,15 @@
 			<FormRow name="Difficulty">
 				<label class="form-radio form-inline">
 					<input type="radio" bind:group={site.difficulty} value={'OW'} />
-					<i class="form-icon" /> Open Water
+					<i class="form-icon"></i> Open Water
 				</label>
 				<label class="form-radio form-inline">
 					<input type="radio" bind:group={site.difficulty} value={'AOW'} />
-					<i class="form-icon" /> Advanced Open Water
+					<i class="form-icon"></i> Advanced Open Water
 				</label>
 				<label class="form-radio form-inline">
 					<input type="radio" bind:group={site.difficulty} value={'TECH'} />
-					<i class="form-icon" /> Technical
+					<i class="form-icon"></i> Technical
 				</label>
 			</FormRow>
 			<FormRow name="GPS" error={gpsError}>
@@ -126,7 +126,8 @@
 				<FormRow name="Published">
 					<label class="form-switch">
 						<input type="checkbox" bind:checked={site.published} />
-						<i class="form-icon" /> Publish this dive site (otherwise only you will be able to see it)
+						<i class="form-icon"></i> Publish this dive site (otherwise only you will be able to see
+						it)
 					</label>
 				</FormRow>
 			{/if}

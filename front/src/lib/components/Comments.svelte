@@ -79,7 +79,7 @@
 {#if showForm}
 	<form class="form-group" on:submit={onSubmit}>
 		<div class="form-group">
-			<textarea rows={4} bind:value={description} class="form-input" />
+			<textarea rows={4} bind:value={description} class="form-input"></textarea>
 		</div>
 		<div class="form-group">
 			<button class="btn btn-primary" type="submit" disabled={canSave == false}>Add Comment</button>
@@ -90,7 +90,7 @@
 	<div class="toast">{errors}</div>
 {/if}
 {#if loading}
-	<div class="loading loading-lg" />
+	<div class="loading loading-lg"></div>
 {/if}
 
 {#each comments as comment}

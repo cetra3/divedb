@@ -28,7 +28,13 @@
 
 	.bytemd,
 	.bytemd-toolbar {
-		font-family: 'Asap', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto !important;
+		font-family:
+			'Asap',
+			-apple-system,
+			system-ui,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			Roboto !important;
 	}
 
 	.bytemd-editor .CodeMirror {
@@ -37,7 +43,13 @@
 		}
 		pre.CodeMirror-line,
 		pre.CodeMirror-line-like {
-			font-family: 'Asap', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto !important;
+			font-family:
+				'Asap',
+				-apple-system,
+				system-ui,
+				BlinkMacSystemFont,
+				'Segoe UI',
+				Roboto !important;
 			font-size: 0.8rem;
 			color: #24292e;
 

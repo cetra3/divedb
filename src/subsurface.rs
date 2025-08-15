@@ -108,7 +108,7 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
             }
 
             if let Some(name) = name {
-                let site_id = Uuid::from_fields(id, d2, d3, d4)?;
+                let site_id = Uuid::from_fields(id, d2, d3, d4);
 
                 let dive_site = DiveSite {
                     id: site_id,
@@ -177,7 +177,7 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
                                             d2,
                                             d3,
                                             d4,
-                                        )?;
+                                        );
 
                                         let dive = Dive {
                                             user_id,

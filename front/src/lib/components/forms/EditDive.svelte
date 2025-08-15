@@ -88,7 +88,7 @@
 				<FormRow name="Published">
 					<label class="form-switch">
 						<input type="checkbox" bind:checked={dive.published} />
-						<i class="form-icon" /> Publish this dive (otherwise only you will be able to see it)
+						<i class="form-icon"></i> Publish this dive (otherwise only you will be able to see it)
 					</label>
 				</FormRow>
 			{/if}

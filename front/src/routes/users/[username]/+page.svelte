@@ -63,7 +63,8 @@
 									</div>
 									<div
 										class="title-center"
-										title="Search for '{apubId}' on your ActivityPub instance to follow {user.displayName ?? user.username}"
+										title="Search for '{apubId}' on your ActivityPub instance to follow {user.displayName ??
+											user.username}"
 									>
 										<MastodonIcon size="22px" />
 										<span class="site-metrics">{apubId}</span>

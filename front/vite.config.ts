@@ -1,18 +1,17 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import type { UserConfig } from 'vite';
+import { defineConfig } from 'vite';
 
-const config: UserConfig = {
-	plugins: [sveltekit()],
-	server: {
-		proxy: {
-			'/api': {
-				target: 'http://localhost:3333'
+export default defineConfig(({ mode }) => {
+	process.env.BACKEND_URL = 'http://localhost:3333';
+
+	return {
+		server: {
+			proxy: {
+				'/api': {
+					target: 'http://localhost:3333'
+				}
 			}
-		}
-	},
-	optimizeDeps: {
-		exclude: ['bytemd']
-	}
-};
-
-export default config;
+		},
+		plugins: [sveltekit()]
+	};
+});

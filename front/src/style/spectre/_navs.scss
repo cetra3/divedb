@@ -1,0 +1,46 @@
+@use 'functions/color' as *;
+@use 'functions/get-var' as *;
+@use 'variables' as *;
+
+// Navs
+.nav {
+	display: flex;
+	flex-direction: column;
+	list-style: none;
+	// margin: $unit-1 0; // old spectre.css
+	margin: get-var('unit-1') 0;
+
+	.nav-item {
+		a {
+			// color: $gray-color-dark; // old spectre.css
+			color: color('gray-color-dark');
+			// padding: $unit-1 $unit-2; // old spectre.css
+			padding: get-var('unit-1') get-var('unit-2');
+			text-decoration: none;
+			&:focus,
+			&:hover {
+				// color: $primary-color; // old spectre.css
+				color: color('primary-color');
+			}
+		}
+		&.active {
+			& > a {
+				// color: darken($gray-color-dark, 10%); // old spectre.css
+				color: color('gray-color-dark', $lightness: -10%);
+				font-weight: bold;
+				&:focus,
+				&:hover {
+					// color: $primary-color; // old spectre.css
+					color: color('primary-color');
+				}
+			}
+		}
+	}
+
+	& .nav {
+		// margin-bottom: $unit-2; // old spectre.css
+		margin-bottom: get-var('unit-2');
+		// margin-left: $unit-4; // old spectre.css
+		margin-left: get-var('unit-4');
+	}
+}
