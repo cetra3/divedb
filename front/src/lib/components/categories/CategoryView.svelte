@@ -2,10 +2,14 @@
 	import type { Category } from '$lib/graphql/generated';
 	type CategoryMap = { [category: string]: string[] };
 
-	export let categories: Category[];
-	export let map: CategoryMap;
+	interface Props {
+		categories: Category[];
+		map: CategoryMap;
+	}
 
-	$: values = categories.map((val) => val.values).flat();
+	let { categories, map }: Props = $props();
+
+	let values = $derived(categories.map((val) => val.values).flat());
 </script>
 
 {#each categories as category, catIdx}

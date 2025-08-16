@@ -4,7 +4,11 @@
 	import { centerVals } from '$lib/util/bounds';
 	import type { LatLngBoundsExpression } from 'leaflet';
 	import DrawRectangle from './leaflet/DrawRectangle.svelte';
-	export let bounds: LatLngBoundsExpression | undefined = undefined;
+	interface Props {
+		bounds?: LatLngBoundsExpression | undefined;
+	}
+
+	let { bounds = $bindable(undefined) }: Props = $props();
 
 	// Don't change when editing
 	let initialBounds = bounds;

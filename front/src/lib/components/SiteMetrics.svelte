@@ -2,7 +2,11 @@
 	import type { SiteSummaryMetricsFragment } from '$lib/graphql/generated';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	export let site: SiteSummaryMetricsFragment;
+	interface Props {
+		site: SiteSummaryMetricsFragment;
+	}
+
+	let { site }: Props = $props();
 </script>
 
 <span title={`${site.siteMetrics.photoCount} photos taken at ${site.name}`} class="title-center">

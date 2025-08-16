@@ -7,10 +7,10 @@
 	import type { ClientError } from 'graphql-request';
 	import FormRow from '$lib/components/FormRow.svelte';
 
-	let errors: string | undefined = undefined;
-	let username = '';
+	let errors: string | undefined = $state(undefined);
+	let username = $state('');
 
-	let loading = false;
+	let loading = $state(false);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -35,7 +35,7 @@
 			});
 	};
 
-	$: canSave = username != '';
+	let canSave = $derived(username != '');
 </script>
 
 <div class="container grid-lg">
@@ -52,7 +52,7 @@
 			</div>
 		{/if}
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Username">
 					<input type="text" bind:value={username} class="form-input" />
 					<span class="form-input-hint"> Enter in a username to use with this account </span>

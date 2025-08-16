@@ -11,13 +11,13 @@
 	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
 	import VerifyEmail from '$lib/components/forms/VerifyEmail.svelte';
 	let currentUser: CurrentUserFragment | undefined;
-	let username = '';
-	let displayName = '';
-	let watermarkLocation = OverlayLocation.BottomRight;
-	let copyrightLocation: OverlayLocation | '' = OverlayLocation.BottomLeft;
-	let description = '';
-	let emailVerified = false;
-	let photoId: string | undefined = undefined;
+	let username = $state('');
+	let displayName = $state('');
+	let watermarkLocation = $state(OverlayLocation.BottomRight);
+	let copyrightLocation: OverlayLocation | '' = $state(OverlayLocation.BottomLeft);
+	let description = $state('');
+	let emailVerified = $state(false);
+	let photoId: string | undefined = $state(undefined);
 
 	onMount(async () => {
 		currentUser = (await client.getCurrentUser()).currentUser ?? undefined;
@@ -30,17 +30,16 @@
 		emailVerified = currentUser?.emailVerified ?? false;
 	});
 
-	let pristine = true;
+	let pristine = $state(true);
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
+	let deleteModal = $state(false);
 
-	let deleteModal = false;
+	let file: File | undefined = $state(undefined);
 
-	let file: File | undefined = undefined;
-
-	const onUpload = (e: Event) => {
+	const onInputChange = (e: Event) => {
 		let files = (e.target as any).files;
 
 		if (files && files.length > 0) {
@@ -53,14 +52,14 @@
 		pristine = false;
 	};
 
-	const onUploaded = (e: CustomEvent<{ photo: PhotoSummaryFragment; index: number }>) => {
-		const { photo } = e.detail;
-
+	const onUpload = ({ photo }: { photo: PhotoSummaryFragment }) => {
 		file = undefined;
 
 		photoId = photo.id;
 		pristine = false;
 	};
+
+	const onError = () => {};
 
 	const onInput = () => {
 		pristine = false;
@@ -90,7 +89,7 @@
 			});
 	};
 
-	$: canSave = displayName != '' && !pristine;
+	let canSave = $derived(displayName != '' && !pristine);
 </script>
 
 <svelte:head>
@@ -113,7 +112,7 @@
 
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Username">
 					<input type="text" bind:value={username} disabled class="form-input" />
 					<span class="form-input-hint"> This is the username you registered with </span>
@@ -123,7 +122,7 @@
 						type="text"
 						placeholder="Enter in a display name to use for watermarks and other things"
 						bind:value={displayName}
-						on:input={onInput}
+						oninput={onInput}
 						class="form-input"
 					/>
 					<span class="form-input-hint">
@@ -134,7 +133,7 @@
 					<div class="columns">
 						{#if photoId}
 							<div class="column col-3 col-sm-6">
-								<!-- svelte-ignore a11y-missing-attribute -->
+								<!-- svelte-ignore a11y_missing_attribute -->
 								<img
 									src={`/api/photos/jpeg/${photoId}`}
 									class="img-edit img-responsive"
@@ -143,7 +142,7 @@
 							</div>
 						{/if}
 						{#if file}
-							<ImageUpload index={0} internal={true} on:upload={onUploaded} {file} />
+							<ImageUpload index={0} internal={true} {onUpload} {onError} {file} />
 						{/if}
 					</div>
 					<div class="columns">
@@ -151,13 +150,13 @@
 							<div class="column col-3 col-sm-6">
 								<button
 									class="btn btn-sm btn-secondary btn-block"
-									on:click={removePhoto}
+									onclick={removePhoto}
 									type="button">Remove Photo</button
 								>
 							</div>
 						{/if}
 						<div class="column col-3 col-sm-6">
-							<input on:change={onUpload} id="fileupload" type="file" accept=".jpg,.jpeg" />
+							<input onchange={onInputChange} id="fileupload" type="file" accept=".jpg,.jpeg" />
 						</div>
 					</div>
 				</FormRow>
@@ -165,7 +164,7 @@
 					<textarea
 						placeholder="Enter in a description of yourself, your dive certifications, and what you like to do!"
 						bind:value={description}
-						on:input={onInput}
+						oninput={onInput}
 						rows="8"
 						class="form-input"
 					></textarea>
@@ -174,7 +173,7 @@
 					</span>
 				</FormRow>
 				<FormRow name="Logo Location">
-					<select on:input={onInput} bind:value={watermarkLocation} class="form-select">
+					<select oninput={onInput} bind:value={watermarkLocation} class="form-select">
 						<option value={OverlayLocation.BottomRight}> Bottom Right </option>
 						<option value={OverlayLocation.BottomLeft}>Bottom Left</option>
 						<option value={OverlayLocation.TopLeft}>Top Left</option>
@@ -185,7 +184,7 @@
 					</span>
 				</FormRow>
 				<FormRow name="Copyright Location">
-					<select on:input={onInput} bind:value={copyrightLocation} class="form-select">
+					<select oninput={onInput} bind:value={copyrightLocation} class="form-select">
 						<option value={''}>Hidden</option>
 						<option value={OverlayLocation.BottomRight}> Bottom Right </option>
 						<option value={OverlayLocation.BottomLeft}>Bottom Left</option>
@@ -238,7 +237,7 @@
 			<button
 				class="btn btn-error"
 				type="submit"
-				on:click={() => {
+				onclick={() => {
 					deleteModal = true;
 				}}
 			>

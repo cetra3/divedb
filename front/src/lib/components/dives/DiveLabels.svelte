@@ -1,12 +1,16 @@
 <script lang="ts">
 	import type { DiveWithMetricsFragment, DiveNodeFragment } from '$lib/graphql/generated';
 
-	export let dive: DiveWithMetricsFragment | DiveNodeFragment;
 
 	import { client } from '$lib/graphql/client';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 	import DiveComment from './DiveComment.svelte';
+	interface Props {
+		dive: DiveWithMetricsFragment | DiveNodeFragment;
+	}
+
+	let { dive }: Props = $props();
 
 	const onLike = (liked: CustomEvent<boolean>) => {
 		let diveId = dive.id;

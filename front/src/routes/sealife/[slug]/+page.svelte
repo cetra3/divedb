@@ -9,16 +9,20 @@
 	import CategoryView from '$lib/components/categories/CategoryView.svelte';
 	import References from '$lib/components/References.svelte';
 	import { session } from '$lib/session';
-	export let data: PageData;
-	let sealife = data.sealife;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
+	let sealife = $state(data.sealife);
 	let mdDesc = data.mdDesc;
 	let siteUrl = data.siteUrl;
 	let categories = data.categories;
 
 	let photos = sealife?.latestPhotos;
 
-	let loading = false;
-	let changed = false;
+	let loading = $state(false);
+	let changed = $state(false);
 
 	const changeCoverPhoto = (photoId: string) => {
 		if (sealife) {
@@ -122,17 +126,18 @@
 			</h1>
 		</div>
 		<div class="column col-12 col-sm-12">
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<ImageList {photos} query={{ sealifeId: sealife.id }}>
-				<svelte:fragment let:photo slot="photo-label">
+				<!-- @migration-task: migrate this slot by hand, `photo-label` is an invalid identifier -->
+	<svelte:fragment let:photo slot="photo-label">
 					{#if sealife.photoId !== photo}
 						{#if loading}
 							<span class="loading padding-20"></span>
 						{:else}
 							<span
 								class="label pointer"
-								on:click={() => {
+								onclick={() => {
 									changeCoverPhoto(photo);
 								}}>Make Cover Photo</span
 							>

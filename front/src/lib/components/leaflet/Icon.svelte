@@ -1,17 +1,23 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { getContext } from 'svelte';
 	import L from 'leaflet';
 
 	const { getMarker } = getContext<any>(L.Marker);
 
-	export let options: any = {};
+	interface Props {
+		options?: any;
+	}
 
-	let icon: L.Icon;
+	let { options = {} }: Props = $props();
 
-	$: {
+	let icon: L.Icon = $state();
+
+	run(() => {
 		icon = L.icon(options);
 		getMarker().setIcon(icon);
-	}
+	});
 
 	export function getIcon() {
 		return icon;

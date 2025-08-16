@@ -4,11 +4,15 @@
 	import { client } from '$lib/graphql/client';
 	import type { ClientError } from 'graphql-request';
 
-	export let onClose: () => void;
-	let errors: string | undefined = undefined;
+	interface Props {
+		onClose: () => void;
+	}
 
-	let password = '';
-	let loading = false;
+	let { onClose }: Props = $props();
+	let errors: string | undefined = $state(undefined);
+
+	let password = $state('');
+	let loading = $state(false);
 
 	const onDelete = () => {
 		client
@@ -29,10 +33,10 @@
 	<div class="modal-overlay"></div>
 	<div class="modal-container">
 		<div class="modal-header">
-			<!-- svelte-ignore a11y-missing-attribute -->
-			<!-- svelte-ignore a11y-missing-content -->
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<a class="btn btn-clear float-right" aria-label="Close" on:click={onClose}></a>
+			<!-- svelte-ignore a11y_missing_attribute -->
+			<!-- svelte-ignore a11y_missing_content -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<a class="btn btn-clear float-right" aria-label="Close" onclick={onClose}></a>
 			<div class="modal-title h5">Delete Account</div>
 		</div>
 		<div class="modal-body">
@@ -57,10 +61,10 @@
 			</div>
 		</div>
 		<div class="modal-footer">
-			<button disabled={password == ''} on:click={onDelete} class="btn btn-error" type="submit">
+			<button disabled={password == ''} onclick={onDelete} class="btn btn-error" type="submit">
 				Delete Account
 			</button>{' '}
-			<button class="btn" on:click={onClose} type="submit"> Cancel </button>
+			<button class="btn" onclick={onClose} type="submit"> Cancel </button>
 		</div>
 	</div>
 </div>

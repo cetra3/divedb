@@ -3,11 +3,15 @@
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import type { PageData } from './$types';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 	let diveSites = data.diveSites;
 
-	let query: string;
-	let showSearch = false;
+	let query: string = $state();
+	let showSearch = $state(false);
 </script>
 
 <svelte:head>
@@ -20,7 +24,7 @@
 			<h1 class="page-title">
 				<DiveSiteIcon size="1em" /> Dive Sites
 				<button
-					on:click={() => {
+					onclick={() => {
 						showSearch = !showSearch;
 					}}
 					class:btn-primary={showSearch}

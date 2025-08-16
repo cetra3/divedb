@@ -8,14 +8,14 @@
 
 	let query = new URLSearchParams(browser ? location.search : '');
 
-	let email = query.get('email') || '';
+	let email = $state(query.get('email') || '');
 	let token = query.get('token') || '';
-	let newPassword = '';
-	let confirmPassword = '';
+	let newPassword = $state('');
+	let confirmPassword = $state('');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -36,7 +36,7 @@
 			});
 	};
 
-	$: canSave = email != '' && newPassword != '' && newPassword == confirmPassword;
+	let canSave = $derived(email != '' && newPassword != '' && newPassword == confirmPassword);
 </script>
 
 <svelte:head>
@@ -56,7 +56,7 @@
 	</div>
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Email">
 					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
 				</FormRow>

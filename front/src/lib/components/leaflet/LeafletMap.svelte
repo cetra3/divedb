@@ -1,25 +1,37 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createEventDispatcher, setContext } from 'svelte';
 	import L, { type LatLngBoundsExpression } from 'leaflet';
 
 	import EventBridge from './EventBridge';
 
-	export let options = {};
-	export let fitBounds: LatLngBoundsExpression | undefined = undefined;
-	export let events: any[] = [];
+	interface Props {
+		options?: any;
+		fitBounds?: LatLngBoundsExpression | undefined;
+		events?: any[];
+		children?: import('svelte').Snippet;
+	}
 
-	let map: L.Map | undefined;
+	let {
+		options = {},
+		fitBounds = undefined,
+		events = [],
+		children
+	}: Props = $props();
+
+	let map: L.Map | undefined = $state();
 
 	setContext(L, {
 		getMap: () => map
 	});
 
-	$: {
+	run(() => {
 		if (fitBounds && map) {
 			console.log('Changing bounds,', fitBounds);
 			map.fitBounds(fitBounds);
 		}
-	}
+	});
 
 	const dispatch = createEventDispatcher();
 	let eventBridge: EventBridge;
@@ -47,6 +59,6 @@
 
 <div style="height:100%; width:100%;" use:initialize>
 	{#if map}
-		<slot />
+		{@render children?.()}
 	{/if}
 </div>

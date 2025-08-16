@@ -1,9 +1,13 @@
 <script lang="ts">
-	export let diveId: string;
-	export let smallOnly = false;
+	interface Props {
+		diveId: string;
+		smallOnly?: boolean;
+	}
 
-	$: smImage = `/api/chart/${diveId}?width=469&height=288`;
-	$: lgImage = `/api/chart/${diveId}?width=958&height=400`;
+	let { diveId, smallOnly = false }: Props = $props();
+
+	let smImage = $derived(`/api/chart/${diveId}?width=469&height=288`);
+	let lgImage = $derived(`/api/chart/${diveId}?width=958&height=400`);
 </script>
 
 <picture>

@@ -7,14 +7,18 @@
 	import { client } from '$lib/graphql/client';
 	import { throttle } from 'lodash-es';
 	import DiveSummary from './DiveSummary.svelte';
-	export let query: GetDivesQueryVariables | undefined = undefined;
-	export let dives: DiveWithMetricsFragment[];
+	interface Props {
+		query?: GetDivesQueryVariables | undefined;
+		dives: DiveWithMetricsFragment[];
+	}
+
+	let { query = undefined, dives = $bindable() }: Props = $props();
 
 	let scrollPercent = 0;
 	let loading = false;
 	let atTheEnd = false;
 
-	$: offset = dives.length;
+	let offset = $derived(dives.length);
 
 	const moreDives = () => {
 		if (query !== undefined && !loading && !atTheEnd) {
@@ -39,7 +43,7 @@
 	}, 300);
 </script>
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 <div class="columns">
 	{#each dives as dive}
 		<DiveSummary {dive} />

@@ -2,8 +2,12 @@
 	import type { Category } from '$lib/graphql/generated';
 	type CategoryMap = { [category: string]: string[] };
 
-	export let categories: Category[];
-	export let map: CategoryMap;
+	interface Props {
+		categories: Category[];
+		map: CategoryMap;
+	}
+
+	let { categories, map = $bindable() }: Props = $props();
 
 	const addValue = (categoryId: string, categoryValueId: string) => {
 		let catVals = map[categoryId] ?? [];
@@ -16,7 +20,7 @@
 		map[categoryId] = catVals.filter((val) => val !== categoryValueId);
 	};
 
-	$: values = Object.values(map).flat();
+	let values = $derived(Object.values(map).flat());
 </script>
 
 {#each categories as category}
@@ -25,7 +29,7 @@
 		<div class="category-buttons">
 			{#each category.values as value}
 				<button
-					on:click={(e) => {
+					onclick={(e) => {
 						e.preventDefault();
 						if (values.some((val) => val == value.id)) {
 							removeValue(category.id, value.id);

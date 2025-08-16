@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { Editor, Viewer } from 'bytemd';
 
-	export let value: string;
+	interface Props {
+		value: string;
+	}
+
+	let { value = $bindable() }: Props = $props();
 
 	function handleChange(e: any) {
 		value = e.detail.value;

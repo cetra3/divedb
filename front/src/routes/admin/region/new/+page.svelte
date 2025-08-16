@@ -7,7 +7,7 @@
 	import type { CreateRegion } from '$lib/graphql/generated';
 	import type { ClientError } from 'graphql-request';
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
 	const onSave = (region: CreateRegion) => {
 		loading = true;
@@ -23,7 +23,7 @@
 			});
 	};
 
-	let loading = false;
+	let loading = $state(false);
 </script>
 
 <CheckLogin />

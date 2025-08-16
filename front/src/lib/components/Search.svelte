@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import SearchIcon from '$lib/icons/SearchIcon.svelte';
 	import { client } from '$lib/graphql/client';
 	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
@@ -8,28 +10,40 @@
 	import { onMount } from 'svelte';
 	import { result, throttle } from 'lodash-es';
 
-	export let query = '';
-	export let map: CategoryMap | undefined = undefined;
-	export let filter: string | undefined = undefined;
-	export let showSearchBar = true;
 
-	export let title = 'Search DiveDB';
+	interface Props {
+		query?: string;
+		map?: CategoryMap | undefined;
+		filter?: string | undefined;
+		showSearchBar?: boolean;
+		title?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		query = $bindable(''),
+		map = undefined,
+		filter = undefined,
+		showSearchBar = true,
+		title = 'Search DiveDB',
+		children
+	}: Props = $props();
 
 	let scrollPercent = 0;
-	let browserLoaded = false;
+	let browserLoaded = $state(false);
 	let atTheEnd = false;
 
 	onMount(() => {
 		browserLoaded = true;
 	});
 
-	let results: SearchResultNodeFragment[] = [];
+	let results: SearchResultNodeFragment[] = $state([]);
 
-	let loading = false;
-	let called = false;
+	let loading = $state(false);
+	let called = $state(false);
 	let offset = 0;
 
-	$: hasValues = map !== undefined && Object.values(map).flat().length > 0;
+	let hasValues = $derived(map !== undefined && Object.values(map).flat().length > 0);
 
 	const updateResult = (more: boolean = false) => {
 		if ((query != '' || hasValues) && !loading) {
@@ -62,7 +76,9 @@
 		}
 	};
 
-	$: (query, map, updateResult());
+	run(() => {
+		(query, map, updateResult());
+	});
 
 	const handleScroll = throttle(() => {
 		let scrollTop = window.scrollY;
@@ -76,7 +92,7 @@
 	}, 300);
 </script>
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 <div class="container grid-lg">
 	{#if showSearchBar}
 		<div class="columns">
@@ -92,7 +108,7 @@
 			</div>
 		</div>
 	{/if}
-	<slot />
+	{@render children?.()}
 	<div class="columns">
 		{#if query != '' || hasValues}
 			{#if loading && !called}

@@ -2,11 +2,15 @@
 	import ImageList from '$lib/components/ImageList.svelte';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';
-	export let data: PageData;
 	import { session } from '$lib/session';
+	interface Props {
+		data: PageData;
+	}
 
-	$: photos = data.photos;
-	$: username = data.username;
+	let { data }: Props = $props();
+
+	let photos = $derived(data.photos);
+	let username = $derived(data.username);
 </script>
 
 <svelte:head>

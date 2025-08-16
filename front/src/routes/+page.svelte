@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	export let data: PageData;
 	import DiveSiteSummary from '$lib/components/DiveSiteSummary.svelte';
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
@@ -8,11 +7,16 @@
 	import Search from '$lib/components/Search.svelte';
 	import { assets } from '$app/paths';
 	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
+	interface Props {
+		data: PageData;
+	}
 
-	$: diveSites = data.frontPage.popularDiveSites;
-	$: recentDives = data.frontPage.recentDives;
+	let { data }: Props = $props();
 
-	let query: string;
+	let diveSites = $derived(data.frontPage.popularDiveSites);
+	let recentDives = $derived(data.frontPage.recentDives);
+
+	let query: string = $state('');
 </script>
 
 <svelte:head>

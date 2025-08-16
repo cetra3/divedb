@@ -6,9 +6,9 @@
 	import { fbLoginRedirect } from '$lib/util/fbRedirect';
 	import type { ClientError } from 'graphql-request';
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = true;
+	let loading = $state(true);
 
 	onMount(() => {
 		let searchParams = new URLSearchParams(window.location.search);

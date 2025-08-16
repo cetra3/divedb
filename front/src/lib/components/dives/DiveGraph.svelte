@@ -3,10 +3,14 @@
 	import GraphImage from './GraphImage.svelte';
 	import GraphPlaceholder from './GraphPlaceholder.svelte';
 
-	export let link = false;
-	export let smallOnly = false;
 
-	export let dive: DiveWithMetricsFragment | DiveNodeFragment;
+	interface Props {
+		link?: boolean;
+		smallOnly?: boolean;
+		dive: DiveWithMetricsFragment | DiveNodeFragment;
+	}
+
+	let { link = false, smallOnly = false, dive }: Props = $props();
 </script>
 
 {#if dive.hasMetrics}

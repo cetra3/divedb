@@ -1,6 +1,11 @@
 <script lang="ts">
-	export let name: string;
-	export let error: boolean | undefined = undefined;
+	interface Props {
+		name: string;
+		error?: boolean | undefined;
+		children?: import('svelte').Snippet;
+	}
+
+	let { name, error = undefined, children }: Props = $props();
 </script>
 
 <div class="form-group" class:has-error={error}>
@@ -8,6 +13,6 @@
 		<label for={undefined} class="form-label">{name}</label>
 	</div>
 	<div class="col-9 col-sm-12">
-		<slot />
+		{@render children?.()}
 	</div>
 </div>

@@ -1,14 +1,20 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	export let site: SiteFragment | CreateDiveSite;
-	export let onSave: (site: CreateDiveSite) => void;
 	import { session } from '$lib/session';
 	import Markdown from './Markdown.svelte';
+	interface Props {
+		site: SiteFragment | CreateDiveSite;
+		onSave: (site: CreateDiveSite) => void;
+	}
 
-	let EditableMap: any;
+	let { site = $bindable(), onSave }: Props = $props();
+
+	let EditableMap: any = $state();
 
 	onMount(async () => {
 		if (browser) {
@@ -18,29 +24,31 @@
 
 	const gpsRegex = /^([-+]?\d{1,2}\.\d+)\s*([-+]?\d{1,3}\.\d+)$/;
 
-	let gps = site.lat !== 0 ? `${site.lat} ${site.lon}` : '';
+	let gps = $state(site.lat !== 0 ? `${site.lat} ${site.lon}` : '');
 
-	let showMap = false;
+	let showMap = $state(false);
 
-	$: gpsMatch = gps.match(gpsRegex);
-	$: gpsError = gps != '' && !gpsMatch;
+	let gpsMatch = $derived(gps.match(gpsRegex));
+	let gpsError = $derived(gps != '' && !gpsMatch);
 
-	$: canSave = site.name != '' && !gpsError;
+	let canSave = $derived(site.name != '' && !gpsError);
 
-	$: isEditor =
-		$session.user?.level == 'ADMIN' ||
+	let isEditor =
+		$derived($session.user?.level == 'ADMIN' ||
 		$session.user?.level == 'EDITOR' ||
 		!('userId' in site) ||
-		($session.user?.id != undefined && $session.user.id === site.userId);
+		($session.user?.id != undefined && $session.user.id === site.userId));
 
 	const onMapChange = (lat: number, lon: number) => {
 		gps = `${lat.toFixed(6)} ${lon.toFixed(6)}`;
 	};
 
-	$: if (gpsMatch != undefined) {
-		site.lat = +gpsMatch[1];
-		site.lon = +gpsMatch[2];
-	}
+	run(() => {
+		if (gpsMatch != undefined) {
+			site.lat = +gpsMatch[1];
+			site.lon = +gpsMatch[2];
+		}
+	});
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -62,7 +70,7 @@
 
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<FormRow name="Name">
 				<input type="text" placeholder="Name" bind:value={site.name} class="form-input" />
 			</FormRow>
@@ -99,10 +107,10 @@
 					</span>
 				{/if}
 				<span class="form-input-hint">
-					<!-- svelte-ignore a11y-invalid-attribute -->
+					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						href="javascript:void(0)"
-						on:click={() => {
+						onclick={() => {
 							showMap = !showMap;
 						}}
 					>
@@ -113,8 +121,7 @@
 			{#if showMap}
 				<FormRow name="">
 					{#if browser}
-						<svelte:component
-							this={EditableMap}
+						<EditableMap
 							lat={site.lat}
 							lon={site.lon}
 							onChange={onMapChange}

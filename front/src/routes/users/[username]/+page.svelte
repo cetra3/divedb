@@ -6,16 +6,20 @@
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
-	$: user = data.user;
-	$: siteUrl = data.siteUrl;
-	$: apubId = getApubId(user.username, data.siteUrl);
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const getApubId = (username: string, url: string) => {
 		const domain = new URL(url).hostname;
 
 		return `@${username}@${domain}`;
 	};
+	let user = $derived(data.user);
+	let siteUrl = $derived(data.siteUrl);
+	let apubId = $derived(getApubId(user.username, data.siteUrl));
 </script>
 
 <svelte:head>

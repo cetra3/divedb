@@ -2,8 +2,12 @@
 	import type { SealifeSummaryFragment } from '$lib/graphql/generated';
 	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
 	import Photo from './photos/Photo.svelte';
-	export let sealife: SealifeSummaryFragment;
-	export let className: string | undefined = undefined;
+	interface Props {
+		sealife: SealifeSummaryFragment;
+		className?: string | undefined;
+	}
+
+	let { sealife, className = undefined }: Props = $props();
 </script>
 
 <div class={className ? className : 'column col-6 col-lg-12'}>

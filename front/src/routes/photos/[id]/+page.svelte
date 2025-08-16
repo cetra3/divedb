@@ -7,7 +7,11 @@
 	import Photo from '$lib/components/photos/Photo.svelte';
 
 	import type { PageData } from './$types';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let photo = data.photo;
 	let relatedPhotos = data.relatedPhotos;
@@ -15,8 +19,8 @@
 	let relatedTitle = data.relatedTitle;
 	let siteUrl = data.siteUrl;
 
-	$: title = photo ? imageAlt(photo) : ' Photo';
-	$: titleWithDate = photo ? imageAlt(photo, true) : ' Photo';
+	let title = $derived(photo ? imageAlt(photo) : ' Photo');
+	let titleWithDate = $derived(photo ? imageAlt(photo, true) : ' Photo');
 </script>
 
 <svelte:head>

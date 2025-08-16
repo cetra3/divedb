@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createEventDispatcher, getContext, onDestroy, setContext } from 'svelte';
 	import L from 'leaflet';
 
@@ -17,14 +19,27 @@
 		shadowSize: [41, 41]
 	});
 
-	export let latLng: any;
-	export let zIndexOffset = 0;
-	export let icon = defaultIcon;
-	export let opacity = 1.0;
-	export let options = {};
-	export let events: any[] = [];
+	interface Props {
+		latLng: any;
+		zIndexOffset?: number;
+		icon?: any;
+		opacity?: number;
+		options?: any;
+		events?: any[];
+		children?: import('svelte').Snippet;
+	}
 
-	let marker: L.Marker;
+	let {
+		latLng,
+		zIndexOffset = 0,
+		icon = defaultIcon,
+		opacity = 1.0,
+		options = {},
+		events = [],
+		children
+	}: Props = $props();
+
+	let marker: L.Marker = $state();
 
 	setContext(L.Layer, {
 		getLayer: () => marker
@@ -34,9 +49,9 @@
 	});
 
 	const dispatch = createEventDispatcher();
-	let eventBridge: EventBridge;
+	let eventBridge: EventBridge = $state();
 
-	$: {
+	run(() => {
 		if (!marker) {
 			marker = L.marker(latLng, options).addTo(getMap());
 			eventBridge = new EventBridge(marker, dispatch, events);
@@ -45,7 +60,7 @@
 		marker.setZIndexOffset(zIndexOffset);
 		marker.setIcon(icon);
 		marker.setOpacity(opacity);
-	}
+	});
 
 	onDestroy(() => {
 		eventBridge.unregister();
@@ -59,6 +74,6 @@
 
 <div>
 	{#if marker}
-		<slot />
+		{@render children?.()}
 	{/if}
 </div>

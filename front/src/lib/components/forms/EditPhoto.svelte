@@ -3,10 +3,14 @@
 	import FormRow from '../FormRow.svelte';
 	import ChooseSealife from './ChooseSealife.svelte';
 	import ChooseSite from './ChooseSite.svelte';
-	export let photo: CreatePhoto | PhotoSummaryFragment;
-	export let onSave: (photo: CreatePhoto) => void;
+	interface Props {
+		photo: CreatePhoto | PhotoSummaryFragment;
+		onSave: (photo: CreatePhoto) => void;
+	}
 
-	let diveSiteId: string | undefined;
+	let { photo, onSave }: Props = $props();
+
+	let diveSiteId: string | undefined = $state();
 
 	if ('diveSite' in photo) {
 		diveSiteId = photo.diveSite?.id;
@@ -14,7 +18,7 @@
 		diveSiteId = photo.diveSiteId ?? undefined;
 	}
 
-	let sealifeId: string | undefined;
+	let sealifeId: string | undefined = $state();
 
 	if ('sealife' in photo) {
 		sealifeId = photo.sealife?.id;
@@ -37,7 +41,7 @@
 	};
 </script>
 
-<form class="form-horizontal" on:submit={onSubmit}>
+<form class="form-horizontal" onsubmit={onSubmit}>
 	<FormRow name="Sealife">
 		<ChooseSealife bind:id={sealifeId} />
 	</FormRow>

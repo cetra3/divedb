@@ -5,8 +5,12 @@
 	import ChooseSite from './ChooseSite.svelte';
 	import Markdown from './Markdown.svelte';
 	import { session } from '$lib/session';
-	export let dive: CreateDive | DiveNodeFragment;
-	export let onSave: (site: CreateDive) => void;
+	interface Props {
+		dive: CreateDive | DiveNodeFragment;
+		onSave: (site: CreateDive) => void;
+	}
+
+	let { dive = $bindable(), onSave }: Props = $props();
 
 	const pad2 = (input: number): string => {
 		return input.toString().padStart(2, '0');
@@ -16,25 +20,25 @@
 
 	let date = new Date(dive.date);
 
-	let dateValue = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-	let timeValue = `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+	let dateValue = $state(`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`);
+	let timeValue = $state(`${pad2(date.getHours())}:${pad2(date.getMinutes())}`);
 
-	let duration = formatMinutes(dive.duration);
+	let duration = $state(formatMinutes(dive.duration));
 
-	$: dateParts = dateValue.split('-');
-	$: timeParts = timeValue.split(':');
+	let dateParts = $derived(dateValue.split('-'));
+	let timeParts = $derived(timeValue.split(':'));
 
-	$: canSave =
-		dive.depth != 0 &&
+	let canSave =
+		$derived(dive.depth != 0 &&
 		dateParts.length == 3 &&
 		timeParts.length == 2 &&
-		duration.match(durationRegex) != undefined;
+		duration.match(durationRegex) != undefined);
 
-	$: isEditor =
-		$session.user?.level == 'ADMIN' ||
+	let isEditor =
+		$derived($session.user?.level == 'ADMIN' ||
 		$session.user?.level == 'EDITOR' ||
 		!('userId' in dive) ||
-		($session.user?.id != undefined && $session.user.id === dive.userId);
+		($session.user?.id != undefined && $session.user.id === dive.userId));
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -55,7 +59,7 @@
 
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<FormRow name="Date">
 				<div class="columns">
 					<div class="column col-6 col-sm-12">

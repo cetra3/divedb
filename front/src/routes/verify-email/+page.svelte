@@ -12,9 +12,9 @@
 	let email = query.get('email');
 	let token = query.get('token');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
 
 	onMount(() => {
 		if (!email || !token) {

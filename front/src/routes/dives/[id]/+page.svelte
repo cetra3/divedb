@@ -4,29 +4,33 @@
 	import type { PageData } from './$types';
 	import { session } from '$lib/session';
 
-	export let data: PageData;
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 	import ImageList from '$lib/components/ImageList.svelte';
 	import formatMinutes from '$lib/util/formatMinutes';
 	import DiveLabels from '$lib/components/dives/DiveLabels.svelte';
 	import Comments from '$lib/components/Comments.svelte';
+	interface Props {
+		data: PageData;
+	}
 
-	$: dive = data.dive;
-	$: relatedDives = data.relatedDives;
-	$: mdDesc = data.mdDesc;
-	$: siteUrl = data.siteUrl;
+	let { data }: Props = $props();
 
-	$: isEditor =
-		$session.user?.level == 'ADMIN' ||
+	let dive = $derived(data.dive);
+	let relatedDives = $derived(data.relatedDives);
+	let mdDesc = $derived(data.mdDesc);
+	let siteUrl = $derived(data.siteUrl);
+
+	let isEditor =
+		$derived($session.user?.level == 'ADMIN' ||
 		$session.user?.level == 'EDITOR' ||
 		!(dive && 'userId' in dive) ||
-		($session.user?.id != undefined && $session.user.id === dive.userId);
-	$: title = dive
+		($session.user?.id != undefined && $session.user.id === dive.userId));
+	let title = $derived(dive
 		? `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
 				dive.diveSite ? ` - ${dive.diveSite.name}` : ''
 			}`
-		: '';
+		: '');
 </script>
 
 <svelte:head>

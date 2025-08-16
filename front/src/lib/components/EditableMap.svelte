@@ -2,9 +2,13 @@
 	import LeafletMap from '$lib/components/leaflet/LeafletMap.svelte';
 	import TileLayer from '$lib/components/leaflet/TileLayer.svelte';
 	import Marker from '$lib/components/leaflet/Marker.svelte';
-	export let lat: number;
-	export let lon: number;
-	export let onChange: (lat: number, lon: number) => void;
+	interface Props {
+		lat: number;
+		lon: number;
+		onChange: (lat: number, lon: number) => void;
+	}
+
+	let { lat = $bindable(), lon = $bindable(), onChange }: Props = $props();
 
 	const mapOptions = {
 		center: [lat, lon],

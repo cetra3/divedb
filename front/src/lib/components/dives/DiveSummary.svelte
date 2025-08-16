@@ -5,11 +5,15 @@
 	import DiveGraph from './DiveGraph.svelte';
 	import DiveLabels from './DiveLabels.svelte';
 
-	export let dive: DiveWithMetricsFragment;
+	interface Props {
+		dive: DiveWithMetricsFragment;
+	}
 
-	$: title = `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
+	let { dive }: Props = $props();
+
+	let title = $derived(`${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
 		dive.diveSite ? ` - ${dive.diveSite.name}` : ''
-	}`;
+	}`);
 </script>
 
 <div class="column col-6 col-lg-12">

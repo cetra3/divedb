@@ -5,14 +5,18 @@
 	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
 	import CategoryPicker from '$lib/components/categories/CategoryPicker.svelte';
 	import { categoryStore } from '$lib/category';
-	export let data: PageData;
-	$: sealife = data.sealife;
-	$: categories = data.categories;
+	interface Props {
+		data: PageData;
+	}
 
-	$: hasValues = Object.values($categoryStore).flat().length > 0;
+	let { data }: Props = $props();
+	let sealife = $derived(data.sealife);
+	let categories = $derived(data.categories);
 
-	let query: string;
-	let showSearch = false;
+	let hasValues = $derived(Object.values($categoryStore).flat().length > 0);
+
+	let query: string = $state();
+	let showSearch = $state(false);
 </script>
 
 <svelte:head>
@@ -25,7 +29,7 @@
 			<h1 class="page-title">
 				<SealifeIcon size="22px" /> Sealife
 				<button
-					on:click={() => {
+					onclick={() => {
 						showSearch = !showSearch;
 					}}
 					class:btn-primary={showSearch}

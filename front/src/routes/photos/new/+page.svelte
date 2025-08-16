@@ -1,6 +1,3 @@
-<script context="module">
-</script>
-
 <script lang="ts">
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
@@ -8,27 +5,43 @@
 	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
 	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
 
-	let isDragging = false;
+	let isDragging = $state(false);
 
-	let filesToUpload: (File | undefined)[] = [];
+	interface QueuedFile {
+		file: File;
+		shouldUpload: boolean;
+	}
 
-	let photosUploaded: PhotoSummaryFragment[] = [];
+	let filesToQueue: (QueuedFile | undefined)[] = $state([]);
+
+	let photosUploaded: PhotoSummaryFragment[] = $state([]);
+
+	let hasErrors = $state(false);
 
 	const clickUpload = () => {
 		document.getElementById('fileupload')?.click();
 	};
 
-	const onUploaded = (e: CustomEvent<{ photo: PhotoSummaryFragment; index: number }>) => {
-		console.log(e.detail);
+	const onUpload = ({ photo, index }: { photo: PhotoSummaryFragment; index: number }) => {
+		let newFilesToQueue = [...filesToQueue];
 
-		const { photo, index } = e.detail;
+		newFilesToQueue[index] = undefined;
 
-		filesToUpload[index] = undefined;
+		// if there is any outstanding files to upload, start them now
+		let nextToUpload = newFilesToQueue.find((file) => file?.shouldUpload == false);
+		if (nextToUpload) {
+			nextToUpload.shouldUpload = true;
+		}
 
+		filesToQueue = [...newFilesToQueue];
 		photosUploaded = [photo, ...photosUploaded];
 	};
 
-	const onUpload = (e: Event) => {
+	const onError = () => {
+		hasErrors = true;
+	};
+
+	const onFileChange = (e: Event) => {
 		let files = (e.target as any).files;
 		if (files) {
 			onAddFiles(files);
@@ -41,11 +54,14 @@
 			let file = files.item(i);
 
 			if (file) {
-				newFiles.push(file);
+			    // limit the number of uploads to 5 at a time
+				let shouldUpload: boolean =
+					newFiles.length + filesToQueue.filter((val) => val !== undefined).length < 5;
+				newFiles.push({ file, shouldUpload });
 			}
 		}
 
-		filesToUpload = [...filesToUpload, ...newFiles];
+		filesToQueue = [...filesToQueue, ...newFiles];
 	};
 </script>
 
@@ -60,28 +76,30 @@
 		<div class="column col-12 col-lg-12">
 			<h1 class="page-title">
 				<PhotoIcon size="22px" /> Upload Photos
-				{#if filesToUpload.length != photosUploaded.length}
-					<span class="margin-left-30 loading loading-lg"></span>
-				{:else if filesToUpload.length > 0}
-					<i class="icon icon-2x icon-check"></i>
+				{#if !hasErrors}
+					{#if filesToQueue.length != photosUploaded.length}
+						<span class="margin-left-30 loading loading-lg"></span>
+					{:else if filesToQueue.length > 0}
+						<i class="icon icon-2x icon-check"></i>
+					{/if}
 				{/if}
 			</h1>
 		</div>
 
 		<div class={`column  col-12`}>
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				class="card pointer"
-				on:click={clickUpload}
-				on:dragenter={() => (isDragging = true)}
-				on:dragleave={() => (isDragging = false)}
-				on:dragover={(e) => {
+				onclick={clickUpload}
+				ondragenter={() => (isDragging = true)}
+				ondragleave={() => (isDragging = false)}
+				ondragover={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					isDragging = true;
 				}}
-				on:drop={(e) => {
+				ondrop={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					isDragging = false;
@@ -94,7 +112,7 @@
 				}}
 			>
 				<input
-					on:change={onUpload}
+					onchange={onFileChange}
 					id="fileupload"
 					type="file"
 					multiple
@@ -112,9 +130,9 @@
 				</div>
 			</div>
 		</div>
-		{#each filesToUpload as file, index}
+		{#each filesToQueue as file, index}
 			{#if file}
-				<ImageUpload {index} on:upload={onUploaded} {file} />
+				<ImageUpload doUpload={file.shouldUpload} {index} {onUpload} {onError} file={file.file} />
 			{/if}
 		{/each}
 	</div>

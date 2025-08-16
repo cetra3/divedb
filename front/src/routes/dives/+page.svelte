@@ -4,8 +4,12 @@
 	import { session } from '$lib/session';
 	import DiveList from '$lib/components/dives/DiveList.svelte';
 
-	export let data: PageData;
-	$: dives = data.dives;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
+	let dives = $derived(data.dives);
 </script>
 
 <svelte:head>

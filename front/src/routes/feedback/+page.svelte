@@ -3,11 +3,11 @@
 	import { client } from '$lib/graphql/client';
 	import type { ClientError } from 'graphql-request';
 
-	let feedback = '';
+	let feedback = $state('');
 
-	$: canSave = feedback != '';
+	let canSave = $derived(feedback != '');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
 	const onSubmit = () => {
 		loading = true;
@@ -23,9 +23,9 @@
 			});
 	};
 
-	let submitted = false;
+	let submitted = $state(false);
 
-	let loading = false;
+	let loading = $state(false);
 </script>
 
 <CheckLogin />
@@ -48,7 +48,7 @@
 				></textarea>
 			</div>
 			<div class="column col-12 col-sm-12 submit-button">
-				<button on:click={onSubmit} disabled={canSave == false} class="btn btn-primary">
+				<button onclick={onSubmit} disabled={canSave == false} class="btn btn-primary">
 					Submit
 				</button>
 			</div>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createEventDispatcher, getContext, onDestroy } from 'svelte';
 	import L from 'leaflet';
 
@@ -6,19 +8,30 @@
 
 	const { getMap } = getContext<any>(L);
 
-	export let url: any;
-	export let wms = false;
-	export let opacity = 1.0;
-	export let zIndex = 1;
-	export let options = {};
-	export let events: any = [];
+	interface Props {
+		url: any;
+		wms?: boolean;
+		opacity?: number;
+		zIndex?: number;
+		options?: any;
+		events?: any;
+	}
 
-	let tileLayer: any;
+	let {
+		url,
+		wms = false,
+		opacity = 1.0,
+		zIndex = 1,
+		options = {},
+		events = []
+	}: Props = $props();
+
+	let tileLayer: any = $state();
 
 	const dispatch = createEventDispatcher();
-	let eventBridge: EventBridge;
+	let eventBridge: EventBridge = $state();
 
-	$: {
+	run(() => {
 		if (!tileLayer) {
 			tileLayer = (!wms ? L.tileLayer(url, options) : L.tileLayer.wms(url, options)).addTo(
 				getMap()
@@ -28,7 +41,7 @@
 		tileLayer.setUrl(url);
 		tileLayer.setOpacity(opacity);
 		tileLayer.setZIndex(zIndex);
-	}
+	});
 
 	onDestroy(() => {
 		eventBridge.unregister();

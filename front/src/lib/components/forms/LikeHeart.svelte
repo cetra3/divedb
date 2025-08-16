@@ -4,8 +4,12 @@
 	import HeartOutline from '$lib/icons/HeartOutline.svelte';
 	import { session } from '$lib/session';
 
-	export let liked: boolean;
-	export let likes: number;
+	interface Props {
+		liked: boolean;
+		likes: number;
+	}
+
+	let { liked = $bindable(), likes = $bindable() }: Props = $props();
 
 	const dispatch = createEventDispatcher<{ liked: boolean }>();
 
@@ -25,15 +29,15 @@
 	};
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 {#if $session.loggedIn || likes > 0}
 	<span
 		class="label heart-label"
 		class:pointer={$session.loggedIn}
 		class:liked={liked || !$session.loggedIn}
 		class:un-liked={!liked && $session.loggedIn}
-		on:click={onClick}
+		onclick={onClick}
 	>
 		{#if liked}
 			<HeartFilled size="16px" />

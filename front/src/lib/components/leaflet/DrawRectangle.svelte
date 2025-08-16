@@ -8,7 +8,11 @@
 	let layerGroup: L.LayerGroup;
 	let map: L.Map;
 
-	export let bounds: LatLngBoundsExpression | undefined = undefined;
+	interface Props {
+		bounds?: LatLngBoundsExpression | undefined;
+	}
+
+	let { bounds = $bindable(undefined) }: Props = $props();
 
 	onMount(() => {
 		map = getMap();

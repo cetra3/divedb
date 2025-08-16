@@ -1,26 +1,30 @@
 <script lang="ts">
 	import type { CreateRegion, RegionNodeFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
-	export let region: CreateRegion | RegionNodeFragment | undefined = undefined;
-	export let onSave: (region: CreateRegion) => void;
 	import { session } from '$lib/session';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import type { LatLngBoundsExpression, LatLngLiteral } from 'leaflet';
 	import { fromLeaflet } from '$lib/util/bounds';
+	interface Props {
+		region?: CreateRegion | RegionNodeFragment | undefined;
+		onSave: (region: CreateRegion) => void;
+	}
 
-	let name = region?.name ?? '';
+	let { region = undefined, onSave }: Props = $props();
 
-	let bounds: LatLngBoundsExpression | undefined = region
+	let name = $state(region?.name ?? '');
+
+	let bounds: LatLngBoundsExpression | undefined = $state(region
 		? [
 				[region.latMin, region.lonMin],
 				[region.latMax, region.lonMax]
 			]
-		: undefined;
+		: undefined);
 
-	$: canSave = name != '' && bounds !== undefined;
+	let canSave = $derived(name != '' && bounds !== undefined);
 
-	$: isEditor = $session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR';
+	let isEditor = $derived($session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR');
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -39,7 +43,7 @@
 		}
 	};
 
-	let EditableRegion: any;
+	let EditableRegion: any = $state();
 
 	onMount(async () => {
 		if (browser) {
@@ -50,14 +54,14 @@
 
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<FormRow name="Name">
 				<input type="text" placeholder="Name" bind:value={name} class="form-input" />
 			</FormRow>
 
 			<FormRow name="Region Bounds">
 				{#if browser}
-					<svelte:component this={EditableRegion} bind:bounds />
+					<EditableRegion bind:bounds />
 				{/if}
 			</FormRow>
 

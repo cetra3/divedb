@@ -9,13 +9,17 @@
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 	import References from '$lib/components/References.svelte';
 
-	export let data: PageData;
-	$: sealife = data.sealife;
-	$: categories = data.categories;
+	interface Props {
+		data: PageData;
+	}
 
-	let showRemove = false;
+	let { data }: Props = $props();
+	let sealife = $derived(data.sealife);
+	let categories = $derived(data.categories);
 
-	$: isEditor = $session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR';
+	let showRemove = $state(false);
+
+	let isEditor = $derived($session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR');
 
 	let onRemove = () => {
 		if (sealife) {
@@ -48,7 +52,7 @@
 			<h1 class="page-title">
 				<SealifeIcon size="33px" /> Edit Sealife
 				{#if isEditor}
-					<button class="btn btn-secondary btn-sm" on:click={onShow}> Remove </button>
+					<button class="btn btn-secondary btn-sm" onclick={onShow}> Remove </button>
 				{/if}
 			</h1>
 		</div>
@@ -58,17 +62,17 @@
 		<EditSealife {categories} {onSave} {sealife} />
 		{#if showRemove}
 			<div class={`modal active`}>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<span class="modal-overlay" aria-label="Close" on:click={onClose}></span>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
-						<!-- svelte-ignore a11y-missing-content -->
-						<!-- svelte-ignore a11y-invalid-attribute -->
+						<!-- svelte-ignore a11y_missing_content -->
+						<!-- svelte-ignore a11y_invalid_attribute -->
 						<a
 							href="javascript:void(0)"
 							class="btn btn-clear float-right"
 							aria-label="Close"
-							on:click={onClose}
+							onclick={onClose}
 						></a>
 						<div class="modal-title h5">Remove Site</div>
 					</div>
@@ -78,8 +82,8 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button class="btn btn-primary" on:click={onRemove}> Remove Sealife </button>{' '}
-						<button on:click={onClose} class="btn btn-secondary"> Cancel </button>
+						<button class="btn btn-primary" onclick={onRemove}> Remove Sealife </button>{' '}
+						<button onclick={onClose} class="btn btn-secondary"> Cancel </button>
 					</div>
 				</div>
 			</div>

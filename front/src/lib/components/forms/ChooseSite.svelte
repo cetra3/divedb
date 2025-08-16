@@ -1,22 +1,28 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { client } from '$lib/graphql/client';
 	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
 	import { onMount } from 'svelte';
 
-	let focused = false;
-	let dropDownFocused = false;
+	let focused = $state(false);
+	let dropDownFocused = $state(false);
 
-	export let belowInput = false;
 
-	export let id: string | null | undefined = undefined;
-	let query = '';
-	let siteLoading = false;
-	let loading = false;
+	interface Props {
+		belowInput?: boolean;
+		id?: string | null | undefined;
+	}
 
-	let idx: number | undefined = 0;
-	let input: HTMLInputElement | undefined = undefined;
+	let { belowInput = false, id = $bindable(undefined) }: Props = $props();
+	let query = $state('');
+	let siteLoading = $state(false);
+	let loading = $state(false);
 
-	let results: SearchResultNodeFragment[] = [];
+	let idx: number | undefined = $state(0);
+	let input: HTMLInputElement | undefined = $state(undefined);
+
+	let results: SearchResultNodeFragment[] = $state([]);
 
 	onMount(() => {
 		if (id) {
@@ -40,7 +46,9 @@
 		}
 	};
 
-	$: (query, focused, updateResult());
+	run(() => {
+		(query, focused, updateResult());
+	});
 </script>
 
 <div class="has-icon-right">
@@ -49,9 +57,9 @@
 		class="form-input"
 		type="text"
 		placeholder="Start typing to find a site..."
-		on:focus={() => (focused = true)}
-		on:blur={() => (focused = false)}
-		on:keydown={(e) => {
+		onfocus={() => (focused = true)}
+		onblur={() => (focused = false)}
+		onkeydown={(e) => {
 			if (results.length > 0) {
 				let curIdx = idx ?? 0;
 				if (e.key == 'ArrowDown') {
@@ -91,21 +99,21 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
-		on:mouseenter={() => (dropDownFocused = true)}
-		on:mouseleave={() => (dropDownFocused = false)}
+		onmouseenter={() => (dropDownFocused = true)}
+		onmouseleave={() => (dropDownFocused = false)}
 		class="dropdown"
 		class:active={focused}
 	>
 		<ul class="menu" class:above-input={belowInput == false}>
 			{#each results as result, index}
 				<li class="menu-item">
-					<!-- svelte-ignore a11y-invalid-attribute -->
+					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						class:active={index == idx}
 						href="javascript:void(0)"
-						on:click={() => {
+						onclick={() => {
 							query = result.name;
 							id = result.id;
 

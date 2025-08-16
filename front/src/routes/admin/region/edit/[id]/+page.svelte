@@ -8,12 +8,16 @@
 	import type { ClientError } from 'graphql-request';
 
 	import type { PageData } from './$types';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 	let region = data.region;
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let showRemove = false;
+	let showRemove = $state(false);
 
 	let onRemove = () => {
 		if (region) {
@@ -45,7 +49,7 @@
 			});
 	};
 
-	let loading = false;
+	let loading = $state(false);
 </script>
 
 <CheckLogin />
@@ -58,7 +62,7 @@
 		<div class="column col-12">
 			<h1 class="page-title">
 				Edit Region
-				<button class="btn btn-secondary btn-sm" on:click={onShow}> Remove </button>
+				<button class="btn btn-secondary btn-sm" onclick={onShow}> Remove </button>
 			</h1>
 		</div>
 		<div class="column col-12">
@@ -66,17 +70,17 @@
 
 			{#if showRemove}
 				<div class={`modal active`}>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<span class="modal-overlay" aria-label="Close" on:click={onClose}></span>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 					<div class="modal-container">
 						<div class="modal-header">
-							<!-- svelte-ignore a11y-missing-content -->
-							<!-- svelte-ignore a11y-invalid-attribute -->
+							<!-- svelte-ignore a11y_missing_content -->
+							<!-- svelte-ignore a11y_invalid_attribute -->
 							<a
 								href="javascript:void(0)"
 								class="btn btn-clear float-right"
 								aria-label="Close"
-								on:click={onClose}
+								onclick={onClose}
 							></a>
 							<div class="modal-title h5">Remove Region</div>
 						</div>
@@ -84,8 +88,8 @@
 							<div class="content">Are you sure you want to remove this region?</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-primary" on:click={onRemove}> Remove Region </button>{' '}
-							<button on:click={onClose} class="btn btn-secondary"> Cancel </button>
+							<button class="btn btn-primary" onclick={onRemove}> Remove Region </button>{' '}
+							<button onclick={onClose} class="btn btn-secondary"> Cancel </button>
 						</div>
 					</div>
 				</div>

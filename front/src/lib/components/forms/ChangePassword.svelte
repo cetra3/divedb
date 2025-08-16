@@ -4,15 +4,15 @@
 
 	import FormRow from '../FormRow.svelte';
 
-	let oldPassword = '';
-	let newPassword = '';
-	let confirmPassword = '';
+	let oldPassword = $state('');
+	let newPassword = $state('');
+	let confirmPassword = $state('');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
-	let pristine = true;
-	let saved = false;
+	let loading = $state(false);
+	let pristine = $state(true);
+	let saved = $state(false);
 
 	const onInput = () => {
 		saved = false;
@@ -40,8 +40,8 @@
 			});
 	};
 
-	$: canSave =
-		oldPassword != '' && newPassword != '' && newPassword == confirmPassword && !pristine;
+	let canSave =
+		$derived(oldPassword != '' && newPassword != '' && newPassword == confirmPassword && !pristine);
 </script>
 
 <div class="columns">
@@ -50,10 +50,10 @@
 </div>
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<FormRow name="Current Password">
 				<input
-					on:input={onInput}
+					oninput={onInput}
 					type="password"
 					placeholder="Enter your current password here"
 					bind:value={oldPassword}
@@ -62,7 +62,7 @@
 			</FormRow>
 			<FormRow name="New Password">
 				<input
-					on:input={onInput}
+					oninput={onInput}
 					type="password"
 					placeholder="Enter your new password here"
 					bind:value={newPassword}
@@ -71,7 +71,7 @@
 			</FormRow>
 			<FormRow name="Confirm Password">
 				<input
-					on:input={onInput}
+					oninput={onInput}
 					type="password"
 					placeholder="Confirm your new password here"
 					bind:value={confirmPassword}

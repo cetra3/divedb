@@ -4,9 +4,13 @@
 	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
 	import Photo from './photos/Photo.svelte';
 
-	export let result: SearchResultNodeFragment;
+	interface Props {
+		result: SearchResultNodeFragment;
+	}
 
-	$: slugLink = result.kind == 'SEALIFE' ? `/sealife/${result.slug}` : `/sites/${result.slug}`;
+	let { result }: Props = $props();
+
+	let slugLink = $derived(result.kind == 'SEALIFE' ? `/sealife/${result.slug}` : `/sites/${result.slug}`);
 </script>
 
 <div class={'column col-6 col-lg-12'}>

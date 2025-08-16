@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (photo-label to photo_label) making the component unusable -->
 <script lang="ts">
 	import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '$lib/graphql/generated';
 	import { client } from '$lib/graphql/client';

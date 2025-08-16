@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	import { client } from '$lib/graphql/client';
 
 	export async function load() {
@@ -19,22 +19,26 @@
 
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let fbAppId = data.fbAppId;
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
 
-	let username = '';
-	let email = '';
-	let password = '';
-	let confirmPassword = '';
+	let username = $state('');
+	let email = $state('');
+	let password = $state('');
+	let confirmPassword = $state('');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
 
-	let registered = false;
+	let registered = $state(false);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -53,7 +57,7 @@
 			});
 	};
 
-	$: canSave = username != '' && email != '' && password != '' && password == confirmPassword;
+	let canSave = $derived(username != '' && email != '' && password != '' && password == confirmPassword);
 </script>
 
 <svelte:head>
@@ -73,7 +77,7 @@
 	</div>
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Username">
 					<input type="text" placeholder="Username" bind:value={username} class="form-input" />
 				</FormRow>

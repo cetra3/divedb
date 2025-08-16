@@ -2,8 +2,12 @@
 	import ChatFilled from '$lib/icons/ChatFilled.svelte';
 	import ChatOutline from '$lib/icons/ChatOutline.svelte';
 
-	export let diveId: string;
-	export let numComments: number;
+	interface Props {
+		diveId: string;
+		numComments: number;
+	}
+
+	let { diveId, numComments }: Props = $props();
 </script>
 
 <a href="/dives/{diveId}#comments">

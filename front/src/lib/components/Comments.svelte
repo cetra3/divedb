@@ -4,21 +4,25 @@
 	import type { ClientError } from 'graphql-request';
 	import UserLabel from './labels/UserLabel.svelte';
 
-	export let dive: DiveNodeFragment;
-	export let showEdit = true;
 	import { session } from '$lib/session';
 	import { goto } from '$app/navigation';
+	interface Props {
+		dive: DiveNodeFragment;
+		showEdit?: boolean;
+	}
 
-	let showForm = false;
-	let description = '';
+	let { dive = $bindable(), showEdit = true }: Props = $props();
 
-	$: comments = dive.comments;
-	$: canSave = description != '';
+	let showForm = $state(false);
+	let description = $state('');
 
-	let errors: string | undefined = undefined;
-	let loading = false;
+	let comments = $derived(dive.comments);
+	let canSave = $derived(description != '');
 
-	let toRemove: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
+	let loading = $state(false);
+
+	let toRemove: string | undefined = $state(undefined);
 
 	const onAddNew = () => {
 		if (!$session.loggedIn) {
@@ -73,11 +77,11 @@
 	Comments
 
 	{#if showEdit}
-		<button class="btn btn-sm" on:click={onAddNew}> Add New</button>
+		<button class="btn btn-sm" onclick={onAddNew}> Add New</button>
 	{/if}
 </h5>
 {#if showForm}
-	<form class="form-group" on:submit={onSubmit}>
+	<form class="form-group" onsubmit={onSubmit}>
 		<div class="form-group">
 			<textarea rows={4} bind:value={description} class="form-input"></textarea>
 		</div>
@@ -102,10 +106,10 @@
 			<UserLabel user={comment.user} />
 			<span class="label">{new Date(comment.date).toLocaleString()}</span>
 			{#if $session.user?.id != undefined && $session.user.id === comment.user.id}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span
-					on:click={() => {
+					onclick={() => {
 						if (toRemove !== comment.id) {
 							toRemove = comment.id;
 						} else {
@@ -121,7 +125,7 @@
 				<br /> Are you sure you want to remove this comment?
 				<button
 					class="btn btn-sm"
-					on:click={() => {
+					onclick={() => {
 						if (toRemove !== undefined) {
 							onRemove(toRemove);
 						}
@@ -130,7 +134,7 @@
 				/
 				<button
 					class="btn btn-sm"
-					on:click={() => {
+					onclick={() => {
 						toRemove = undefined;
 					}}>No</button
 				>

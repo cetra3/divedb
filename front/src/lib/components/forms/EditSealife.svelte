@@ -1,18 +1,22 @@
 <script lang="ts">
 	import type { Category, CreateSealife, SealifeNodeFragment } from '$lib/graphql/generated';
 	import FormRow from '../FormRow.svelte';
-	export let sealife: SealifeNodeFragment | CreateSealife;
-	export let categories: Category[];
-	export let onSave: (site: CreateSealife) => void;
 	import { session } from '$lib/session';
 	import CategoryPicker from '../categories/CategoryPicker.svelte';
 	import Markdown from './Markdown.svelte';
+	interface Props {
+		sealife: SealifeNodeFragment | CreateSealife;
+		categories: Category[];
+		onSave: (site: CreateSealife) => void;
+	}
 
-	let categoryMap = sealife.categoryMap ?? {};
+	let { sealife = $bindable(), categories, onSave }: Props = $props();
 
-	$: canSave = sealife.name != '';
+	let categoryMap = $state(sealife.categoryMap ?? {});
 
-	$: isEditor = $session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR';
+	let canSave = $derived(sealife.name != '');
+
+	let isEditor = $derived($session.user?.level == 'ADMIN' || $session.user?.level == 'EDITOR');
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -31,7 +35,7 @@
 
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<FormRow name="Name">
 				<input type="text" placeholder="Name" bind:value={sealife.name} class="form-input" />
 			</FormRow>

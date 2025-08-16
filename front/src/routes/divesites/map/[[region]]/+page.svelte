@@ -1,24 +1,30 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { browser } from '$app/environment';
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import type { RegionNodeFragment } from '$lib/graphql/generated';
 	import type { PageData } from './$types';
 	import type { LatLngBoundsExpression } from 'leaflet';
-	export let data: PageData;
 	let diveSites = data.diveSites;
 
 	import { page } from '$app/stores';
 
 	import { onMount } from 'svelte';
+	interface Props {
+		data: PageData;
+	}
 
-	let DiveMap: any;
+	let { data }: Props = $props();
+
+	let DiveMap: any = $state();
 
 	const site = browser ? $page.url.searchParams.get('site') : undefined;
 
-	let region: RegionNodeFragment | undefined = undefined;
-	let bounds: LatLngBoundsExpression | undefined = undefined;
+	let region: RegionNodeFragment | undefined = $state(undefined);
+	let bounds: LatLngBoundsExpression | undefined = $state(undefined);
 
-	$: {
+	run(() => {
 		if (data.region) {
 			region = data.regions.find((val) => val.slug == data.region);
 
@@ -32,7 +38,7 @@
 			region = undefined;
 			bounds = undefined;
 		}
-	}
+	});
 
 	onMount(async () => {
 		if (browser) {
@@ -76,7 +82,7 @@
 	</div>
 	<div class="columns dive-site-content">
 		{#if browser}
-			<svelte:component this={DiveMap} sites={diveSites} selectedSite={site} {bounds} />
+			<DiveMap sites={diveSites} selectedSite={site} {bounds} />
 		{/if}
 	</div>
 </div>

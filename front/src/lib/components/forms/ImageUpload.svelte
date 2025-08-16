@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	export interface UploadResponse {
 		id: string;
 		user_id: string;
@@ -14,27 +14,37 @@
 
 <script lang="ts">
 	import { client } from '$lib/graphql/client';
+	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
 
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
-	export let file: File;
-	export let index: number;
-	export let internal: boolean = false;
+	interface Props {
+		file: File;
+		index: number;
+		internal?: boolean;
+		doUpload?: boolean;
+		onUpload: (response: { photo: PhotoSummaryFragment; index: number }) => void;
+		onError: (error: string) => void;
+	}
 
-	let uploading = false;
-	const dispatch = createEventDispatcher();
+	let { file, index, internal = false, doUpload = true, onError, onUpload }: Props = $props();
 
-	let completed = false;
+	let completed = $state(false);
 
-	let dataUrl: string | undefined = undefined;
+	let dataUrl: string | undefined = $state(undefined);
 
-	let error: string | undefined = undefined;
+	let error: string | undefined = $state(undefined);
 
-	let percentComplete = 0;
+	let percentComplete = $state(0);
+
+	$effect(() => {
+		if (doUpload) {
+			uploadFile(file);
+		}
+	});
 
 	onMount(() => {
 		dataUrl = window.URL.createObjectURL(file);
-		uploadFile(file);
 	});
 
 	onDestroy(() => {
@@ -43,8 +53,16 @@
 		}
 	});
 
+	const setError = (errorString: string) => {
+		if (errorString == '') {
+			error = 'An unexpected error occurred';
+		} else {
+			error = errorString;
+		}
+		onError(error);
+	};
+
 	const uploadFile = (file: File) => {
-		uploading = true;
 		let formData = new FormData();
 
 		if (file) {
@@ -62,30 +80,25 @@
 		});
 
 		request.addEventListener('error', () => {
-			error = request.responseText;
-			uploading = false;
+			setError(request.responseText);
 		});
 
 		request.addEventListener('load', () => {
 			if (request.status == 200) {
-				uploading = false;
-
-				console.log(request.responseText);
-
 				let photoArray = JSON.parse(request.responseText);
 
 				let photo: UploadResponse = photoArray[0];
 
 				client.getPhotos({ id: photo.id }).then((val) => {
 					const newPhoto = val.photos[0];
-					dispatch('upload', {
+					onUpload({
 						photo: newPhoto,
 						index
 					});
 					completed = true;
 				});
 			} else {
-				error = request.responseText;
+				setError(request.responseText);
 			}
 		});
 
@@ -95,10 +108,12 @@
 	};
 </script>
 
-{#if dataUrl}
+{#if error}
+	<div class="column col-12">{error}</div>
+{:else if dataUrl}
 	<div class="column col-3 col-sm-6">
 		<div class="img-holder">
-			<!-- svelte-ignore a11y-missing-attribute -->
+			<!-- svelte-ignore a11y_missing_attribute -->
 			<img src={dataUrl} class:incomplete={!completed} class="img-edit img-responsive" />
 			<div class="img-overlay" style={`margin-left:${percentComplete}%`}></div>
 		</div>

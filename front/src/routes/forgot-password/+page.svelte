@@ -3,13 +3,13 @@
 	import { client } from '$lib/graphql/client';
 	import type { ClientError } from 'graphql-request';
 
-	let email = '';
+	let email = $state('');
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
 
-	let submitted = false;
+	let submitted = $state(false);
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
 
@@ -27,7 +27,7 @@
 			});
 	};
 
-	$: canSave = email != '' && submitted == false;
+	let canSave = $derived(email != '' && submitted == false);
 </script>
 
 <svelte:head>
@@ -47,7 +47,7 @@
 	</div>
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Email">
 					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
 				</FormRow>

@@ -7,9 +7,13 @@
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 
 	import type { PageData } from './$types';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 	let dive = data.dive;
-	let showRemove = false;
+	let showRemove = $state(false);
 
 	let onRemove = () => {
 		if (dive) {
@@ -45,7 +49,7 @@
 		<div class="column">
 			<h1 class="page-title">
 				<DiveLogIcon size="33px" /> Edit Dive
-				<button class="btn btn-secondary btn-sm" on:click={onShow}> Remove </button>
+				<button class="btn btn-secondary btn-sm" onclick={onShow}> Remove </button>
 			</h1>
 		</div>
 	</div>
@@ -54,17 +58,17 @@
 		<EditDive {onSave} {dive} />
 		{#if showRemove}
 			<div class={`modal active`}>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<span class="modal-overlay" aria-label="Close" on:click={onClose}></span>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
-						<!-- svelte-ignore a11y-missing-content -->
-						<!-- svelte-ignore a11y-invalid-attribute -->
+						<!-- svelte-ignore a11y_missing_content -->
+						<!-- svelte-ignore a11y_invalid_attribute -->
 						<a
 							href="javascript:void(0)"
 							class="btn btn-clear float-right"
 							aria-label="Close"
-							on:click={onClose}
+							onclick={onClose}
 						></a>
 						<div class="modal-title h5">Remove Site</div>
 					</div>
@@ -72,8 +76,8 @@
 						<div class="content">Are you sure you want to remove this Dive?</div>
 					</div>
 					<div class="modal-footer">
-						<button class="btn btn-primary" on:click={onRemove}> Remove Dive </button>{' '}
-						<button on:click={onClose} class="btn btn-secondary"> Cancel </button>
+						<button class="btn btn-primary" onclick={onRemove}> Remove Dive </button>{' '}
+						<button onclick={onClose} class="btn btn-secondary"> Cancel </button>
 					</div>
 				</div>
 			</div>

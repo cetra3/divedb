@@ -12,19 +12,23 @@
 	import References from '$lib/components/References.svelte';
 	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
 	import DiveList from '$lib/components/dives/DiveList.svelte';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
 
-	$: diveSite = data.diveSite;
-	$: siteUrl = data.siteUrl;
-	$: mdDesc = data.mdDesc;
-	$: mdAccess = data.mdAccess;
+	let { data }: Props = $props();
 
-	$: photos = diveSite?.latestPhotos ?? [];
+	let diveSite = $derived(data.diveSite);
+	let siteUrl = $derived(data.siteUrl);
+	let mdDesc = $derived(data.mdDesc);
+	let mdAccess = $derived(data.mdAccess);
 
-	$: dives = diveSite?.latestDives ?? [];
+	let photos = $derived(diveSite?.latestPhotos ?? []);
 
-	let loading = false;
-	let changed = false;
+	let dives = $derived(diveSite?.latestDives ?? []);
+
+	let loading = $state(false);
+	let changed = $state(false);
 
 	const toDegreeDecimalMinutes = (lat: number, lon: number) => {
 		let lat_d = Math.floor(Math.abs(lat));
@@ -179,17 +183,18 @@
 				</h1>
 			</div>
 			<div class="column col-12 col-sm-12">
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<ImageList {photos} query={{ diveSite: diveSite.id }}>
-					<svelte:fragment let:photo slot="photo-label">
+					<!-- @migration-task: migrate this slot by hand, `photo-label` is an invalid identifier -->
+	<svelte:fragment let:photo slot="photo-label">
 						{#if diveSite.photoId !== photo}
 							{#if loading}
 								<span class="loading padding-20"></span>
 							{:else}
 								<span
 									class="label pointer"
-									on:click={() => {
+									onclick={() => {
 										changeCoverPhoto(photo);
 									}}>Make Cover Photo</span
 								>

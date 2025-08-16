@@ -4,9 +4,13 @@
 	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
 	import EditPhoto from '../forms/EditPhoto.svelte';
 
-	export let photo: PhotoSummaryFragment;
 
-	export let onEditSave: (fragment: PhotoSummaryFragment) => void;
+	interface Props {
+		photo: PhotoSummaryFragment;
+		onEditSave: (fragment: PhotoSummaryFragment) => void;
+	}
+
+	let { photo = $bindable(), onEditSave }: Props = $props();
 </script>
 
 <div class="edit-form">

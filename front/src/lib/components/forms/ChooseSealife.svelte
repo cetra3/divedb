@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { client } from '$lib/graphql/client';
 	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
 	import { onMount } from 'svelte';
@@ -6,18 +8,22 @@
 	import SealifeSummary from '../SealifeSummary.svelte';
 	import SearchResult from '../SearchResult.svelte';
 
-	let focused = false;
-	let dropDownFocused = false;
+	let focused = $state(false);
+	let dropDownFocused = $state(false);
 
-	export let id: string | undefined = undefined;
-	let query = '';
-	let sealifeLoading = false;
-	let loading = false;
+	interface Props {
+		id?: string | undefined;
+	}
 
-	let idx: number | undefined = 0;
-	let input: HTMLElement | undefined = undefined;
+	let { id = $bindable(undefined) }: Props = $props();
+	let query = $state('');
+	let sealifeLoading = $state(false);
+	let loading = $state(false);
 
-	let results: SearchResultNodeFragment[] = [];
+	let idx: number | undefined = $state(0);
+	let input: HTMLElement | undefined = $state(undefined);
+
+	let results: SearchResultNodeFragment[] = $state([]);
 
 	onMount(() => {
 		if (id) {
@@ -41,7 +47,9 @@
 		}
 	};
 
-	$: (query, focused, updateResult());
+	run(() => {
+		(query, focused, updateResult());
+	});
 </script>
 
 <div class="has-icon-right">
@@ -50,9 +58,9 @@
 		class="form-input"
 		type="text"
 		placeholder="Start typing to find sealife..."
-		on:focus={() => (focused = true)}
-		on:blur={() => (focused = false)}
-		on:keydown={(e) => {
+		onfocus={() => (focused = true)}
+		onblur={() => (focused = false)}
+		onkeydown={(e) => {
 			if (results.length > 0) {
 				let curIdx = idx ?? 0;
 				if (e.key == 'ArrowDown') {
@@ -100,22 +108,22 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
-		on:mouseenter={() => (dropDownFocused = true)}
-		on:mouseleave={() => (dropDownFocused = false)}
+		onmouseenter={() => (dropDownFocused = true)}
+		onmouseleave={() => (dropDownFocused = false)}
 		class="dropdown"
 		class:active={focused}
 	>
 		<div class="menu sealife-menu">
 			{#each results as result, index}
-				<!-- svelte-ignore a11y-invalid-attribute -->
+				<!-- svelte-ignore a11y_invalid_attribute -->
 				<a
 					class="sealife-item"
 					class:active={index == idx}
 					id={`sealife-list-item-${index}`}
 					href="javascript:void(0)"
-					on:click={() => {
+					onclick={() => {
 						query = result.name;
 						id = result.id;
 
@@ -123,7 +131,7 @@
 						dropDownFocused = false;
 					}}
 				>
-					<!-- svelte-ignore a11y-invalid-attribute -->
+					<!-- svelte-ignore a11y_invalid_attribute -->
 					<div class="sealife-photo">
 						{#if result.photoId}
 							<Photo id={result.photoId} />

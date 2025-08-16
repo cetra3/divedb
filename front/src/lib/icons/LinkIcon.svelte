@@ -1,6 +1,10 @@
 <script lang="ts">
 	import BaseIcon from './BaseIcon.svelte';
-	export let size: string;
+	interface Props {
+		size: string;
+	}
+
+	let { size }: Props = $props();
 </script>
 
 <BaseIcon {size} viewBox={'0 0 16 16'}>

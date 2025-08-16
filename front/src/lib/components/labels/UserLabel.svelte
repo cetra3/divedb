@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { UserSummaryFragment } from '$lib/graphql/generated';
 
-	export let user: UserSummaryFragment;
+	interface Props {
+		user: UserSummaryFragment;
+	}
+
+	let { user }: Props = $props();
 </script>
 
 <span class="label label-success" title={'@' + user.username}>

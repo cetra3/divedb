@@ -1,12 +1,17 @@
 <script lang="ts">
 	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
-	export let showEdit = false;
 	import { session } from '$lib/session';
 	import { client } from '$lib/graphql/client';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 
-	export let photo: PhotoSummaryFragment;
+	interface Props {
+		showEdit?: boolean;
+		photo: PhotoSummaryFragment;
+		children?: import('svelte').Snippet;
+	}
+
+	let { showEdit = false, photo, children }: Props = $props();
 
 	const onLike = (liked: CustomEvent<boolean>) => {
 		let photoId = photo.id;
@@ -71,7 +76,7 @@
 		</a>
 	{/if}
 
-	<slot />
+	{@render children?.()}
 </div>
 
 <style global lang="scss">

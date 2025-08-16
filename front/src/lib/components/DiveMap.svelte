@@ -7,11 +7,15 @@
 	import Marker from '$lib/components/leaflet/Marker.svelte';
 	import Icon from '$lib/components/leaflet/Icon.svelte';
 	import Popup from '$lib/components/leaflet/Popup.svelte';
-	export let sites: SiteSummaryMetricsFragment[];
-	export let selectedSite: string | undefined = undefined;
-	export let bounds: LatLngBoundsExpression | undefined = undefined;
+	interface Props {
+		sites: SiteSummaryMetricsFragment[];
+		selectedSite?: string | undefined;
+		bounds?: LatLngBoundsExpression | undefined;
+	}
 
-	let showOnlyDived = true;
+	let { sites, selectedSite = undefined, bounds = undefined }: Props = $props();
+
+	let showOnlyDived = $state(true);
 
 	const sitesToDisplay = (showOnlyDived: boolean) => {
 		return sites
@@ -29,7 +33,7 @@
 			});
 	};
 
-	$: displaySites = sitesToDisplay(showOnlyDived);
+	let displaySites = $derived(sitesToDisplay(showOnlyDived));
 
 	const siteToSelect = sites.find((site) => site.slug === selectedSite);
 
@@ -51,8 +55,8 @@
 		attribution: '© OpenStreetMap contributors'
 	};
 
-	let selectedPopup;
-	let selectedMarker;
+	let selectedPopup = $state();
+	let selectedMarker = $state();
 
 	const iconOptions = {
 		iconUrl: '/leaflet/marker-icon-2x-blue.png',

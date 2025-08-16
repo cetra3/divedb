@@ -2,10 +2,10 @@
 	import { client } from '$lib/graphql/client';
 	import type { ClientError } from 'graphql-request';
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
-	let saved = false;
+	let loading = $state(false);
+	let saved = $state(false);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -24,7 +24,7 @@
 			});
 	};
 
-	$: canSave = !saved && !loading;
+	let canSave = $derived(!saved && !loading);
 </script>
 
 <div class="columns">
@@ -38,7 +38,7 @@
 </div>
 <div class="columns">
 	<div class="column col-12 col-sm-12">
-		<form class="form-horizontal" on:submit={onSubmit}>
+		<form class="form-horizontal" onsubmit={onSubmit}>
 			<button class="btn btn-primary" type="submit" disabled={canSave == false}
 				>Resend Verification Email</button
 			>

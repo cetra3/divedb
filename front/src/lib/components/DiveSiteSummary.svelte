@@ -3,8 +3,12 @@
 	import SiteMetrics from './SiteMetrics.svelte';
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import Photo from './photos/Photo.svelte';
-	export let site: SiteSummaryMetricsFragment;
-	export let className: string | undefined = undefined;
+	interface Props {
+		site: SiteSummaryMetricsFragment;
+		className?: string | undefined;
+	}
+
+	let { site, className = undefined }: Props = $props();
 </script>
 
 <div class={className ? className : 'column col-6 col-lg-12'}>

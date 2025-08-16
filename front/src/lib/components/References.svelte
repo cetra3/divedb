@@ -4,20 +4,29 @@
 	import type { ClientError } from 'graphql-request';
 	import FormRow from './FormRow.svelte';
 
-	export let references: ReferenceFragment[];
-	export let sealifeId: string | undefined = undefined;
-	export let diveSiteId: string | undefined = undefined;
-	export let showEdit = true;
+	interface Props {
+		references: ReferenceFragment[];
+		sealifeId?: string | undefined;
+		diveSiteId?: string | undefined;
+		showEdit?: boolean;
+	}
 
-	let showForm = false;
-	let url = '';
+	let {
+		references = $bindable(),
+		sealifeId = undefined,
+		diveSiteId = undefined,
+		showEdit = true
+	}: Props = $props();
 
-	$: canSave = url != '';
+	let showForm = $state(false);
+	let url = $state('');
 
-	let errors: string | undefined = undefined;
-	let loading = false;
+	let canSave = $derived(url != '');
 
-	let toRemove: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
+	let loading = $state(false);
+
+	let toRemove: string | undefined = $state(undefined);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -70,7 +79,7 @@
 		{#if showEdit}
 			<button
 				class="btn btn-sm"
-				on:click={() => {
+				onclick={() => {
 					showForm = !showForm;
 				}}
 			>
@@ -80,7 +89,7 @@
 	</h5>
 {/if}
 {#if showForm}
-	<form class="form-horizontal" on:submit={onSubmit}>
+	<form class="form-horizontal" onsubmit={onSubmit}>
 		<FormRow name="URL">
 			<input type="text" placeholder="https://divedb.net" bind:value={url} class="form-input" />
 		</FormRow>
@@ -105,10 +114,10 @@
 			<a href={reference.url}>{reference.title}</a>
 			<em class="text-muted text-small"> - {urlDisplay(reference.url)}</em>
 			{#if showForm}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<button
 					class="btn btn-sm"
-					on:click={() => {
+					onclick={() => {
 						if (toRemove !== reference.id) {
 							toRemove = reference.id;
 						} else {
@@ -121,7 +130,7 @@
 				<br /> Are you sure you want to remove this reference?
 				<button
 					class="btn btn-sm"
-					on:click={() => {
+					onclick={() => {
 						if (toRemove !== undefined) {
 							onRemove(toRemove);
 						}
@@ -130,7 +139,7 @@
 				/
 				<button
 					class="btn btn-sm"
-					on:click={() => {
+					onclick={() => {
 						toRemove = undefined;
 					}}>No</button
 				>

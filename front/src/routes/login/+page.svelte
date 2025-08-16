@@ -8,19 +8,23 @@
 	import { client } from '$lib/graphql/client';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let fbAppId = data.fbAppId;
 
-	let email = '';
-	let password = '';
+	let email = $state('');
+	let password = $state('');
 
 	let query = new URLSearchParams(browser ? location.search : '');
 	let redirect = query.get('redirect') || '/';
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	let loading = false;
+	let loading = $state(false);
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbLoginRedirect}&scope=email`;
 
@@ -43,7 +47,7 @@
 			});
 	};
 
-	$: canSave = email != '' && password != '';
+	let canSave = $derived(email != '' && password != '');
 </script>
 
 <svelte:head>
@@ -63,7 +67,7 @@
 	</div>
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Email">
 					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
 				</FormRow>

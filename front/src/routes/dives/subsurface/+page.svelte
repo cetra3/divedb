@@ -6,14 +6,14 @@
 	import { client } from '$lib/graphql/client';
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
 
-	let email = $session.user?.email ?? '';
-	let password = '';
+	let email = $state($session.user?.email ?? '');
+	let password = $state('');
 
-	let loading = false;
+	let loading = $state(false);
 
-	let errors: string | undefined = undefined;
+	let errors: string | undefined = $state(undefined);
 
-	$: canSave = email != '' && password != '';
+	let canSave = $derived(email != '' && password != '');
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -48,7 +48,7 @@
 
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" on:submit={onSubmit}>
+			<form class="form-horizontal" onsubmit={onSubmit}>
 				<FormRow name="Subsurface Email">
 					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
 				</FormRow>
