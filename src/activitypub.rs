@@ -245,13 +245,19 @@ pub fn is_apub_request(request: &HttpRequest) -> bool {
     {
         debug!("Accept Header: {header}");
 
-        if header.to_lowercase().contains(FEDERATION_CONTENT_TYPE) {
+        let lower_case = header.to_lowercase();
+        if lower_case.contains(FEDERATION_CONTENT_TYPE)
+            || lower_case.contains(ACTIVITYPUB_CONTENT_TYPE)
+        {
             return true;
         }
     }
 
     false
 }
+/// See: https://www.w3.org/TR/activitypub/#retrieving-objects
+pub const ACTIVITYPUB_CONTENT_TYPE: &str =
+    "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
 /// Handles messages received in user inbox
 pub async fn user_inbox(
