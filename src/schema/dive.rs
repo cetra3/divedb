@@ -16,9 +16,11 @@ pub struct DiveMetric {
     pub depth: f32,
     pub pressure: Option<f32>,
     pub temperature: Option<f32>,
+    pub o2: Option<f32>,
+    pub he: Option<f32>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, FromRow)]
 pub struct Dive {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -29,6 +31,7 @@ pub struct Dive {
     pub dive_number: i32,
     pub description: String,
     pub published: bool,
+    pub deco_model: Option<String>,
 }
 
 #[Object]
@@ -180,6 +183,7 @@ pub struct CreateDive {
     pub dive_site_id: Option<Uuid>,
     pub description: String,
     pub published: bool,
+    pub deco_model: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject, Default)]

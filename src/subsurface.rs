@@ -170,7 +170,7 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
                                     if dir_entry.file_type()?.is_dir() {
                                         let folder = dir_entry.path();
 
-                                        let subsurface_dive = parse_dive(year, month, folder)?;
+                                        let mut subsurface_dive = parse_dive(year, month, folder)?;
 
                                         let dive_id = Uuid::from_fields(
                                             subsurface_dive.dive_number,
@@ -192,6 +192,9 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
                                                 .and_then(|id| sites.get(&id))
                                                 .map(|site| site.id),
                                             id: dive_id,
+                                            deco_model: subsurface_dive
+                                                .extra_data
+                                                .remove("Deco model"),
                                         };
 
                                         dive_metrics.insert(dive_id, subsurface_dive.metrics);
@@ -238,6 +241,7 @@ pub struct SubsurfaceDive {
     pub description: String,
     pub depth: f32,
     pub metrics: Vec<DiveMetric>,
+    pub extra_data: HashMap<String, String>,
 }
 
 pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDive, Error> {
@@ -267,6 +271,8 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
     let mut metrics = vec![];
     let mut dive_number = 0;
     let mut description = String::new();
+    let mut extra_data = HashMap::new();
+    let mut gas_changes = HashMap::new();
 
     for entry in read_dir(folder)? {
         let file = entry?.path();
@@ -305,24 +311,36 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
         } else if file_name == "Divecomputer" {
             let mut lines = read_lines(&file)?;
 
-            let mut first_line = None;
+            let mut first_metric_line = None;
 
             //We skip ahead to the first time entry in the file
             while let Some(Ok(line)) = lines.next() {
+                if line.starts_with("keyvalue") {
+                    if let Some((key, value)) = parse_keyvalue_simple(&line) {
+                        extra_data.insert(key.to_string(), value.to_string());
+                    }
+                }
+
+                if line.starts_with("event") {
+                    if let Some((time_seconds, o2, he)) = parse_gas_change(&line) {
+                        gas_changes.insert(time_seconds, (o2, he));
+                    }
+                }
+
                 if line.starts_with("  ") {
-                    first_line = Some(line);
+                    first_metric_line = Some(line);
                     break;
                 }
             }
 
-            if let Some(line) = first_line {
-                let first_metric = parse_metric(line)?;
+            if let Some(line) = first_metric_line {
+                let first_metric = parse_metric(line, &mut gas_changes)?;
                 depth = first_metric.depth;
 
                 metrics.push(first_metric);
 
                 while let Some(Ok(line)) = lines.next() {
-                    let metric = parse_metric(line)?;
+                    let metric = parse_metric(line, &mut gas_changes)?;
 
                     if metric.depth > depth {
                         depth = metric.depth;
@@ -340,6 +358,10 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
         0
     };
 
+    if !gas_changes.is_empty() {
+        warn!("Missing metrics to associate to gas changes: {gas_changes:?}");
+    }
+
     let subsurface_dive = SubsurfaceDive {
         dive_site_id,
         dive_number,
@@ -348,9 +370,53 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
         description,
         depth,
         metrics,
+        extra_data,
     };
 
     Ok(subsurface_dive)
+}
+
+fn parse_keyvalue_simple(line: &str) -> Option<(&str, &str)> {
+    let content = line.strip_prefix("keyvalue ")?;
+
+    let start1 = content.find('"')? + 1;
+    let end1 = content[start1..].find('"')? + start1;
+    let key = &content[start1..end1];
+
+    let remaining = &content[end1 + 1..];
+    let start2 = remaining.find('"')? + 1;
+    let end2 = remaining[start2..].find('"')? + start2;
+    let value = &remaining[start2..end2];
+
+    Some((key, value))
+}
+
+// Add this helper function
+fn parse_gas_change(line: &str) -> Option<(i32, Option<f32>, Option<f32>)> {
+    let event_start = line.find("event ")? + 6;
+    let time_end = line[event_start..].find(' ')? + event_start;
+    let time_str = &line[event_start..time_end];
+
+    let time_seconds = parse_time(time_str)?;
+
+    let o2 = parse_percentage(line, "o2=");
+    let he = parse_percentage(line, "he=");
+
+    Some((time_seconds, o2, he))
+}
+
+fn parse_time(time_str: &str) -> Option<i32> {
+    let mut time_parts = time_str.split(':');
+    let minutes: u32 = time_parts.next()?.parse().ok()?;
+    let seconds: u32 = time_parts.next()?.parse().ok()?;
+    Some((minutes * 60 + seconds) as i32)
+}
+
+fn parse_percentage(line: &str, prefix: &str) -> Option<f32> {
+    let start = line.find(prefix)? + prefix.len();
+    let end = line[start..].find('%')? + start;
+    let value_str = &line[start..end];
+    value_str.parse().ok()
 }
 
 /// Will return `true` if it's at the end of the notes
@@ -378,28 +444,19 @@ fn parse_notes(line: &str, result: &mut String) -> bool {
     false
 }
 
-fn parse_metric(line: String) -> Result<DiveMetric, Error> {
+fn parse_metric(
+    line: String,
+    gas_changes: &mut HashMap<i32, (Option<f32>, Option<f32>)>,
+) -> Result<DiveMetric, Error> {
     //Parses a metric string like ` 2:20 2.48m 30.2°C 199.75bar tts=0:16`
     //Time & depth are always first, then there are various other metrics
 
     let mut metrics = line.split_whitespace();
 
-    let mut time_val = metrics
-        .next()
-        .ok_or_else(|| anyhow!("No time value!"))?
-        .split(':');
+    let time_str = metrics.next().ok_or_else(|| anyhow!("No time value!"))?;
 
-    let minutes = time_val
-        .next()
-        .ok_or_else(|| anyhow!("No minute value!"))?
-        .parse::<u32>()?;
-
-    let seconds = time_val
-        .next()
-        .ok_or_else(|| anyhow!("No seconds value!"))?
-        .parse::<u32>()?;
-
-    let time = ((minutes * 60) + seconds) as i32;
+    let time = parse_time(time_str)
+        .ok_or_else(|| anyhow!("Failed to parse time from string: {time_str}"))?;
 
     let depth_val = metrics.next().ok_or_else(|| anyhow!("No depth value!"))?;
 
@@ -416,11 +473,15 @@ fn parse_metric(line: String) -> Result<DiveMetric, Error> {
         }
     }
 
+    let (o2, he) = gas_changes.remove(&time).unwrap_or((None, None));
+
     let metric = DiveMetric {
         time,
         depth,
         pressure,
         temperature,
+        o2,
+        he,
     };
 
     Ok(metric)
@@ -536,6 +597,8 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             Ok((dive, metrics.remove(&id)))
         })
         .try_for_each_concurrent(0, |(dive, metrics)| async move {
+            let mut should_update = true;
+
             if let Some(existing_dive) = handle
                 .dives(
                     Some(dive.user_id),
@@ -547,8 +610,27 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 .await?
                 .first()
             {
-                debug!("Dive exists:{}, skipping", existing_dive.id);
-            } else {
+                if existing_dive.date != dive.date
+                    || existing_dive.duration != dive.duration
+                    || existing_dive.depth != dive.depth
+                    || existing_dive.dive_site_id != dive.dive_site_id
+                    || existing_dive.description != dive.description
+                    || existing_dive.deco_model != dive.deco_model
+                {
+                    debug!("Changes to dive: before: {existing_dive:?}, after: {dive:?}");
+                } else {
+                    if !handle.has_metrics(dive.id).await?
+                        && metrics.as_ref().is_some_and(|m| !m.is_empty())
+                    {
+                        debug!("Dive has no metrics: {}, updating", dive.id);
+                    } else {
+                        debug!("Dive exists:{}, skipping", existing_dive.id);
+                        should_update = false;
+                    }
+                }
+            }
+
+            if should_update {
                 debug!("Syncing {:?}", dive);
                 let request = CreateDive {
                     id: Some(dive.id),
@@ -558,6 +640,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     dive_site_id: dive.dive_site_id,
                     description: dive.description,
                     published: dive.published,
+                    deco_model: dive.deco_model,
                 };
 
                 handle.create_dive(dive.user_id, &request).await?;

@@ -35,17 +35,18 @@ impl DbHandle {
 
         let result = {
             let client = self.pool.get().await?;
-            let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published)
-            values ($1, $2, $3, $4, $5, $6, $7, $8)
-            
+            let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published, deco_model)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
             on conflict(id) do update
                 set date = excluded.date,
                     dive_site_id = excluded.dive_site_id,
                     duration = excluded.duration,
                     depth = excluded.depth,
                     description = excluded.description,
-                    published = excluded.published
-            
+                    published = excluded.published,
+                    deco_model = excluded.deco_model
+
             returning *";
 
             let depth = request.depth as f32;
@@ -62,6 +63,7 @@ impl DbHandle {
                         &request.dive_site_id,
                         &request.description,
                         &request.published,
+                        &request.deco_model
                     ],
                 )
                 .await?;
@@ -148,15 +150,15 @@ impl DbHandle {
     ) -> Result<Option<Dive>, Error> {
         let client = self.pool.get().await?;
         let query = "
-            select 
+            select
                 *
             from
                 (
-                select 
+                select
                     *,
                     ABS(extract(epoch from (date - $2))) as abs_time
                 from
-                    dives 
+                    dives
                 where
                     user_id = $1
                 ) as abs
@@ -171,7 +173,7 @@ impl DbHandle {
     }
 
     pub async fn add_metrics(&self, dive_id: Uuid, request: &[DiveMetric]) -> Result<(), Error> {
-        let query = "insert into dive_metrics (dive_id, time, depth, pressure, temperature) values ($1, $2, $3, $4, $5)";
+        let query = "insert into dive_metrics (dive_id, time, depth, pressure, temperature, o2, he) values ($1, $2, $3, $4, $5, $6, $7)";
 
         let mut client = self.pool.get().await?;
 
@@ -191,6 +193,8 @@ impl DbHandle {
                     &metric.depth,
                     &metric.pressure,
                     &metric.temperature,
+                    &metric.o2,
+                    &metric.he,
                 ],
             )
             .await?;
