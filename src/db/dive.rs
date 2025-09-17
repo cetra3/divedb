@@ -63,7 +63,7 @@ impl DbHandle {
                         &request.dive_site_id,
                         &request.description,
                         &request.published,
-                        &request.deco_model
+                        &request.deco_model,
                     ],
                 )
                 .await?;
@@ -94,6 +94,16 @@ impl DbHandle {
         sql.add_sql("order by \"date\" desc limit 4");
 
         Dive::from_rows(self.query(sql).await?)
+    }
+
+    pub async fn dive(&self, dive_id: Uuid) -> Result<Dive, Error> {
+        let mut sql = StatementBuilder::new("select * from dives");
+
+        sql.add_param("id = ${}", &dive_id);
+
+        let mut result = Dive::from_rows(self.query(sql).await?)?;
+
+        Ok(result.pop().ok_or_else(|| anyhow::anyhow!("No dive found"))?)
     }
 
     pub async fn dives(
@@ -229,7 +239,7 @@ impl DbHandle {
     pub async fn dive_metrics(&self, dive_id: Uuid) -> Result<Vec<DiveMetric>, Error> {
         let client = self.pool.get().await?;
         let query =
-            "select time, depth, pressure, temperature from dive_metrics where dive_id = $1 order by time asc";
+            "select time, depth, pressure, temperature, o2, he from dive_metrics where dive_id = $1 order by time asc";
         let result = client.query(query, &[&dive_id]).await?;
 
         DiveMetric::from_rows(result)
