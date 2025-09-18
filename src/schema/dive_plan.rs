@@ -13,7 +13,7 @@ pub struct DivePlanInput {
     pub deco_gasses: Vec<GasInput>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, InputObject)]
+#[derive(Serialize, Deserialize, Copy, Debug, Clone, InputObject)]
 pub struct GasInput {
     pub litres: f32,
     pub o2: f32,

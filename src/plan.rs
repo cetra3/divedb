@@ -48,8 +48,8 @@ pub fn plan_dive(dive_plan: DivePlanInput) -> Result<DiveSchedule> {
         depth: 0.,
         pressure: None,
         temperature: None,
-        o2: None,
-        he: None,
+        o2: Some(dive_plan.back_gas.o2).filter(|val| *val != 21.),
+        he: Some(dive_plan.back_gas.he).filter(|val| *val != 0.),
     });
 
     stages.push(DiveStage {
