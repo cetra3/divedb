@@ -599,6 +599,8 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
         .try_for_each_concurrent(0, |(dive, metrics)| async move {
             let mut should_update = true;
 
+            let mut is_published = false;
+
             if let Some(existing_dive) = handle
                 .dives(
                     Some(dive.user_id),
@@ -610,6 +612,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 .await?
                 .first()
             {
+                is_published = existing_dive.published;
                 if existing_dive.date != dive.date
                     || existing_dive.duration != dive.duration
                     || existing_dive.depth != dive.depth
@@ -639,7 +642,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     depth: dive.depth as f64,
                     dive_site_id: dive.dive_site_id,
                     description: dive.description,
-                    published: dive.published,
+                    published: is_published,
                     deco_model: dive.deco_model,
                 };
 
