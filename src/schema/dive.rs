@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use super::{DiveComment, DiveCommentQuery, DiveSite, Photo, PhotoQuery, PublicUserInfo};
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromRow)]
+#[derive(Serialize, Deserialize, Debug, Clone, SimpleObject, FromRow)]
 pub struct DiveMetric {
     pub time: i32,
     pub depth: f32,

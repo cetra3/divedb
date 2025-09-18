@@ -1331,6 +1331,14 @@ impl Mutation {
 
         Ok(true)
     }
+
+    async fn plan_dive(&self, plan: DivePlanInput) -> FieldResult<DiveSchedule> {
+
+        let schedule = crate::plan::plan_dive(plan)?;
+
+        Ok(schedule)
+    }
+
 }
 
 pub type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;

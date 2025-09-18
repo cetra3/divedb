@@ -3,7 +3,7 @@ use std::io::Cursor;
 use crate::{
     graphql::WebContext,
     photos::{get_font_width, FONT, WATERMARK},
-    schema::{Dive, DiveMetric, DiveSiteQuery},
+    schema::{DiveMetric, DiveSiteQuery},
 };
 use actix_web::{
     error::{ErrorInternalServerError, ErrorNotFound},
@@ -266,6 +266,49 @@ fn catmull_bezier(points: Vec<Point>) -> Vec<Curve> {
     res
 }
 
+fn get_gas_changes(metrics: &[DiveMetric]) -> Vec<GasChange> {
+    let mut gas_changes = Vec::new();
+
+    for metric in metrics {
+        match (metric.o2, metric.he.filter(|val| *val != 0.)) {
+            (Some(o2), None) => {
+                let point = Point {
+                    x: metric.time as f64,
+                    y: metric.depth as f64,
+                };
+
+                if o2 == 21. {
+                    gas_changes.push(GasChange {
+                        gas: "Air".into(),
+                        point,
+                    });
+                } else {
+                    gas_changes.push(GasChange {
+                        gas: format!("EAN{:.0}", o2),
+                        point,
+                    });
+                }
+            }
+            (o2, Some(he)) => {
+                let point = Point {
+                    x: metric.time as f64,
+                    y: metric.depth as f64,
+                };
+
+                let o2 = o2.unwrap_or(21.);
+
+                gas_changes.push(GasChange {
+                    gas: format!("{:.0}%/{:.0}%", o2, he),
+                    point,
+                });
+            }
+            _ => {}
+        }
+    }
+
+    gas_changes
+}
+
 fn get_ceiling(mut model: BuhlmannModel, metrics: &[DiveMetric]) -> Vec<Point> {
     let mut gas = Gas::new(0.21, 0.);
 
@@ -284,7 +327,7 @@ fn get_ceiling(mut model: BuhlmannModel, metrics: &[DiveMetric]) -> Vec<Point> {
 
         let time_delta = metric.time as f64 - cur_time;
 
-        model.record(
+        model.record_travel(
             Depth::from_meters(metric.depth),
             Time::from_seconds(time_delta),
             &gas,
@@ -336,7 +379,7 @@ fn parse_deco_model(model: &str) -> Option<BuhlmannModel> {
     ))
 }
 
-fn render_dive(
+pub fn render_dive(
     metrics: Vec<DiveMetric>,
     deco_model: Option<BuhlmannModel>,
     width: Option<f64>,
@@ -393,6 +436,17 @@ fn render_dive(
         .map(|model| get_ceiling(model, &metrics))
         .unwrap_or_default();
 
+    let gas_changes = get_gas_changes(&metrics)
+        .into_iter()
+        .map(|val| GasChange {
+            point: Point {
+                x: (val.point.x / max_x * width) + offset,
+                y: (val.point.y / max_y * height) + offset,
+            },
+            gas: val.gas,
+        })
+        .collect();
+
     let ceiling = if !ceiling_points.is_empty() {
         Some(
             ceiling_points
@@ -426,6 +480,7 @@ fn render_dive(
         max_x,
         max_y,
         max_point,
+        gas_changes,
         max_depth,
     };
     //let output = catmull_bezier(uddf.to_points()).iter().map(|val| val.to_svg()).collect::<Vec<String>>().join("");
@@ -459,7 +514,13 @@ struct ChartTemplate {
     max_x: f64,
     max_y: f64,
     max_point: Point,
+    gas_changes: Vec<GasChange>,
     max_depth: f64,
+}
+
+struct GasChange {
+    point: Point,
+    gas: String,
 }
 
 impl ChartTemplate {

@@ -1,0 +1,23 @@
+fragment DiveScheduleNode on DiveSchedule {
+	runtime
+	tts
+	stages {
+		...DiveStageNode
+	}
+	smallChart
+	bigChart
+}
+
+fragment DiveStageNode on DiveStage {
+	stageType
+	time
+	depth
+	gas {
+		...GasOutputNode
+	}
+}
+
+fragment GasOutputNode on GasOutput {
+	o2
+	he
+}

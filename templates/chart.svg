@@ -3,7 +3,8 @@
 {% let graph2 = "#E85600" %}
 {% let axis1 = "#A0CEE3" %}
 {% let axis2 = "#9CA7B0" %}
-<svg width="{{width + offset * 2.0}}" height="{{height + offset * 2.0}}"  viewBox="0 0 {{width + offset * 2.0}} {{height + offset * 2.0}}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+{% let axis3 = "#32B643" %}
+<svg class="dive-chart" width="{{width + offset * 2.0}}" height="{{height + offset * 2.0}}"  viewBox="0 0 {{width + offset * 2.0}} {{height + offset * 2.0}}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="horizontalPipe" x2="0" y2="1">
         <stop offset="0" stop-color="{{graph1}}22"/>
@@ -18,7 +19,7 @@
     text {
       font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif
     }
-    svg {
+    svg.dive-chart {
       background: #303742
     }
   </style>
@@ -41,5 +42,11 @@
   <path stroke="none" d="M {{offset}} {{offset}} {{ceiling}} L {{width + offset}} {{offset}}" fill="url(#horizontalPipeDeco)" />
   {% endif %}
   <circle cx="{{max_point.x}}" cy="{{max_point.y}}" r="3" fill="{{axis1}}" />
+  {% for change in gas_changes %}
+  <rect x="{{change.point.x - 1.0}}" y="{{change.point.y - 6.0}}" width="2" height="3" rx="1"  fill="{{axis3}}" />
+  <rect x="{{change.point.x - 3.0}}" y="{{change.point.y - 4.0}}" width="6" height="8" rx="2"  fill="{{axis3}}" />
+  <rect x="{{change.point.x - 3.0}}" y="{{change.point.y - 0.5}}" width="6" height="8" rx="0.5"  fill="{{axis3}}" />
+  <text x="{{change.point.x + 3.0}}" y="{{change.point.y + 2.0}}" dominant-baseline="hanging" text-anchor="left" font-size="12" fill="{{axis3}}" font-weight="bold" >{{change.gas}}</text>
+  {% endfor %}
   <text x="{{max_point.x}}" y="{{max_point.y + 2.0}}" dominant-baseline="hanging" text-anchor="left" font-size="12" fill="{{axis1}}" font-weight="bold" >MAX {{ "{:.2}"|format(max_depth) }}m</text>
 </svg>

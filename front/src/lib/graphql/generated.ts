@@ -2,23 +2,15 @@ import type { GraphQLClient, RequestOptions } from 'graphql-request';
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = {
-	[K in keyof T]: T[K];
-};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-	[SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-	[SubKey in K]: Maybe<T[SubKey]>;
-};
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
 	[_ in K]?: never;
 };
 export type Incremental<T> =
 	| T
-	| {
-			[P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never;
-	  };
+	| { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 type GraphQLClientRequestHeaders = RequestOptions['requestHeaders'];
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -75,6 +67,7 @@ export type CreateCategoryValue = {
 
 export type CreateDive = {
 	date: Scalars['DateTime']['input'];
+	decoModel?: InputMaybe<Scalars['String']['input']>;
 	depth: Scalars['Float']['input'];
 	description: Scalars['String']['input'];
 	diveSiteId?: InputMaybe<Scalars['UUID']['input']>;
@@ -172,6 +165,24 @@ export type DiveComment = {
 	userId: Scalars['UUID']['output'];
 };
 
+export type DivePlanInput = {
+	backGas: GasInput;
+	decoGasses: Array<GasInput>;
+	depth: Scalars['Float']['input'];
+	gfHigh: Scalars['Int']['input'];
+	gfLow: Scalars['Int']['input'];
+	time: Scalars['Int']['input'];
+};
+
+export type DiveSchedule = {
+	__typename?: 'DiveSchedule';
+	bigChart: Scalars['String']['output'];
+	runtime: Scalars['Int']['output'];
+	smallChart: Scalars['String']['output'];
+	stages: Array<DiveStage>;
+	tts: Scalars['Int']['output'];
+};
+
 export type DiveSite = {
 	__typename?: 'DiveSite';
 	access: Scalars['String']['output'];
@@ -195,6 +206,14 @@ export type DiveSite = {
 	userId?: Maybe<Scalars['UUID']['output']>;
 };
 
+export type DiveStage = {
+	__typename?: 'DiveStage';
+	depth: Scalars['Float']['output'];
+	gas?: Maybe<GasOutput>;
+	stageType: StageType;
+	time: Scalars['Int']['output'];
+};
+
 export type Feedback = {
 	__typename?: 'Feedback';
 	date: Scalars['DateTime']['output'];
@@ -202,6 +221,18 @@ export type Feedback = {
 	id: Scalars['UUID']['output'];
 	user: UserInfo;
 	userId: Scalars['UUID']['output'];
+};
+
+export type GasInput = {
+	he: Scalars['Float']['input'];
+	litres: Scalars['Float']['input'];
+	o2: Scalars['Float']['input'];
+};
+
+export type GasOutput = {
+	__typename?: 'GasOutput';
+	he: Scalars['Float']['output'];
+	o2: Scalars['Float']['output'];
 };
 
 export type LoginResponse = {
@@ -239,6 +270,7 @@ export type Mutation = {
 	newReference: OgReference;
 	newRegion: Region;
 	newSealife: Sealife;
+	planDive: DiveSchedule;
 	registerUser: Scalars['Boolean']['output'];
 	removeCategory: Scalars['Boolean']['output'];
 	removeCategoryValue: Scalars['Boolean']['output'];
@@ -338,6 +370,10 @@ export type MutationNewRegionArgs = {
 
 export type MutationNewSealifeArgs = {
 	sealife: CreateSealife;
+};
+
+export type MutationPlanDiveArgs = {
+	plan: DivePlanInput;
 };
 
 export type MutationRegisterUserArgs = {
@@ -587,6 +623,13 @@ export type SiteMetric = {
 	photoCount: Scalars['Int']['output'];
 };
 
+export enum StageType {
+	Ascend = 'ASCEND',
+	Descend = 'DESCEND',
+	GasChange = 'GAS_CHANGE',
+	Stay = 'STAY'
+}
+
 export type UserInfo = {
 	__typename?: 'UserInfo';
 	description: Scalars['String']['output'];
@@ -608,12 +651,7 @@ export type CategoryNodeFragment = {
 	__typename?: 'Category';
 	id: string;
 	name: string;
-	values: Array<{
-		__typename?: 'CategoryValue';
-		id: string;
-		categoryId: string;
-		value: string;
-	}>;
+	values: Array<{ __typename?: 'CategoryValue'; id: string; categoryId: string; value: string }>;
 };
 
 export type CategoryValueNodeFragment = {
@@ -649,12 +687,7 @@ export type DiveSummaryFragment = {
 		username: string;
 		displayName?: string | null;
 	};
-	diveSite?: {
-		__typename?: 'DiveSite';
-		name: string;
-		id: string;
-		slug?: string | null;
-	} | null;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 };
 
 export type DiveWithMetricsFragment = {
@@ -670,12 +703,7 @@ export type DiveWithMetricsFragment = {
 	likes: number;
 	liked: boolean;
 	numComments: number;
-	diveSite?: {
-		__typename?: 'DiveSite';
-		name: string;
-		id: string;
-		slug?: string | null;
-	} | null;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	latestPhotos: Array<{
 		__typename?: 'Photo';
 		id: string;
@@ -699,19 +727,9 @@ export type DiveWithMetricsFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -794,19 +812,9 @@ export type DiveNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -823,13 +831,33 @@ export type DiveNodeFragment = {
 			displayName?: string | null;
 		};
 	}>;
-	diveSite?: {
-		__typename?: 'DiveSite';
-		name: string;
-		id: string;
-		slug?: string | null;
-	} | null;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 };
+
+export type DiveScheduleNodeFragment = {
+	__typename?: 'DiveSchedule';
+	runtime: number;
+	tts: number;
+	smallChart: string;
+	bigChart: string;
+	stages: Array<{
+		__typename?: 'DiveStage';
+		stageType: StageType;
+		time: number;
+		depth: number;
+		gas?: { __typename?: 'GasOutput'; o2: number; he: number } | null;
+	}>;
+};
+
+export type DiveStageNodeFragment = {
+	__typename?: 'DiveStage';
+	stageType: StageType;
+	time: number;
+	depth: number;
+	gas?: { __typename?: 'GasOutput'; o2: number; he: number } | null;
+};
+
+export type GasOutputNodeFragment = { __typename?: 'GasOutput'; o2: number; he: number };
 
 export type SiteFragment = {
 	__typename?: 'DiveSite';
@@ -847,11 +875,7 @@ export type SiteFragment = {
 	slug?: string | null;
 	date: any;
 	photoId?: string | null;
-	siteMetrics: {
-		__typename?: 'SiteMetric';
-		photoCount: number;
-		diveCount: number;
-	};
+	siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 	photo?: {
 		__typename?: 'Photo';
 		id: string;
@@ -875,19 +899,9 @@ export type SiteFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -927,19 +941,9 @@ export type SiteFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -969,12 +973,7 @@ export type SiteFragment = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -1005,12 +1004,7 @@ export type SiteFragment = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1067,11 +1061,7 @@ export type SiteSummaryMetricsFragment = {
 	lat: number;
 	lon: number;
 	photoId?: string | null;
-	siteMetrics: {
-		__typename?: 'SiteMetric';
-		photoCount: number;
-		diveCount: number;
-	};
+	siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 };
 
 export type FeedbackNodeFragment = {
@@ -1111,19 +1101,9 @@ export type PhotoSummaryFragment = {
 			username: string;
 			displayName?: string | null;
 		};
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	} | null;
-	diveSite?: {
-		__typename?: 'DiveSite';
-		name: string;
-		id: string;
-		slug?: string | null;
-	} | null;
+	diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	sealife?: {
 		__typename?: 'Sealife';
 		id: string;
@@ -1197,19 +1177,9 @@ export type SealifeNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1249,19 +1219,9 @@ export type SealifeNodeFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1372,19 +1332,9 @@ export type UserInfoFragment = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -1414,12 +1364,7 @@ export type UserInfoFragment = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -1450,12 +1395,7 @@ export type UserInfoFragment = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1552,12 +1492,7 @@ export type AddDiveMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1574,12 +1509,7 @@ export type AddDiveMutation = {
 				displayName?: string | null;
 			};
 		}>;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	};
 };
 
@@ -1605,11 +1535,7 @@ export type AddDiveSiteMutation = {
 		slug?: string | null;
 		date: any;
 		photoId?: string | null;
-		siteMetrics: {
-			__typename?: 'SiteMetric';
-			photoCount: number;
-			diveCount: number;
-		};
+		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 		photo?: {
 			__typename?: 'Photo';
 			id: string;
@@ -1640,12 +1566,7 @@ export type AddDiveSiteMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1692,12 +1613,7 @@ export type AddDiveSiteMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1727,12 +1643,7 @@ export type AddDiveSiteMutation = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -1880,12 +1791,7 @@ export type AddSealifeMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1932,12 +1838,7 @@ export type AddSealifeMutation = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -1992,19 +1893,13 @@ export type RemoveCommentMutationVariables = Exact<{
 	commentId: Scalars['UUID']['input'];
 }>;
 
-export type RemoveCommentMutation = {
-	__typename?: 'Mutation';
-	removeComment: boolean;
-};
+export type RemoveCommentMutation = { __typename?: 'Mutation'; removeComment: boolean };
 
 export type DeleteUserMutationVariables = Exact<{
 	password: Scalars['String']['input'];
 }>;
 
-export type DeleteUserMutation = {
-	__typename?: 'Mutation';
-	deleteUser: boolean;
-};
+export type DeleteUserMutation = { __typename?: 'Mutation'; deleteUser: boolean };
 
 export type FbLoginUserMutationVariables = Exact<{
 	redirectUri: Scalars['String']['input'];
@@ -2051,10 +1946,7 @@ export type UnlikeDiveMutationVariables = Exact<{
 	diveId: Scalars['UUID']['input'];
 }>;
 
-export type UnlikeDiveMutation = {
-	__typename?: 'Mutation';
-	unlikeDive: boolean;
-};
+export type UnlikeDiveMutation = { __typename?: 'Mutation'; unlikeDive: boolean };
 
 export type LikePhotoMutationVariables = Exact<{
 	photoId: Scalars['UUID']['input'];
@@ -2066,10 +1958,7 @@ export type UnlikePhotoMutationVariables = Exact<{
 	photoId: Scalars['UUID']['input'];
 }>;
 
-export type UnlikePhotoMutation = {
-	__typename?: 'Mutation';
-	unlikePhoto: boolean;
-};
+export type UnlikePhotoMutation = { __typename?: 'Mutation'; unlikePhoto: boolean };
 
 export type LoginUserMutationVariables = Exact<{
 	email: Scalars['String']['input'];
@@ -2118,19 +2007,13 @@ export type MergeDiveSitesMutationVariables = Exact<{
 	toId: Scalars['UUID']['input'];
 }>;
 
-export type MergeDiveSitesMutation = {
-	__typename?: 'Mutation';
-	mergeDiveSites: boolean;
-};
+export type MergeDiveSitesMutation = { __typename?: 'Mutation'; mergeDiveSites: boolean };
 
 export type RequestResetTokenMutationVariables = Exact<{
 	email: Scalars['String']['input'];
 }>;
 
-export type RequestResetTokenMutation = {
-	__typename?: 'Mutation';
-	requestResetToken: boolean;
-};
+export type RequestResetTokenMutation = { __typename?: 'Mutation'; requestResetToken: boolean };
 
 export type ResetPasswordMutationVariables = Exact<{
 	email: Scalars['String']['input'];
@@ -2155,9 +2038,28 @@ export type ChangePasswordMutationVariables = Exact<{
 	newPassword: Scalars['String']['input'];
 }>;
 
-export type ChangePasswordMutation = {
+export type ChangePasswordMutation = { __typename?: 'Mutation'; changePassword: boolean };
+
+export type PlanDiveMutationVariables = Exact<{
+	plan: DivePlanInput;
+}>;
+
+export type PlanDiveMutation = {
 	__typename?: 'Mutation';
-	changePassword: boolean;
+	planDive: {
+		__typename?: 'DiveSchedule';
+		runtime: number;
+		tts: number;
+		smallChart: string;
+		bigChart: string;
+		stages: Array<{
+			__typename?: 'DiveStage';
+			stageType: StageType;
+			time: number;
+			depth: number;
+			gas?: { __typename?: 'GasOutput'; o2: number; he: number } | null;
+		}>;
+	};
 };
 
 export type NewRegionMutationVariables = Exact<{
@@ -2182,10 +2084,7 @@ export type RemoveRegionMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveRegionMutation = {
-	__typename?: 'Mutation';
-	removeRegion: boolean;
-};
+export type RemoveRegionMutation = { __typename?: 'Mutation'; removeRegion: boolean };
 
 export type RegisterUserMutationVariables = Exact<{
 	username: Scalars['String']['input'];
@@ -2193,74 +2092,48 @@ export type RegisterUserMutationVariables = Exact<{
 	password: Scalars['String']['input'];
 }>;
 
-export type RegisterUserMutation = {
-	__typename?: 'Mutation';
-	registerUser: boolean;
-};
+export type RegisterUserMutation = { __typename?: 'Mutation'; registerUser: boolean };
 
 export type RemoveDiveMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveDiveMutation = {
-	__typename?: 'Mutation';
-	removeDive: boolean;
-};
+export type RemoveDiveMutation = { __typename?: 'Mutation'; removeDive: boolean };
 
 export type RemoveDiveSiteMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveDiveSiteMutation = {
-	__typename?: 'Mutation';
-	removeDiveSite: boolean;
-};
+export type RemoveDiveSiteMutation = { __typename?: 'Mutation'; removeDiveSite: boolean };
 
 export type RemovePhotoMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemovePhotoMutation = {
-	__typename?: 'Mutation';
-	removePhoto: boolean;
-};
+export type RemovePhotoMutation = { __typename?: 'Mutation'; removePhoto: boolean };
 
 export type RemoveReferenceMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveReferenceMutation = {
-	__typename?: 'Mutation';
-	removeReference: boolean;
-};
+export type RemoveReferenceMutation = { __typename?: 'Mutation'; removeReference: boolean };
 
 export type RemoveSealifeMutationVariables = Exact<{
 	id: Scalars['UUID']['input'];
 }>;
 
-export type RemoveSealifeMutation = {
-	__typename?: 'Mutation';
-	removeSealife: boolean;
-};
+export type RemoveSealifeMutation = { __typename?: 'Mutation'; removeSealife: boolean };
 
-export type ResendVerificationMutationVariables = Exact<{
-	[key: string]: never;
-}>;
+export type ResendVerificationMutationVariables = Exact<{ [key: string]: never }>;
 
-export type ResendVerificationMutation = {
-	__typename?: 'Mutation';
-	resendVerification: boolean;
-};
+export type ResendVerificationMutation = { __typename?: 'Mutation'; resendVerification: boolean };
 
 export type SyncSubsurfaceMutationVariables = Exact<{
 	email: Scalars['String']['input'];
 	password: Scalars['String']['input'];
 }>;
 
-export type SyncSubsurfaceMutation = {
-	__typename?: 'Mutation';
-	syncSubsurface: boolean;
-};
+export type SyncSubsurfaceMutation = { __typename?: 'Mutation'; syncSubsurface: boolean };
 
 export type UpdatePhotoMutationVariables = Exact<{
 	photo: CreatePhoto;
@@ -2291,19 +2164,9 @@ export type UpdatePhotoMutation = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -2347,12 +2210,7 @@ export type GetCategoriesQuery = {
 		__typename?: 'Category';
 		id: string;
 		name: string;
-		values: Array<{
-			__typename?: 'CategoryValue';
-			id: string;
-			categoryId: string;
-			value: string;
-		}>;
+		values: Array<{ __typename?: 'CategoryValue'; id: string; categoryId: string; value: string }>;
 	}>;
 };
 
@@ -2425,11 +2283,7 @@ export type FrontPageQuery = {
 		lat: number;
 		lon: number;
 		photoId?: string | null;
-		siteMetrics: {
-			__typename?: 'SiteMetric';
-			photoCount: number;
-			diveCount: number;
-		};
+		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 	}>;
 	recentDives: Array<{
 		__typename?: 'Dive';
@@ -2444,12 +2298,7 @@ export type FrontPageQuery = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -2480,12 +2329,7 @@ export type FrontPageQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2583,12 +2427,7 @@ export type GetDiveQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2605,12 +2444,7 @@ export type GetDiveQuery = {
 				displayName?: string | null;
 			};
 		}>;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 	}>;
 };
 
@@ -2640,11 +2474,7 @@ export type GetDiveSitesQuery = {
 		slug?: string | null;
 		date: any;
 		photoId?: string | null;
-		siteMetrics: {
-			__typename?: 'SiteMetric';
-			photoCount: number;
-			diveCount: number;
-		};
+		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 		photo?: {
 			__typename?: 'Photo';
 			id: string;
@@ -2675,12 +2505,7 @@ export type GetDiveSitesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2727,12 +2552,7 @@ export type GetDiveSitesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -2762,12 +2582,7 @@ export type GetDiveSitesQuery = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -2867,11 +2682,7 @@ export type GetDiveSitesSummaryMetricsQuery = {
 		lat: number;
 		lon: number;
 		photoId?: string | null;
-		siteMetrics: {
-			__typename?: 'SiteMetric';
-			photoCount: number;
-			diveCount: number;
-		};
+		siteMetrics: { __typename?: 'SiteMetric'; photoCount: number; diveCount: number };
 	}>;
 };
 
@@ -2896,12 +2707,7 @@ export type GetDivesQuery = {
 		likes: number;
 		liked: boolean;
 		numComments: number;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		latestPhotos: Array<{
 			__typename?: 'Photo';
 			id: string;
@@ -2932,12 +2738,7 @@ export type GetDivesQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -3000,19 +2801,9 @@ export type GetPhotosQuery = {
 				username: string;
 				displayName?: string | null;
 			};
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		} | null;
-		diveSite?: {
-			__typename?: 'DiveSite';
-			name: string;
-			id: string;
-			slug?: string | null;
-		} | null;
+		diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 		sealife?: {
 			__typename?: 'Sealife';
 			id: string;
@@ -3104,12 +2895,7 @@ export type GetSealifeQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -3156,12 +2942,7 @@ export type GetSealifeQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -3236,12 +3017,7 @@ export type GetUserQuery = {
 					slug?: string | null;
 				} | null;
 			} | null;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			sealife?: {
 				__typename?: 'Sealife';
 				id: string;
@@ -3271,12 +3047,7 @@ export type GetUserQuery = {
 			likes: number;
 			liked: boolean;
 			numComments: number;
-			diveSite?: {
-				__typename?: 'DiveSite';
-				name: string;
-				id: string;
-				slug?: string | null;
-			} | null;
+			diveSite?: { __typename?: 'DiveSite'; name: string; id: string; slug?: string | null } | null;
 			latestPhotos: Array<{
 				__typename?: 'Photo';
 				id: string;
@@ -3492,6 +3263,33 @@ export const DiveNodeFragmentDoc = gql`
 		diveSite {
 			...SiteSummary
 		}
+	}
+`;
+export const GasOutputNodeFragmentDoc = gql`
+	fragment GasOutputNode on GasOutput {
+		o2
+		he
+	}
+`;
+export const DiveStageNodeFragmentDoc = gql`
+	fragment DiveStageNode on DiveStage {
+		stageType
+		time
+		depth
+		gas {
+			...GasOutputNode
+		}
+	}
+`;
+export const DiveScheduleNodeFragmentDoc = gql`
+	fragment DiveScheduleNode on DiveSchedule {
+		runtime
+		tts
+		stages {
+			...DiveStageNode
+		}
+		smallChart
+		bigChart
 	}
 `;
 export const SiteMetricNodeFragmentDoc = gql`
@@ -3843,6 +3641,16 @@ export const ChangePasswordDocument = gql`
 	mutation changePassword($oldPassword: String!, $newPassword: String!) {
 		changePassword(oldPassword: $oldPassword, newPassword: $newPassword)
 	}
+`;
+export const PlanDiveDocument = gql`
+	mutation planDive($plan: DivePlanInput!) {
+		planDive(plan: $plan) {
+			...DiveScheduleNode
+		}
+	}
+	${DiveScheduleNodeFragmentDoc}
+	${DiveStageNodeFragmentDoc}
+	${GasOutputNodeFragmentDoc}
 `;
 export const NewRegionDocument = gql`
 	mutation newRegion($region: CreateRegion!) {
@@ -4497,6 +4305,24 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						signal
 					}),
 				'changePassword',
+				'mutation',
+				variables
+			);
+		},
+		planDive(
+			variables: PlanDiveMutationVariables,
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
+		): Promise<PlanDiveMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<PlanDiveMutation>({
+						document: PlanDiveDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
+				'planDive',
 				'mutation',
 				variables
 			);
