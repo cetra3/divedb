@@ -43,6 +43,7 @@ pub mod search;
 mod seo;
 pub mod subsurface;
 pub mod token;
+pub mod plan;
 
 use db::DbHandle;
 use graphql::*;

@@ -86,3 +86,4 @@ anyhow = { version = "1.0.75", features = ["backtrace"] }
 kuchikiki = "0.8.2"
 console-subscriber = "0.2.0"
 foyer = { version = "0.18", features = ["serde"] }
+dive-deco = "6.0.3"

@@ -50,9 +50,9 @@
 			<i class="icon icon-menu"></i>
 		</button>
 	</div>
-	{#if $session.loggedIn}
-		<div class="divider" data-content="DIVES"></div>
-		<div>
+	<div class="divider" data-content="DIVES"></div>
+	<div>
+		{#if $session.loggedIn}
 			<a
 				onclick={hideMenu}
 				class="btn btn-link mobile-link text-left"
@@ -60,15 +60,12 @@
 			>
 				Your Dives
 			</a>
-			<a onclick={hideMenu} class="btn btn-link mobile-link text-left" href="/dives">
-				All Dives
-			</a>
-		</div>
-	{:else}
-		<div>
-			<a onclick={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> Dives </a>
-		</div>
-	{/if}
+		{/if}
+		<a onclick={hideMenu} class="btn btn-link mobile-link text-left" href="/dives"> All Dives </a>
+		<a onclick={hideMenu} class="btn btn-link mobile-link text-left" href="/dives/plan">
+			Deco Planner
+		</a>
+	</div>
 
 	<div class="divider" data-content="SITES"></div>
 	<div>
@@ -147,23 +144,22 @@
 			<button aria-label="Menu" class="btn btn-link mobile-link hide-big" onclick={menuShow}>
 				<i class="icon icon-menu"></i>
 			</button>
-			{#if $session.user}
-				<div class="dropdown hide-small">
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<!-- svelte-ignore a11y_missing_attribute -->
-					<a class="btn btn-link dropdown-toggle" tabindex="0"
-						>Dives <i class="icon icon-caret"></i></a
-					>
-					<ul class="menu menu-list">
+			<div class="dropdown hide-small">
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<!-- svelte-ignore a11y_missing_attribute -->
+				<a class="btn btn-link dropdown-toggle" tabindex="0"
+					>Dives <i class="icon icon-caret"></i></a
+				>
+				<ul class="menu menu-list">
+					{#if $session.user}
 						<li class="menu-item">
 							<a href="/users/{$session.user?.username}/dives">Your Dives</a>
 						</li>
-						<li class="menu-item"><a href="/dives">All Dives</a></li>
-					</ul>
-				</div>
-			{:else}
-				<a class="btn btn-link hide-small" href="/dives">Dives</a>
-			{/if}
+					{/if}
+					<li class="menu-item"><a href="/dives">All Dives</a></li>
+					<li class="menu-item"><a href="/dives/plan">Deco Planner</a></li>
+				</ul>
+			</div>
 			<div class="dropdown hide-small">
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 				<!-- svelte-ignore a11y_missing_attribute -->

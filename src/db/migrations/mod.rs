@@ -54,6 +54,7 @@ impl Migrator {
                 Box::new(create_apub_keys::CreateApubKeys),
                 Box::new(external!("V020__external_users.sql")),
                 Box::new(external!("V021__email_verification.sql")),
+                Box::new(external!("V022__deco_model.sql")),
             ],
         }
     }

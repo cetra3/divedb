@@ -3,7 +3,7 @@ use std::io::Cursor;
 use crate::{
     graphql::WebContext,
     photos::{get_font_width, FONT, WATERMARK},
-    schema::{DiveMetric, DiveQuery, DiveSiteQuery},
+    schema::{DiveMetric, DiveSiteQuery},
 };
 use actix_web::{
     error::{ErrorInternalServerError, ErrorNotFound},
@@ -11,6 +11,7 @@ use actix_web::{
 };
 use anyhow::Error;
 use askama::Template;
+use dive_deco::{BuhlmannConfig, BuhlmannModel, DecoModel, Depth, Gas, Time};
 use image::{imageops::overlay, ImageOutputFormat, Rgba, RgbaImage};
 use imageproc::drawing::draw_text_mut;
 use once_cell::sync::Lazy;
@@ -52,17 +53,9 @@ pub async fn png_chart(
 
     let dive = context
         .handle
-        .dives(
-            None,
-            &DiveQuery {
-                id: Some(*dive_id),
-                ..Default::default()
-            },
-        )
+        .dive(*dive_id)
         .await
-        .map_err(ErrorInternalServerError)?
-        .pop()
-        .ok_or_else(|| ErrorNotFound("No dive found"))?;
+        .map_err(|err| ErrorNotFound(err.to_string()))?;
 
     let user = context
         .handle
@@ -89,7 +82,25 @@ pub async fn png_chart(
     let width = Some(800.0);
     let height = Some(560.0);
 
-    let svg = render_dive(dive_metrics, width, height)
+    let mut output_text = format!(
+        "{} - #{}",
+        user.display_name.unwrap_or(user.username),
+        dive.dive_number
+    );
+
+    let deco_model = dive.deco_model.as_deref().and_then(parse_deco_model);
+
+    if let Some(ref model) = deco_model {
+        write!(
+            &mut output_text,
+            " - GF {}/{}",
+            model.config().gf.0,
+            model.config().gf.1
+        )
+        .ok();
+    }
+
+    let svg = render_dive(dive_metrics, deco_model, width, height)
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
     let mut tree = resvg::usvg::Tree::from_data(svg.as_bytes(), &Default::default()).unwrap();
@@ -115,12 +126,6 @@ pub async fn png_chart(
     );
 
     overlay(&mut out_img, &img, 0, EXTRA_HEIGHT as i64);
-
-    let mut output_text = format!(
-        "{} - #{}",
-        user.display_name.unwrap_or(user.username),
-        dive.dive_number
-    );
 
     if let Some(site) = dive_site {
         write!(&mut output_text, " - {}", site.name).ok();
@@ -172,10 +177,21 @@ pub async fn svg_chart(
         .await
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
+    let dive = context
+        .handle
+        .dive(*dive_id)
+        .await
+        .map_err(|err| ErrorInternalServerError(err.to_string()))?;
+
     let ChartRequest { width, height } = query.into_inner();
 
-    let svg = render_dive(dive_metrics, width, height)
-        .map_err(|err| ErrorInternalServerError(err.to_string()))?;
+    let svg = render_dive(
+        dive_metrics,
+        dive.deco_model.as_deref().and_then(parse_deco_model),
+        width,
+        height,
+    )
+    .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
     Ok(HttpResponse::Ok().content_type("image/svg+xml").body(svg))
 }
@@ -250,8 +266,122 @@ fn catmull_bezier(points: Vec<Point>) -> Vec<Curve> {
     res
 }
 
-fn render_dive(
+fn get_gas_changes(metrics: &[DiveMetric]) -> Vec<GasChange> {
+    let mut gas_changes = Vec::new();
+
+    for metric in metrics {
+        match (metric.o2, metric.he.filter(|val| *val != 0.)) {
+            (Some(o2), None) => {
+                let point = Point {
+                    x: metric.time as f64,
+                    y: metric.depth as f64,
+                };
+
+                if o2 == 21. {
+                    gas_changes.push(GasChange {
+                        gas: "Air".into(),
+                        point,
+                    });
+                } else {
+                    gas_changes.push(GasChange {
+                        gas: format!("EAN{:.0}", o2),
+                        point,
+                    });
+                }
+            }
+            (o2, Some(he)) => {
+                let point = Point {
+                    x: metric.time as f64,
+                    y: metric.depth as f64,
+                };
+
+                let o2 = o2.unwrap_or(21.);
+
+                gas_changes.push(GasChange {
+                    gas: format!("{:.0}%/{:.0}%", o2, he),
+                    point,
+                });
+            }
+            _ => {}
+        }
+    }
+
+    gas_changes
+}
+
+fn get_ceiling(mut model: BuhlmannModel, metrics: &[DiveMetric]) -> Vec<Point> {
+    let mut gas = Gas::new(0.21, 0.);
+
+    let mut ceiling = vec![];
+
+    let mut cur_time = 0.;
+    let mut in_deco = false;
+
+    for metric in metrics {
+        if metric.o2.is_some() || metric.he.is_some() {
+            gas = Gas::new(
+                metric.o2.map(|val| val / 100.).unwrap_or(0.21) as f64,
+                metric.he.map(|val| val / 100.).unwrap_or(0.) as f64,
+            );
+        }
+
+        let time_delta = metric.time as f64 - cur_time;
+
+        model.record_travel(
+            Depth::from_meters(metric.depth),
+            Time::from_seconds(time_delta),
+            &gas,
+        );
+
+        let new_ceiling = model.ceiling().as_meters();
+
+        // round to 3 meters
+        let ceiling_depth = 3.0;
+        let new_ceiling = ((new_ceiling) / ceiling_depth).round() * ceiling_depth;
+
+        if !in_deco && new_ceiling > 0. {
+            // emit the previous time as 0
+            ceiling.push(Point { x: cur_time, y: 0. });
+
+            in_deco = true;
+        }
+
+        if in_deco {
+            ceiling.push(Point {
+                x: metric.time as f64,
+                y: new_ceiling,
+            });
+
+            if new_ceiling == 0. && ceiling.last().is_some_and(|val| val.y == 0.) {
+                in_deco = false;
+            }
+        }
+
+        cur_time = metric.time as f64;
+    }
+
+    ceiling
+}
+
+fn parse_deco_model(model: &str) -> Option<BuhlmannModel> {
+    let suffix = model.strip_prefix("GF ")?;
+
+    let mut split = suffix.split("/");
+
+    let low = split.next()?;
+    let high = split.next()?;
+
+    let gf_low = low.parse::<u8>().ok()?;
+    let gf_high = high.parse::<u8>().ok()?;
+
+    Some(BuhlmannModel::new(
+        BuhlmannConfig::new().with_gradient_factors(gf_low, gf_high),
+    ))
+}
+
+pub fn render_dive(
     metrics: Vec<DiveMetric>,
+    deco_model: Option<BuhlmannModel>,
     width: Option<f64>,
     height: Option<f64>,
 ) -> Result<String, Error> {
@@ -302,15 +432,55 @@ fn render_dive(
         .collect::<Vec<String>>()
         .join("");
 
+    let ceiling_points = deco_model
+        .map(|model| get_ceiling(model, &metrics))
+        .unwrap_or_default();
+
+    let gas_changes = get_gas_changes(&metrics)
+        .into_iter()
+        .map(|val| GasChange {
+            point: Point {
+                x: (val.point.x / max_x * width) + offset,
+                y: (val.point.y / max_y * height) + offset,
+            },
+            gas: val.gas,
+        })
+        .collect();
+
+    let ceiling = if !ceiling_points.is_empty() {
+        Some(
+            ceiling_points
+                .into_iter()
+                .map(|val| Point {
+                    x: (val.x / max_x * width) + offset,
+                    y: (val.y / max_y * height) + offset,
+                })
+                .enumerate()
+                .map(|(i, val)| {
+                    if i == 0 {
+                        format!("M {} {offset} {}", val.x, val.as_svg())
+                    } else {
+                        val.as_svg()
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(""),
+        )
+    } else {
+        None
+    };
+
     let chart = ChartTemplate {
         width,
         height,
         path,
+        ceiling,
         offset,
         lines: 5,
         max_x,
         max_y,
         max_point,
+        gas_changes,
         max_depth,
     };
     //let output = catmull_bezier(uddf.to_points()).iter().map(|val| val.to_svg()).collect::<Vec<String>>().join("");
@@ -338,12 +508,19 @@ struct ChartTemplate {
     width: f64,
     height: f64,
     path: String,
+    ceiling: Option<String>,
     offset: f64,
     lines: usize,
     max_x: f64,
     max_y: f64,
     max_point: Point,
+    gas_changes: Vec<GasChange>,
     max_depth: f64,
+}
+
+struct GasChange {
+    point: Point,
+    gas: String,
 }
 
 impl ChartTemplate {

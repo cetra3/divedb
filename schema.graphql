@@ -29,6 +29,7 @@ input CreateDive {
 	diveSiteId: UUID
 	description: String!
 	published: Boolean!
+	decoModel: String
 }
 
 input CreateDiveComment {
@@ -125,6 +126,23 @@ type DiveComment {
 	description: String!
 }
 
+input DivePlanInput {
+	time: Int!
+	depth: Float!
+	gfLow: Int!
+	gfHigh: Int!
+	backGas: GasInput!
+	decoGasses: [GasInput!]!
+}
+
+type DiveSchedule {
+	runtime: Int!
+	tts: Int!
+	stages: [DiveStage!]!
+	smallChart: String!
+	bigChart: String!
+}
+
 type DiveSite {
 	id: UUID!
 	userId: UUID
@@ -147,12 +165,30 @@ type DiveSite {
 	references: [OgReference!]!
 }
 
+type DiveStage {
+	stageType: StageType!
+	time: Int!
+	depth: Float!
+	gas: GasOutput
+}
+
 type Feedback {
 	id: UUID!
 	userId: UUID!
 	user: UserInfo!
 	date: DateTime!
 	feedback: String!
+}
+
+input GasInput {
+	litres: Float!
+	o2: Float!
+	he: Float!
+}
+
+type GasOutput {
+	o2: Float!
+	he: Float!
 }
 
 """
@@ -212,6 +248,7 @@ type Mutation {
 	removeRegion(id: UUID!): Boolean!
 	verifyEmail(email: String!, token: UUID!): LoginResponse!
 	resendVerification: Boolean!
+	planDive(plan: DivePlanInput!): DiveSchedule!
 }
 
 type OgReference {
@@ -321,6 +358,13 @@ enum SearchResultKind {
 type SiteMetric {
 	photoCount: Int!
 	diveCount: Int!
+}
+
+enum StageType {
+	ASCEND
+	DESCEND
+	STAY
+	GAS_CHANGE
 }
 
 """

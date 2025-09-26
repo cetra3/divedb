@@ -1584,6 +1584,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dive-deco"
+version = "6.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2ebcce7b7e22128a49c2ec72dfaf73b8d8a2baf8cbdbdd07cb64bbcf3ffe4c4"
+
+[[package]]
 name = "divedb"
 version = "0.1.0"
 dependencies = [
@@ -1605,6 +1611,7 @@ dependencies = [
  "dataloader",
  "deadpool",
  "deadpool-postgres",
+ "dive-deco",
  "divedb_core",
  "dotenv",
  "enum_delegate",

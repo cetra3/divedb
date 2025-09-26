@@ -788,7 +788,8 @@ impl Mutation {
             false
         };
 
-        let dive = context.web.handle.create_dive(user.id, &dive).await?;
+        let dive = context.web.handle.create_dive(user.id, &dive, None).await?;
+        context.web.handle.refresh_dives(user.id).await?;
 
         let followers = context
             .web
@@ -1331,6 +1332,14 @@ impl Mutation {
 
         Ok(true)
     }
+
+    async fn plan_dive(&self, plan: DivePlanInput) -> FieldResult<DiveSchedule> {
+
+        let schedule = crate::plan::plan_dive(plan)?;
+
+        Ok(schedule)
+    }
+
 }
 
 pub type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;

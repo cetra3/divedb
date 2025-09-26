@@ -1,0 +1,5 @@
+mutation planDive($plan: DivePlanInput!) {
+    planDive(plan: $plan) {
+		...DiveScheduleNode
+	}
+}

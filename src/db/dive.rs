@@ -1,6 +1,8 @@
 use anyhow::Error;
 use chrono::{DateTime, Local};
 use divedb_core::FromRow;
+use tokio_postgres::Transaction;
+use tracing::debug;
 use uuid::Uuid;
 
 use crate::schema::*;
@@ -8,7 +10,7 @@ use crate::schema::*;
 use super::{DbHandle, StatementBuilder};
 
 impl DbHandle {
-    async fn refresh_dives(&self, user_id: Uuid) -> Result<(), Error> {
+    pub async fn refresh_dives(&self, user_id: Uuid) -> Result<(), Error> {
         // Reorders the dive numbers based upon the dates
         let dive_number_query = "
             update dives set dive_number = rn
@@ -30,27 +32,36 @@ impl DbHandle {
         Ok(())
     }
 
-    pub async fn create_dive(&self, user_id: Uuid, request: &CreateDive) -> Result<Dive, Error> {
+    pub async fn create_dive(
+        &self,
+        user_id: Uuid,
+        request: &CreateDive,
+        dive_metrics: Option<Vec<DiveMetric>>,
+    ) -> Result<Dive, Error> {
         let uuid = request.id.unwrap_or_else(Uuid::new_v4);
 
         let result = {
-            let client = self.pool.get().await?;
-            let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published)
-            values ($1, $2, $3, $4, $5, $6, $7, $8)
-            
+            let mut client = self.pool.get().await?;
+
+            let mut conn = client.transaction().await?;
+
+            let query = "insert into dives (id, user_id, date, duration, depth, dive_site_id, description, published, deco_model)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
             on conflict(id) do update
                 set date = excluded.date,
                     dive_site_id = excluded.dive_site_id,
                     duration = excluded.duration,
                     depth = excluded.depth,
                     description = excluded.description,
-                    published = excluded.published
-            
+                    published = excluded.published,
+                    deco_model = excluded.deco_model
+
             returning *";
 
             let depth = request.depth as f32;
 
-            let result = client
+            let result = conn
                 .query_one(
                     query,
                     &[
@@ -62,6 +73,7 @@ impl DbHandle {
                         &request.dive_site_id,
                         &request.description,
                         &request.published,
+                        &request.deco_model,
                     ],
                 )
                 .await?;
@@ -69,17 +81,22 @@ impl DbHandle {
             //update photos
             let photo_query = "update photos set dive_id = $1 where dive_id is null and user_id = $2 and ABS(extract(epoch from (date - $3))) < ($4 + 7200)";
 
-            client
-                .execute(
-                    photo_query,
-                    &[&uuid, &user_id, &request.date, &request.duration],
-                )
-                .await?;
+            conn.execute(
+                photo_query,
+                &[&uuid, &user_id, &request.date, &request.duration],
+            )
+            .await?;
+
+            if let Some(metrics) = dive_metrics {
+                debug!("Adding metrics for:{}", uuid);
+                self.add_metrics(uuid, &metrics, &mut conn).await?;
+                debug!("Finished metrics for:{}", uuid);
+            }
+
+            conn.commit().await?;
 
             result
         };
-
-        self.refresh_dives(user_id).await?;
 
         Dive::from_row(result)
     }
@@ -92,6 +109,18 @@ impl DbHandle {
         sql.add_sql("order by \"date\" desc limit 4");
 
         Dive::from_rows(self.query(sql).await?)
+    }
+
+    pub async fn dive(&self, dive_id: Uuid) -> Result<Dive, Error> {
+        let mut sql = StatementBuilder::new("select * from dives");
+
+        sql.add_param("id = ${}", &dive_id);
+
+        let mut result = Dive::from_rows(self.query(sql).await?)?;
+
+        Ok(result
+            .pop()
+            .ok_or_else(|| anyhow::anyhow!("No dive found"))?)
     }
 
     pub async fn dives(
@@ -148,15 +177,15 @@ impl DbHandle {
     ) -> Result<Option<Dive>, Error> {
         let client = self.pool.get().await?;
         let query = "
-            select 
+            select
                 *
             from
                 (
-                select 
+                select
                     *,
                     ABS(extract(epoch from (date - $2))) as abs_time
                 from
-                    dives 
+                    dives
                 where
                     user_id = $1
                 ) as abs
@@ -170,12 +199,13 @@ impl DbHandle {
             .and_then(|row| Dive::from_row(row).ok()))
     }
 
-    pub async fn add_metrics(&self, dive_id: Uuid, request: &[DiveMetric]) -> Result<(), Error> {
-        let query = "insert into dive_metrics (dive_id, time, depth, pressure, temperature) values ($1, $2, $3, $4, $5)";
-
-        let mut client = self.pool.get().await?;
-
-        let conn = client.transaction().await?;
+    pub async fn add_metrics<'a>(
+        &self,
+        dive_id: Uuid,
+        request: &[DiveMetric],
+        conn: &mut Transaction<'a>,
+    ) -> Result<(), Error> {
+        let query = "insert into dive_metrics (dive_id, time, depth, pressure, temperature, o2, he) values ($1, $2, $3, $4, $5, $6, $7)";
 
         conn.query("delete from dive_metrics where dive_id = $1", &[&dive_id])
             .await?;
@@ -191,12 +221,12 @@ impl DbHandle {
                     &metric.depth,
                     &metric.pressure,
                     &metric.temperature,
+                    &metric.o2,
+                    &metric.he,
                 ],
             )
             .await?;
         }
-
-        conn.commit().await?;
 
         Ok(())
     }
@@ -225,7 +255,7 @@ impl DbHandle {
     pub async fn dive_metrics(&self, dive_id: Uuid) -> Result<Vec<DiveMetric>, Error> {
         let client = self.pool.get().await?;
         let query =
-            "select time, depth, pressure, temperature from dive_metrics where dive_id = $1 order by time asc";
+            "select time, depth, pressure, temperature, o2, he from dive_metrics where dive_id = $1 order by time asc";
         let result = client.query(query, &[&dive_id]).await?;
 
         DiveMetric::from_rows(result)
