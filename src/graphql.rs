@@ -788,7 +788,8 @@ impl Mutation {
             false
         };
 
-        let dive = context.web.handle.create_dive(user.id, &dive).await?;
+        let dive = context.web.handle.create_dive(user.id, &dive, None).await?;
+        context.web.handle.refresh_dives(user.id).await?;
 
         let followers = context
             .web

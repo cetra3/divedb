@@ -596,7 +596,7 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
             let id = dive.id;
             Ok((dive, metrics.remove(&id)))
         })
-        .try_for_each_concurrent(0, |(dive, metrics)| async move {
+        .try_for_each_concurrent(1, |(dive, metrics)| async move {
             let mut should_update = true;
 
             let mut is_published = false;
@@ -646,18 +646,16 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     deco_model: dive.deco_model,
                 };
 
-                handle.create_dive(dive.user_id, &request).await?;
+                handle.create_dive(dive.user_id, &request, metrics).await?;
 
-                if let Some(metrics) = metrics {
-                    debug!("Adding metrics for:{}", dive.id);
-                    handle.add_metrics(dive.id, &metrics).await?;
-                    debug!("Finished metrics for:{}", dive.id);
-                }
+
             }
 
             Ok(()) as Result<(), Error>
         })
         .await?;
+
+    handle.refresh_dives(user_id).await?;
 
     debug!("Finished subsurface sync for {user_id}");
 
