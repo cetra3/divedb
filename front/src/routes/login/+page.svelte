@@ -14,7 +14,8 @@
 
 	let { data }: Props = $props();
 
-	let fbAppId = data.fbAppId;
+	let fbAppId = data.loginInfo.fbAppId;
+	let openidIssuerName = data.loginInfo.openidIssuerName;
 
 	let email = $state('');
 	let password = $state('');
@@ -27,6 +28,19 @@
 	let loading = $state(false);
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbLoginRedirect}&scope=email`;
+
+	const onOauthLogin = (e: Event) => {
+		e.preventDefault();
+		client
+			.oauthAuthorizationUrl()
+			.then((response) => {
+				window.location.href = response.oauthAuthorizationUrl;
+			})
+			.catch((reason: ClientError) => {
+				loading = false;
+				errors = reason.response.errors?.map((val) => val.message).join();
+			});
+	};
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -99,6 +113,12 @@
 		{#if fbAppId != ''}
 			<div class="column col-12 col-sm-12 padding-top">
 				<a href={fbUrl} class="btn btn-primary">Login with Facebook</a>
+			</div>
+		{/if}
+
+		{#if openidIssuerName != ''}
+			<div class="column col-12 col-sm-12 padding-top">
+				<button onclick={onOauthLogin} class="btn btn-primary">Login with {openidIssuerName}</button>
 			</div>
 		{/if}
 	</div>

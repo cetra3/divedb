@@ -1,5 +1,6 @@
 use crate::activitypub::activities::CreatePost;
 use crate::email::Emailer;
+use crate::openid::OpenIDClient;
 use crate::search::{SearchResult, Searcher};
 use crate::{db::DbHandle, facebook::FacebookOauth, schema::*, subsurface, token::TokenEncryptor};
 use crate::{SiteContext, SITE_URL};
@@ -46,6 +47,7 @@ pub struct WebContext {
     pub frontend_url: String,
     pub admin_email: Option<String>,
     pub client: Client,
+    pub openid_client: Option<OpenIDClient>,
 }
 
 impl SchemaContext {
@@ -82,6 +84,16 @@ impl Query {
         let schema_context = context.data::<SchemaContext>()?;
 
         Ok(schema_context.web.facebook.fb_app_id.clone())
+    }
+
+    async fn openid_issuer_name(&self, context: &Context<'_>) -> FieldResult<Option<String>> {
+        let schema_context = context.data::<SchemaContext>()?;
+
+        Ok(schema_context
+            .web
+            .openid_client
+            .as_ref()
+            .map(|client| client.issuer_name()))
     }
 
     async fn categories(&self, context: &Context<'_>) -> FieldResult<Vec<Category>> {
@@ -582,6 +594,64 @@ impl Mutation {
             photo_id: user.photo_id,
             email_verified: user.email_verified,
         })
+    }
+
+    async fn oauth_authorization_url(&self, context: &Context<'_>) -> FieldResult<String> {
+        let context = context.data::<SchemaContext>()?;
+
+        if let Some(ref openid_client) = context.web.openid_client {
+            let url = openid_client.request_authorization_url().await?;
+
+            Ok(url.to_string())
+        } else {
+            Err(anyhow!("OpenID not configured").into())
+        }
+    }
+
+    async fn oauth_callback(
+        &self,
+        context: &Context<'_>,
+        code: String,
+        state: String,
+    ) -> FieldResult<LoginResponse> {
+        let context = context.data::<SchemaContext>()?;
+
+        if let Some(ref openid_client) = context.web.openid_client {
+            let values = openid_client.validate_callback(&code, &state).await?;
+
+            let user = match context.web.handle.user(&values.email).await {
+                Ok(user) => user,
+                Err(_) => {
+                    let user = context
+                        .web
+                        .handle
+                        .new_user(&values.preferred_username, &values.email, None)
+                        .await?;
+                    context.web.handle.mark_email_verified(user.id).await?;
+
+                    user
+                }
+            };
+
+            let email = values.email;
+            let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
+
+            Ok(LoginResponse {
+                id: user.id,
+                email,
+                token,
+                level: user.level,
+                username: user.username,
+                display_name: user.display_name,
+                watermark_location: user.watermark_location,
+                copyright_location: user.copyright_location,
+                description: user.description,
+                photo_id: user.photo_id,
+                email_verified: user.email_verified,
+            })
+        } else {
+            Err(anyhow!("OpenID not configured").into())
+        }
     }
 
     async fn update_settings(
@@ -1334,12 +1404,10 @@ impl Mutation {
     }
 
     async fn plan_dive(&self, plan: DivePlanInput) -> FieldResult<DiveSchedule> {
-
         let schedule = crate::plan::plan_dive(plan)?;
 
         Ok(schedule)
     }
-
 }
 
 pub type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;

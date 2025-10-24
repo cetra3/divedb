@@ -83,6 +83,19 @@ You will need a valid smtp server to send emails for email registration and pass
 * `SMTP_PASSWORD`: The password for your SMTP server (if required)
 * `FROM_ADDR`: The email address to use as the sender for emails. defaults to `contact@divedb.net`
 
+#### Open ID Connect Integration
+
+You can configure an optional OpenID Connect provider for user authentication.
+
+When configuring in your Provider the Redirect URI is always of the form `{SITE_URL}/oauth/callback`.  I.e, `https://divedb.net/oauth/callback`
+
+Configure the following environment variables:
+
+* `OPENID_ISSUER_NAME`: The name of the OpenID issuer.  This is to show a button on the login/register page
+* `OPENID_ISSUER_URL`: The URL of the OpenID issuer i.e, `https://example.com`.  The issuer is required to have a `/.well-known/openid-configuration` endpoint.
+* `OPENID_CLIENT_ID`: The client ID for your OpenID provider.
+* `OPENID_CLIENT_SECRET`: The client secret for your OpenID provider.
+
 #### Facebook Integration
 
 If you want to enable Facebook login, you need to create a Facebook app and configure the following environment variables:

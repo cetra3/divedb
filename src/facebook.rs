@@ -1,16 +1,16 @@
 use anyhow::{anyhow, Error};
+use clap::Parser;
 use reqwest::Url;
 use serde::Deserialize;
-use structopt::StructOpt;
 
 use serde_json::Value;
 use tracing::*;
 
-#[derive(StructOpt, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq)]
 pub struct FacebookOauth {
-    #[structopt(env, default_value = "")]
+    #[arg(long, env, default_value = "")]
     pub fb_app_id: String,
-    #[structopt(env, default_value = "")]
+    #[arg(long, env, default_value = "")]
     fb_app_secret: String,
 }
 

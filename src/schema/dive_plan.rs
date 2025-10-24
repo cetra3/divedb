@@ -2,7 +2,6 @@ use async_graphql::*;
 use dive_deco::{DecoStageType, Gas};
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject)]
 pub struct DivePlanInput {
     pub time: i32,
@@ -49,7 +48,7 @@ pub struct DiveSchedule {
     pub tts: i32,
     pub stages: Vec<DiveStage>,
     pub small_chart: String,
-    pub big_chart: String
+    pub big_chart: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, SimpleObject)]
@@ -69,7 +68,6 @@ pub enum StageType {
     STAY,
     GAS_CHANGE,
 }
-
 
 impl From<DecoStageType> for StageType {
     fn from(value: DecoStageType) -> Self {
