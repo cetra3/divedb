@@ -15,7 +15,7 @@
 
 	let hasValues = $derived(Object.values($categoryStore).flat().length > 0);
 
-	let query: string = $state();
+	let query: string = $state('');
 	let showSearch = $state(false);
 </script>
 
