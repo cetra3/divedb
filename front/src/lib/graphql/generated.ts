@@ -270,6 +270,8 @@ export type Mutation = {
 	newReference: OgReference;
 	newRegion: Region;
 	newSealife: Sealife;
+	oauthAuthorizationUrl: Scalars['String']['output'];
+	oauthCallback: LoginResponse;
 	planDive: DiveSchedule;
 	registerUser: Scalars['Boolean']['output'];
 	removeCategory: Scalars['Boolean']['output'];
@@ -370,6 +372,11 @@ export type MutationNewRegionArgs = {
 
 export type MutationNewSealifeArgs = {
 	sealife: CreateSealife;
+};
+
+export type MutationOauthCallbackArgs = {
+	code: Scalars['String']['input'];
+	state: Scalars['String']['input'];
 };
 
 export type MutationPlanDiveArgs = {
@@ -515,6 +522,7 @@ export type Query = {
 	dives: Array<Dive>;
 	fbAppId: Scalars['String']['output'];
 	feedback: Array<Feedback>;
+	openidIssuerName?: Maybe<Scalars['String']['output']>;
 	photos: Array<Photo>;
 	popularDiveSites: Array<DiveSite>;
 	recentDives: Array<Dive>;
@@ -2009,6 +2017,30 @@ export type MergeDiveSitesMutationVariables = Exact<{
 
 export type MergeDiveSitesMutation = { __typename?: 'Mutation'; mergeDiveSites: boolean };
 
+export type OauthAuthorizationUrlMutationVariables = Exact<{ [key: string]: never }>;
+
+export type OauthAuthorizationUrlMutation = {
+	__typename?: 'Mutation';
+	oauthAuthorizationUrl: string;
+};
+
+export type OauthCallbackMutationVariables = Exact<{
+	code: Scalars['String']['input'];
+	state: Scalars['String']['input'];
+}>;
+
+export type OauthCallbackMutation = {
+	__typename?: 'Mutation';
+	oauthCallback: {
+		__typename?: 'LoginResponse';
+		id: string;
+		email: string;
+		username: string;
+		level: UserLevel;
+		token: string;
+	};
+};
+
 export type RequestResetTokenMutationVariables = Exact<{
 	email: Scalars['String']['input'];
 }>;
@@ -2244,10 +2276,6 @@ export type GetCurrentUserQuery = {
 		emailVerified: boolean;
 	} | null;
 };
-
-export type FbAppIdQueryVariables = Exact<{ [key: string]: never }>;
-
-export type FbAppIdQuery = { __typename?: 'Query'; fbAppId: string };
 
 export type GetFeedbackQueryVariables = Exact<{
 	id?: InputMaybe<Scalars['UUID']['input']>;
@@ -3110,6 +3138,14 @@ export type GetUserQuery = {
 	};
 };
 
+export type LoginInfoQueryVariables = Exact<{ [key: string]: never }>;
+
+export type LoginInfoQuery = {
+	__typename?: 'Query';
+	fbAppId: string;
+	openidIssuerName?: string | null;
+};
+
 export type GetRegionsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetRegionsQuery = {
@@ -3624,6 +3660,19 @@ export const MergeDiveSitesDocument = gql`
 		mergeDiveSites(fromId: $fromId, toId: $toId)
 	}
 `;
+export const OauthAuthorizationUrlDocument = gql`
+	mutation oauthAuthorizationUrl {
+		oauthAuthorizationUrl
+	}
+`;
+export const OauthCallbackDocument = gql`
+	mutation oauthCallback($code: String!, $state: String!) {
+		oauthCallback(code: $code, state: $state) {
+			...CurrentUserToken
+		}
+	}
+	${CurrentUserTokenFragmentDoc}
+`;
 export const RequestResetTokenDocument = gql`
 	mutation requestResetToken($email: String!) {
 		requestResetToken(email: $email)
@@ -3749,11 +3798,6 @@ export const GetCurrentUserDocument = gql`
 		}
 	}
 	${CurrentUserFragmentDoc}
-`;
-export const FbAppIdDocument = gql`
-	query fbAppId {
-		fbAppId
-	}
 `;
 export const GetFeedbackDocument = gql`
 	query getFeedback($id: UUID) {
@@ -3919,6 +3963,12 @@ export const GetUserDocument = gql`
 	${SiteSummaryFragmentDoc}
 	${SealifeSummaryFragmentDoc}
 	${DiveWithMetricsFragmentDoc}
+`;
+export const LoginInfoDocument = gql`
+	query loginInfo {
+		fbAppId
+		openidIssuerName
+	}
 `;
 export const GetRegionsDocument = gql`
 	query getRegions {
@@ -4251,6 +4301,42 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						signal
 					}),
 				'mergeDiveSites',
+				'mutation',
+				variables
+			);
+		},
+		oauthAuthorizationUrl(
+			variables?: OauthAuthorizationUrlMutationVariables,
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
+		): Promise<OauthAuthorizationUrlMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<OauthAuthorizationUrlMutation>({
+						document: OauthAuthorizationUrlDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
+				'oauthAuthorizationUrl',
+				'mutation',
+				variables
+			);
+		},
+		oauthCallback(
+			variables: OauthCallbackMutationVariables,
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
+		): Promise<OauthCallbackMutation> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<OauthCallbackMutation>({
+						document: OauthCallbackDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
+				'oauthCallback',
 				'mutation',
 				variables
 			);
@@ -4597,24 +4683,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				variables
 			);
 		},
-		fbAppId(
-			variables?: FbAppIdQueryVariables,
-			requestHeaders?: GraphQLClientRequestHeaders,
-			signal?: RequestInit['signal']
-		): Promise<FbAppIdQuery> {
-			return withWrapper(
-				(wrappedRequestHeaders) =>
-					client.request<FbAppIdQuery>({
-						document: FbAppIdDocument,
-						variables,
-						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
-						signal
-					}),
-				'fbAppId',
-				'query',
-				variables
-			);
-		},
 		getFeedback(
 			variables?: GetFeedbackQueryVariables,
 			requestHeaders?: GraphQLClientRequestHeaders,
@@ -4791,6 +4859,24 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						signal
 					}),
 				'getUser',
+				'query',
+				variables
+			);
+		},
+		loginInfo(
+			variables?: LoginInfoQueryVariables,
+			requestHeaders?: GraphQLClientRequestHeaders,
+			signal?: RequestInit['signal']
+		): Promise<LoginInfoQuery> {
+			return withWrapper(
+				(wrappedRequestHeaders) =>
+					client.request<LoginInfoQuery>({
+						document: LoginInfoDocument,
+						variables,
+						requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+						signal
+					}),
+				'loginInfo',
 				'query',
 				variables
 			);

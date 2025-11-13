@@ -183,7 +183,7 @@ pub struct CreateDive {
     pub dive_site_id: Option<Uuid>,
     pub description: String,
     pub published: bool,
-    pub deco_model: Option<String>
+    pub deco_model: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, InputObject, Default)]

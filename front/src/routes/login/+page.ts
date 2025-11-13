@@ -1,9 +1,9 @@
 import { client } from '$lib/graphql/client';
 
 export async function load() {
-	let result = await client.fbAppId();
+	let result = await client.loginInfo();
 
 	return {
-		fbAppId: result.fbAppId
+		loginInfo: result
 	};
 }

@@ -1,21 +1,8 @@
-<script module lang="ts">
-	import { client } from '$lib/graphql/client';
-
-	export async function load() {
-		let result = await client.fbAppId();
-
-		return {
-			props: {
-				fbAppId: result.fbAppId
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import FormRow from '$lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
 	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
+	import { client } from '$lib/graphql/client';
 
 	import type { PageData } from './$types';
 
@@ -25,7 +12,8 @@
 
 	let { data }: Props = $props();
 
-	let fbAppId = data.fbAppId;
+	let fbAppId = data.loginInfo.fbAppId;
+	let openidIssuerName = data.loginInfo.openidIssuerName;
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
 
@@ -39,6 +27,20 @@
 	let loading = $state(false);
 
 	let registered = $state(false);
+
+	const onOauthRegister = (e: Event) => {
+		e.preventDefault();
+		client
+			.oauthAuthorizationUrl()
+			.then((response) => {
+				window.location.href = response.oauthAuthorizationUrl;
+			})
+			.catch((reason: ClientError) => {
+				loading = false;
+				errors = reason.response.errors?.map((val) => val.message).join();
+			});
+	};
+
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -130,6 +132,11 @@
 		{#if fbAppId != ''}
 			<div class="column col-12 col-sm-12 padding-top">
 				<a href={fbUrl} class="btn btn-primary">Register with Facebook</a>
+			</div>
+		{/if}
+		{#if openidIssuerName != ''}
+			<div class="column col-12 col-sm-12 padding-top">
+				<button onclick={onOauthRegister} class="btn btn-primary">Register with {openidIssuerName}</button>
 			</div>
 		{/if}
 	</div>
