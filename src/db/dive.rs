@@ -118,9 +118,7 @@ impl DbHandle {
 
         let mut result = Dive::from_rows(self.query(sql).await?)?;
 
-        Ok(result
-            .pop()
-            .ok_or_else(|| anyhow::anyhow!("No dive found"))?)
+        result.pop().ok_or_else(|| anyhow::anyhow!("No dive found"))
     }
 
     pub async fn dives(

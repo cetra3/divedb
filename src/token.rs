@@ -83,7 +83,7 @@ impl FromRequest for Token {
 mod tests {
 
     use crate::token::*;
-    use aes_gcm::aead::{generic_array::GenericArray, NewAead};
+    use aes_gcm::{aead::generic_array::GenericArray, KeyInit};
 
     const KEY: &[u8; 32] = b"Really Secret Key!!!!!!!!!!!!!!!";
     const MESSAGE: &str = "Hello World";

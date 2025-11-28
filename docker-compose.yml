@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: divedb
       POSTGRES_DB: divedb
     volumes:
-      - divedb-db:/var/lib/postgresql/data
+      - divedb-db:/var/lib/postgresql
     ports:
       - "5432:5432"
   backend:

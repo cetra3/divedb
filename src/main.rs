@@ -12,6 +12,7 @@ use async_graphql::{
     http::{playground_source, GraphQLPlaygroundConfig},
     CacheControl,
 };
+use clap::Parser;
 use facebook::FacebookOauth;
 use foyer::{DirectFsDeviceOptions, Engine, HybridCacheBuilder, LargeEngineOptions};
 use once_cell::sync::Lazy;
@@ -23,7 +24,6 @@ use std::{
     str::FromStr,
     sync::Arc,
 };
-use structopt::StructOpt;
 use token::Token;
 use tracing::*;
 use tracing_subscriber::{prelude::*, EnvFilter};
@@ -37,25 +37,27 @@ pub mod escape;
 pub mod facebook;
 pub mod frontend;
 pub mod graphql;
+pub mod openid;
 mod photos;
+pub mod plan;
 pub mod schema;
 pub mod search;
 mod seo;
 pub mod subsurface;
 pub mod token;
-pub mod plan;
 
 use db::DbHandle;
 use graphql::*;
 use schema::User;
 
-use aes_gcm::aead::NewAead;
 use aes_gcm::Aes256Gcm;
+use aes_gcm::KeyInit;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 use crate::{
     chart::{png_chart, svg_chart},
     email::Emailer,
+    openid::{OpenIDClient, OpenIDSettings},
     photos::{image_dims, resize_image},
     schema::{DiveSiteBatcher, Photo, PhotoQuery, SealifeBatcher},
     search::Searcher,
@@ -63,11 +65,11 @@ use crate::{
 };
 
 // Sets up the postgres connection as given by `-c`
-#[derive(StructOpt, Clone, Debug, PartialEq)]
-#[structopt(name = "divedb", about = "divedb Demo")]
+#[derive(Parser, Clone, Debug, PartialEq)]
+#[command(name = "divedb", about = "divedb Demo")]
 pub struct ConfigContext {
-    #[structopt(
-        short = "c",
+    #[arg(
+        short = 'c',
         long = "connect_url",
         help = "PostgreSQL Connection URL",
         default_value = "postgres://divedb:divedb@localhost",
@@ -75,57 +77,63 @@ pub struct ConfigContext {
     )]
     connect_url: String,
 
-    #[structopt(short = "w", help = "Write out schema to schema.grapqhl", long)]
+    #[arg(short = 'w', help = "Write out schema to schema.grapqhl", long)]
     write_schema: bool,
 
-    #[structopt(short = "r", help = "Refresh all thumbnails/photos", long)]
+    #[arg(short = 'r', help = "Refresh all thumbnails/photos", long)]
     refresh_photos: bool,
 
-    #[structopt(short = "l", help = "Listen Address", default_value = "[::]:3333", env)]
+    #[arg(short = 'l', help = "Listen Address", default_value = "[::]:3333", env)]
     listen_address: String,
 
-    #[structopt(default_value = "cache", env)]
+    #[arg(long, default_value = "cache", env)]
     cache_dir: String,
 
-    #[structopt(default_value = "http://localhost:3000", env)]
+    #[arg(long, default_value = "http://localhost:3000", env)]
     frontend_url: String,
 
-    #[structopt(env)]
+    #[arg(long, env)]
     admin_email: Option<String>,
 
-    #[structopt(flatten)]
+    #[arg(long, env)]
+    disable_email_login: bool,
+
+    #[command(flatten)]
     facebook: FacebookOauth,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     site_context: SiteContext,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     email_settings: EmailSettings,
+
+    #[command(flatten)]
+    open_id_settings: Option<OpenIDSettings>,
 }
 
-#[derive(StructOpt, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq)]
 pub struct SiteContext {
-    #[structopt(env)]
+    #[arg(long, env)]
     pub secret_key: Option<String>,
 }
 
 pub static SITE_URL: Lazy<String> =
     Lazy::new(|| std::env::var("SITE_URL").unwrap_or("https://divedb.net".into()));
 
-#[derive(StructOpt, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq)]
 pub struct EmailSettings {
-    #[structopt(env, default_value = "localhost")]
+    #[arg(long, env, default_value = "localhost")]
     pub smtp_host: String,
-    #[structopt(env, default_value = "25")]
+    #[arg(long, env, default_value = "25")]
     pub smtp_port: u16,
-    #[structopt(env, default_value = "contact@divedb.net")]
+    #[arg(long, env, default_value = "contact@divedb.net")]
     pub from_addr: String,
-    #[structopt(env)]
-    pub smtp_username: Option<String>,
-    #[structopt(env)]
-    pub smtp_password: Option<String>,
-    #[structopt(env, default_value = "tls")]
+    #[arg(long, env, default_value = "tls")]
     pub smtp_security: EmailSecurity,
+    #[arg(long, env)]
+    pub smtp_username: Option<String>,
+    #[arg(long, env)]
+    pub smtp_password: Option<String>,
 }
 
 impl FromStr for EmailSecurity {
@@ -205,7 +213,7 @@ async fn main() -> Result<(), Error> {
         .init();
 
     // Grab the connect_url from the args
-    let config = ConfigContext::from_args();
+    let config = ConfigContext::parse();
 
     if config.write_schema {
         tokio::fs::write("schema.graphql", schema().sdl()).await?;
@@ -294,6 +302,12 @@ async fn main() -> Result<(), Error> {
         .build()
         .unwrap();
 
+    let openid_client = if let Some(ref open_id_settings) = config.open_id_settings {
+        Some(OpenIDClient::new(open_id_settings, client.clone()).await?)
+    } else {
+        None
+    };
+
     let web_context = Arc::new(WebContext {
         handle,
         rate_limiter,
@@ -308,6 +322,8 @@ async fn main() -> Result<(), Error> {
         frontend_url: config.frontend_url,
         client: client.clone(),
         admin_email: config.admin_email,
+        openid_client,
+        disable_email_login: config.disable_email_login,
     });
 
     let domain = site_url

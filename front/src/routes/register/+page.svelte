@@ -1,21 +1,8 @@
-<script module lang="ts">
-	import { client } from '$lib/graphql/client';
-
-	export async function load() {
-		let result = await client.fbAppId();
-
-		return {
-			props: {
-				fbAppId: result.fbAppId
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import FormRow from '$lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
 	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
+	import { client } from '$lib/graphql/client';
 
 	import type { PageData } from './$types';
 
@@ -25,7 +12,9 @@
 
 	let { data }: Props = $props();
 
-	let fbAppId = data.fbAppId;
+	let fbAppId = data.loginInfo.fbAppId;
+	let openidIssuerName = data.loginInfo.openidIssuerName;
+	let disableEmailLogin = data.loginInfo.disableEmailLogin;
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
 
@@ -39,6 +28,19 @@
 	let loading = $state(false);
 
 	let registered = $state(false);
+
+	const onOauthRegister = (e: Event) => {
+		e.preventDefault();
+		client
+			.oauthAuthorizationUrl()
+			.then((response) => {
+				window.location.href = response.oauthAuthorizationUrl;
+			})
+			.catch((reason: ClientError) => {
+				loading = false;
+				errors = reason.response.errors?.map((val) => val.message).join();
+			});
+	};
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -57,7 +59,9 @@
 			});
 	};
 
-	let canSave = $derived(username != '' && email != '' && password != '' && password == confirmPassword);
+	let canSave = $derived(
+		username != '' && email != '' && password != '' && password == confirmPassword
+	);
 </script>
 
 <svelte:head>
@@ -70,40 +74,49 @@
 			<h1 class="page-title">Register</h1>
 		</div>
 	</div>
-	<div class="columns">
-		<div class="column col-12 col-sm-12">
-			<p>Register below using your email &amp; password</p>
+	{#if !disableEmailLogin}
+		<div class="columns">
+			<div class="column col-12 col-sm-12">
+				<p>Register below using your email &amp; password</p>
+			</div>
 		</div>
-	</div>
+	{/if}
 	<div class="columns">
-		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" onsubmit={onSubmit}>
-				<FormRow name="Username">
-					<input type="text" placeholder="Username" bind:value={username} class="form-input" />
-				</FormRow>
-				<FormRow name="Email">
-					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
-				</FormRow>
-				<FormRow name="Password">
-					<input type="password" placeholder="Password" bind:value={password} class="form-input" />
-				</FormRow>
-				<FormRow name="Confirm Password">
-					<input
-						type="password"
-						placeholder="Confirm Password"
-						bind:value={confirmPassword}
-						class="form-input"
-					/>
-				</FormRow>
-				<FormRow name="">
-					<button
-						class="btn btn-primary"
-						type="submit"
-						disabled={canSave == false || registered == true}>Register</button
-					>
-				</FormRow>
-			</form>
-		</div>
+		{#if !disableEmailLogin}
+			<div class="column col-12 col-sm-12">
+				<form class="form-horizontal" onsubmit={onSubmit}>
+					<FormRow name="Username">
+						<input type="text" placeholder="Username" bind:value={username} class="form-input" />
+					</FormRow>
+					<FormRow name="Email">
+						<input type="text" placeholder="Email" bind:value={email} class="form-input" />
+					</FormRow>
+					<FormRow name="Password">
+						<input
+							type="password"
+							placeholder="Password"
+							bind:value={password}
+							class="form-input"
+						/>
+					</FormRow>
+					<FormRow name="Confirm Password">
+						<input
+							type="password"
+							placeholder="Confirm Password"
+							bind:value={confirmPassword}
+							class="form-input"
+						/>
+					</FormRow>
+					<FormRow name="">
+						<button
+							class="btn btn-primary"
+							type="submit"
+							disabled={canSave == false || registered == true}>Register</button
+						>
+					</FormRow>
+				</form>
+			</div>
+		{/if}
 		{#if registered}
 			<div class="column col-12">
 				<div class="toast">
@@ -130,6 +143,13 @@
 		{#if fbAppId != ''}
 			<div class="column col-12 col-sm-12 padding-top">
 				<a href={fbUrl} class="btn btn-primary">Register with Facebook</a>
+			</div>
+		{/if}
+		{#if openidIssuerName != ''}
+			<div class="column col-12 col-sm-12 padding-top">
+				<button onclick={onOauthRegister} class="btn btn-primary"
+					>Register with {openidIssuerName}</button
+				>
 			</div>
 		{/if}
 	</div>

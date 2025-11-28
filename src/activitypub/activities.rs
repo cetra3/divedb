@@ -4,9 +4,7 @@ use activitypub_federation::{
     activity_sending::SendActivityTask,
     config::Data,
     fetch::object_id::ObjectId,
-    kinds::activity::{
-        AcceptType, CreateType, DeleteType, FollowType, LikeType, UndoType, UpdateType,
-    },
+    kinds::activity::{AcceptType, CreateType, FollowType, LikeType, UndoType, UpdateType},
     protocol::{context::WithContext, helpers::deserialize_one_or_many},
     traits::{ActivityHandler, Actor, Object},
 };
@@ -237,18 +235,6 @@ pub struct CreatePost {
     object: Note,
     #[serde(rename = "type")]
     kind: CreateOrUpdateType,
-    id: Url,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct DeletePost {
-    actor: ObjectId<User>,
-    #[serde(deserialize_with = "deserialize_one_or_many")]
-    to: Vec<Url>,
-    object: Url,
-    #[serde(rename = "type")]
-    kind: DeleteType,
     id: Url,
 }
 
