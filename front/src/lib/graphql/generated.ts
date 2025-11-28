@@ -518,6 +518,7 @@ export type Query = {
 	categories: Array<Category>;
 	categoryValues: Array<CategoryValue>;
 	currentUser?: Maybe<LoginResponse>;
+	disableEmailLogin: Scalars['Boolean']['output'];
 	diveSites: Array<DiveSite>;
 	dives: Array<Dive>;
 	fbAppId: Scalars['String']['output'];
@@ -3144,6 +3145,7 @@ export type LoginInfoQuery = {
 	__typename?: 'Query';
 	fbAppId: string;
 	openidIssuerName?: string | null;
+	disableEmailLogin: boolean;
 };
 
 export type GetRegionsQueryVariables = Exact<{ [key: string]: never }>;
@@ -3968,6 +3970,7 @@ export const LoginInfoDocument = gql`
 	query loginInfo {
 		fbAppId
 		openidIssuerName
+		disableEmailLogin
 	}
 `;
 export const GetRegionsDocument = gql`

@@ -302,6 +302,7 @@ type Query {
 	siteUrl: String!
 	fbAppId: String!
 	openidIssuerName: String
+	disableEmailLogin: Boolean!
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
 	search(query: String!, offset: Int): [SearchResult!]!

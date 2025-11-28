@@ -95,6 +95,9 @@ pub struct ConfigContext {
     #[arg(long, env)]
     admin_email: Option<String>,
 
+    #[arg(long, env)]
+    disable_email_login: bool,
+
     #[command(flatten)]
     facebook: FacebookOauth,
 
@@ -320,6 +323,7 @@ async fn main() -> Result<(), Error> {
         client: client.clone(),
         admin_email: config.admin_email,
         openid_client,
+        disable_email_login: config.disable_email_login,
     });
 
     let domain = site_url

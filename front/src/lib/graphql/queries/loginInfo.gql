@@ -1,4 +1,5 @@
 query loginInfo {
 	fbAppId
 	openidIssuerName
+	disableEmailLogin
 }

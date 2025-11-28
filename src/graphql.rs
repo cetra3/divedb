@@ -48,6 +48,7 @@ pub struct WebContext {
     pub admin_email: Option<String>,
     pub client: Client,
     pub openid_client: Option<OpenIDClient>,
+    pub disable_email_login: bool,
 }
 
 impl SchemaContext {
@@ -94,6 +95,12 @@ impl Query {
             .openid_client
             .as_ref()
             .map(|client| client.issuer_name()))
+    }
+
+    async fn disable_email_login(&self, context: &Context<'_>) -> FieldResult<bool> {
+        let schema_context = context.data::<SchemaContext>()?;
+
+        Ok(schema_context.web.disable_email_login)
     }
 
     async fn categories(&self, context: &Context<'_>) -> FieldResult<Vec<Category>> {
