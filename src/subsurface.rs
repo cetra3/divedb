@@ -621,15 +621,13 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                     || existing_dive.deco_model != dive.deco_model
                 {
                     debug!("Changes to dive: before: {existing_dive:?}, after: {dive:?}");
+                } else if !handle.has_metrics(dive.id).await?
+                    && metrics.as_ref().is_some_and(|m| !m.is_empty())
+                {
+                    debug!("Dive has no metrics: {}, updating", dive.id);
                 } else {
-                    if !handle.has_metrics(dive.id).await?
-                        && metrics.as_ref().is_some_and(|m| !m.is_empty())
-                    {
-                        debug!("Dive has no metrics: {}, updating", dive.id);
-                    } else {
-                        debug!("Dive exists:{}, skipping", existing_dive.id);
-                        should_update = false;
-                    }
+                    debug!("Dive exists:{}, skipping", existing_dive.id);
+                    should_update = false;
                 }
             }
 
@@ -647,8 +645,6 @@ pub async fn import_repository(user_id: Uuid, repo: Repository, db: DbHandle) ->
                 };
 
                 handle.create_dive(dive.user_id, &request, metrics).await?;
-
-
             }
 
             Ok(()) as Result<(), Error>

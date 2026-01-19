@@ -218,6 +218,8 @@ type Mutation {
 	fbRegisterUser(username: String!, redirectUri: String!, code: String!): LoginResponse!
 	login(email: String!, password: String!): LoginResponse!
 	fbLogin(redirectUri: String!, code: String!): LoginResponse!
+	oauthAuthorizationUrl: String!
+	oauthCallback(code: String!, state: String!): LoginResponse!
 	updateSettings(displayName: String, watermarkLocation: OverlayLocation!, copyrightLocation: OverlayLocation, description: String!, photoId: UUID): LoginResponse
 	syncSubsurface(email: String!, password: String!): Boolean!
 	addFeedback(feedback: String!): Feedback!
@@ -299,6 +301,8 @@ type PublicUserInfo {
 type Query {
 	siteUrl: String!
 	fbAppId: String!
+	openidIssuerName: String
+	disableEmailLogin: Boolean!
 	categories: [Category!]!
 	categoryValues: [CategoryValue!]!
 	search(query: String!, offset: Int): [SearchResult!]!

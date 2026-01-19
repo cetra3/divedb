@@ -96,12 +96,9 @@ pub fn plan_dive(dive_plan: DivePlanInput) -> Result<DiveSchedule> {
         cur_time += stage.duration.as_seconds() as i32;
 
         let (o2, he) = if stage.stage_type == DecoStageType::GasSwitch {
-
             let gas = GasOutput::from(stage.gas);
 
-
             (Some(gas.o2), Some(gas.he))
-
         } else {
             (None, None)
         };

@@ -1,0 +1,5 @@
+mutation oauthCallback($code: String!, $state: String!) {
+	oauthCallback(code: $code, state: $state) {
+		...CurrentUserToken
+	}
+}

@@ -14,7 +14,9 @@
 
 	let { data }: Props = $props();
 
-	let fbAppId = data.fbAppId;
+	let fbAppId = data.loginInfo.fbAppId;
+	let openidIssuerName = data.loginInfo.openidIssuerName;
+	let disableEmailLogin = data.loginInfo.disableEmailLogin;
 
 	let email = $state('');
 	let password = $state('');
@@ -27,6 +29,19 @@
 	let loading = $state(false);
 
 	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbLoginRedirect}&scope=email`;
+
+	const onOauthLogin = (e: Event) => {
+		e.preventDefault();
+		client
+			.oauthAuthorizationUrl()
+			.then((response) => {
+				window.location.href = response.oauthAuthorizationUrl;
+			})
+			.catch((reason: ClientError) => {
+				loading = false;
+				errors = reason.response.errors?.map((val) => val.message).join();
+			});
+	};
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -60,25 +75,34 @@
 			<h1 class="page-title">Login</h1>
 		</div>
 	</div>
-	<div class="columns">
-		<div class="column col-12 col-sm-12">
-			<p>Login below using your email &amp; password</p>
+	{#if !disableEmailLogin}
+		<div class="columns">
+			<div class="column col-12 col-sm-12">
+				<p>Login below using your email &amp; password</p>
+			</div>
 		</div>
-	</div>
+	{/if}
 	<div class="columns">
-		<div class="column col-12 col-sm-12">
-			<form class="form-horizontal" onsubmit={onSubmit}>
-				<FormRow name="Email">
-					<input type="text" placeholder="Email" bind:value={email} class="form-input" />
-				</FormRow>
-				<FormRow name="Password">
-					<input type="password" placeholder="Password" bind:value={password} class="form-input" />
-				</FormRow>
-				<FormRow name="">
-					<button class="btn btn-primary" type="submit" disabled={canSave == false}>Login</button>
-				</FormRow>
-			</form>
-		</div>
+		{#if !disableEmailLogin}
+			<div class="column col-12 col-sm-12">
+				<form class="form-horizontal" onsubmit={onSubmit}>
+					<FormRow name="Email">
+						<input type="text" placeholder="Email" bind:value={email} class="form-input" />
+					</FormRow>
+					<FormRow name="Password">
+						<input
+							type="password"
+							placeholder="Password"
+							bind:value={password}
+							class="form-input"
+						/>
+					</FormRow>
+					<FormRow name="">
+						<button class="btn btn-primary" type="submit" disabled={canSave == false}>Login</button>
+					</FormRow>
+				</form>
+			</div>
+		{/if}
 		{#if errors}
 			<div class="toast">{errors}</div>
 		{/if}
@@ -90,15 +114,25 @@
 
 		<div class="column col-12 col-sm-12 padding-top">
 			<p>Don't have an account? <a href="/register?redirect={redirect}">Register here</a>.</p>
-			<p>
-				Forgot your password? <a href="/forgot-password?redirect={redirect}">Reset Your Password</a
-				>.
-			</p>
+			{#if !disableEmailLogin}
+				<p>
+					Forgot your password? <a href="/forgot-password?redirect={redirect}"
+						>Reset Your Password</a
+					>.
+				</p>
+			{/if}
 		</div>
 
 		{#if fbAppId != ''}
 			<div class="column col-12 col-sm-12 padding-top">
 				<a href={fbUrl} class="btn btn-primary">Login with Facebook</a>
+			</div>
+		{/if}
+
+		{#if openidIssuerName != ''}
+			<div class="column col-12 col-sm-12 padding-top">
+				<button onclick={onOauthLogin} class="btn btn-primary">Login with {openidIssuerName}</button
+				>
 			</div>
 		{/if}
 	</div>
