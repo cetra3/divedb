@@ -6,7 +6,6 @@
 	import type { RegionNodeFragment } from '$lib/graphql/generated';
 	import type { PageData } from './$types';
 	import type { LatLngBoundsExpression } from 'leaflet';
-	let diveSites = data.diveSites;
 
 	import { page } from '$app/stores';
 
@@ -16,6 +15,7 @@
 	}
 
 	let { data }: Props = $props();
+	let diveSites = $derived(data.diveSites);
 
 	let DiveMap: any = $state();
 

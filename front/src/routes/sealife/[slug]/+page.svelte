@@ -15,11 +15,11 @@
 
 	let { data }: Props = $props();
 	let sealife = $state(data.sealife);
-	let mdDesc = data.mdDesc;
-	let siteUrl = data.siteUrl;
-	let categories = data.categories;
+	let mdDesc = $derived(data.mdDesc);
+	let siteUrl = $derived(data.siteUrl);
+	let categories = $derived(data.categories);
 
-	let photos = sealife?.latestPhotos;
+	let photos = $derived(sealife?.latestPhotos);
 
 	let loading = $state(false);
 	let changed = $state(false);

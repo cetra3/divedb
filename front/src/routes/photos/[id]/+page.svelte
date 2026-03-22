@@ -13,11 +13,11 @@
 
 	let { data }: Props = $props();
 
-	let photo = data.photo;
-	let relatedPhotos = data.relatedPhotos;
-	let query = data.query;
-	let relatedTitle = data.relatedTitle;
-	let siteUrl = data.siteUrl;
+	let photo = $derived(data.photo);
+	let relatedPhotos = $derived(data.relatedPhotos);
+	let query = $derived(data.query);
+	let relatedTitle = $derived(data.relatedTitle);
+	let siteUrl = $derived(data.siteUrl);
 
 	let title = $derived(photo ? imageAlt(photo) : ' Photo');
 	let titleWithDate = $derived(photo ? imageAlt(photo, true) : ' Photo');

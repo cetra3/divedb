@@ -4,7 +4,6 @@
 	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
 	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
 	import type { PageData } from './$types';
-	let diveSite = data.diveSite;
 	import { session } from '$lib/session';
 	import { client } from '$lib/graphql/client';
 	import CheckLogin from '$lib/components/CheckLogin.svelte';
@@ -13,6 +12,7 @@
 	}
 
 	let { data }: Props = $props();
+	let diveSite = $derived(data.diveSite);
 
 	let showRemove = $state(false);
 
