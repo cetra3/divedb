@@ -145,7 +145,7 @@
 				<a href={fbUrl} class="btn btn-primary">Register with Facebook</a>
 			</div>
 		{/if}
-		{#if openidIssuerName != ''}
+		{#if openidIssuerName}
 			<div class="column col-12 col-sm-12 padding-top">
 				<button onclick={onOauthRegister} class="btn btn-primary"
 					>Register with {openidIssuerName}</button

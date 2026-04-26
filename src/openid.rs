@@ -19,14 +19,15 @@ use url::Url;
 use crate::SITE_URL;
 
 #[derive(Parser, Clone, Debug, PartialEq)]
+#[group(requires_all = ["issuer_name", "issuer_url", "client_id", "client_secret"])]
 pub struct OpenIDSettings {
-    #[arg(long, env = "OPENID_ISSUER_NAME")]
+    #[arg(long, env = "OPENID_ISSUER_NAME", required = false)]
     pub issuer_name: String,
-    #[arg(long, env = "OPENID_ISSUER_URL")]
+    #[arg(long, env = "OPENID_ISSUER_URL", required = false)]
     pub issuer_url: String,
-    #[arg(long, env = "OPENID_CLIENT_ID")]
+    #[arg(long, env = "OPENID_CLIENT_ID", required = false)]
     pub client_id: String,
-    #[arg(long, env = "OPENID_CLIENT_SECRET")]
+    #[arg(long, env = "OPENID_CLIENT_SECRET", required = false)]
     pub client_secret: String,
 }
 

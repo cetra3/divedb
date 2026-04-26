@@ -129,7 +129,7 @@
 			</div>
 		{/if}
 
-		{#if openidIssuerName != ''}
+		{#if openidIssuerName}
 			<div class="column col-12 col-sm-12 padding-top">
 				<button onclick={onOauthLogin} class="btn btn-primary">Login with {openidIssuerName}</button
 				>
