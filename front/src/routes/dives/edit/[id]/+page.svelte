@@ -60,12 +60,9 @@
 		{/key}
 		{#if showRemove}
 			<div class={`modal active`}>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
-						<!-- svelte-ignore a11y_missing_content -->
-						<!-- svelte-ignore a11y_invalid_attribute -->
 						<a
 							href="javascript:void(0)"
 							class="btn btn-clear float-right"

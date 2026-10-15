@@ -114,7 +114,6 @@
 			<a href={reference.url}>{reference.title}</a>
 			<em class="text-muted text-small"> - {urlDisplay(reference.url)}</em>
 			{#if showForm}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<button
 					class="btn btn-sm"
 					onclick={() => {

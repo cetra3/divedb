@@ -54,8 +54,6 @@
 		<source type="image/webp" srcset="/api/photos/webp/{id}" />
 		<source type="image/jpeg" srcset="/api/photos/jpeg/{id}" />
 	{/if}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<img
 		width={newWidth}
 		height={newHeight}

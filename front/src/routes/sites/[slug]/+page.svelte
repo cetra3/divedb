@@ -183,8 +183,6 @@
 				</h1>
 			</div>
 			<div class="column col-12 col-sm-12">
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<ImageList {photos} query={{ diveSite: diveSite.id }}>
 					{#snippet photoLabel(photo)}
 						{#if diveSite?.photoId !== photo}

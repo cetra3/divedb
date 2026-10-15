@@ -133,7 +133,6 @@
 					<div class="columns">
 						{#if photoId}
 							<div class="column col-3 col-sm-6">
-								<!-- svelte-ignore a11y_missing_attribute -->
 								<img
 									src={`/api/photos/jpeg/${photoId}`}
 									class="img-edit img-responsive"

@@ -145,8 +145,6 @@
 				<i class="icon icon-menu"></i>
 			</button>
 			<div class="dropdown hide-small">
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a class="btn btn-link dropdown-toggle" tabindex="0"
 					>Dives <i class="icon icon-caret"></i></a
 				>
@@ -161,8 +159,6 @@
 				</ul>
 			</div>
 			<div class="dropdown hide-small">
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a class="btn btn-link dropdown-toggle" tabindex="0"
 					>Sites <i class="icon icon-caret"></i></a
 				>
@@ -173,8 +169,6 @@
 			</div>
 			{#if $session.loggedIn}
 				<div class="dropdown hide-small">
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<!-- svelte-ignore a11y_missing_attribute -->
 					<a class="btn btn-link dropdown-toggle" tabindex="0"
 						>Photos <i class="icon icon-caret"></i></a
 					>

@@ -106,8 +106,6 @@
 			<UserLabel user={comment.user} />
 			<span class="label">{new Date(comment.date).toLocaleString()}</span>
 			{#if $session.user?.id != undefined && $session.user.id === comment.user.id}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span
 					onclick={() => {
 						if (toRemove !== comment.id) {

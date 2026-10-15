@@ -99,7 +99,6 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
 		onmouseenter={() => (dropDownFocused = true)}
 		onmouseleave={() => (dropDownFocused = false)}
@@ -109,7 +108,6 @@
 		<ul class="menu" class:above-input={belowInput == false}>
 			{#each results as result, index}
 				<li class="menu-item">
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						class:active={index == idx}
 						href="javascript:void(0)"

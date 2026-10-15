@@ -109,7 +109,6 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
 		onmouseenter={() => (dropDownFocused = true)}
 		onmouseleave={() => (dropDownFocused = false)}
@@ -118,7 +117,6 @@
 	>
 		<div class="menu sealife-menu">
 			{#each results as result, index}
-				<!-- svelte-ignore a11y_invalid_attribute -->
 				<a
 					class="sealife-item"
 					class:active={index == idx}
@@ -132,7 +130,6 @@
 						dropDownFocused = false;
 					}}
 				>
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<div class="sealife-photo">
 						{#if result.photoId}
 							<Photo id={result.photoId} />

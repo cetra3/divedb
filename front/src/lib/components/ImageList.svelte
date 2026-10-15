@@ -156,8 +156,6 @@
 {#if showModal}
 	<div class="photo-modal">
 		<div class="modal-close">
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<span class="pointer" onclick={closeModal}>✕ </span>
 		</div>
 		<div
@@ -192,8 +190,6 @@
 		</div>
 		<div class="photo-modal-toolbar">
 			<PhotoLabels photo={photos[curIdx]}>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span
 					class="pointer label label-secondary"
 					onclick={() => {

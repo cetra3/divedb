@@ -106,7 +106,6 @@
 					</span>
 				{/if}
 				<span class="form-input-hint">
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						href="javascript:void(0)"
 						onclick={() => {
