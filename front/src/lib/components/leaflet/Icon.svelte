@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { getContext } from 'svelte';
 	import L from 'leaflet';
 
@@ -12,9 +10,9 @@
 
 	let { options = {} }: Props = $props();
 
-	let icon: L.Icon = $state();
+	let icon: L.Icon;
 
-	run(() => {
+	$effect.pre(() => {
 		icon = L.icon(options);
 		getMarker().setIcon(icon);
 	});

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { createEventDispatcher, setContext } from 'svelte';
 	import L, { type LatLngBoundsExpression } from 'leaflet';
 
@@ -26,9 +24,8 @@
 		getMap: () => map
 	});
 
-	run(() => {
+	$effect(() => {
 		if (fitBounds && map) {
-			console.log('Changing bounds,', fitBounds);
 			map.fitBounds(fitBounds);
 		}
 	});
