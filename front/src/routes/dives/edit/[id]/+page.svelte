@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import EditDive from '$lib/components/forms/EditDive.svelte';
-	import { client } from '$lib/graphql/client';
-	import type { CreateDive } from '$lib/graphql/generated';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import EditDive from '#lib/components/forms/EditDive.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import type { CreateDive } from '#lib/graphql/generated.js';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
 
 	import type { PageData } from './$types';
 	interface Props {

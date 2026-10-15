@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import Search from '$lib/components/Search.svelte';
-	import SealifeSummary from '$lib/components/SealifeSummary.svelte';
-	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
-	import CategoryPicker from '$lib/components/categories/CategoryPicker.svelte';
-	import { categoryStore } from '$lib/category';
+	import Search from '#lib/components/Search.svelte';
+	import SealifeSummary from '#lib/components/SealifeSummary.svelte';
+	import SealifeIcon from '#lib/icons/SealifeIcon.svelte';
+	import CategoryPicker from '#lib/components/categories/CategoryPicker.svelte';
+	import { categoryStore } from '#lib/category.js';
 	interface Props {
 		data: PageData;
 	}

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { CreateDive, DiveNodeFragment } from '$lib/graphql/generated';
-	import formatMinutes from '$lib/util/formatMinutes';
+	import type { CreateDive, DiveNodeFragment } from '#lib/graphql/generated.js';
+	import formatMinutes from '#lib/util/formatMinutes.js';
 	import FormRow from '../FormRow.svelte';
 	import ChooseSite from './ChooseSite.svelte';
 	import Markdown from './Markdown.svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	interface Props {
 		dive: CreateDive | DiveNodeFragment;
 		onSave: (site: CreateDive) => void;
@@ -20,7 +20,9 @@
 
 	let date = new Date(dive.date);
 
-	let dateValue = $state(`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`);
+	let dateValue = $state(
+		`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
+	);
 	let timeValue = $state(`${pad2(date.getHours())}:${pad2(date.getMinutes())}`);
 
 	let duration = $state(formatMinutes(dive.duration));
@@ -28,17 +30,19 @@
 	let dateParts = $derived(dateValue.split('-'));
 	let timeParts = $derived(timeValue.split(':'));
 
-	let canSave =
-		$derived(dive.depth != 0 &&
-		dateParts.length == 3 &&
-		timeParts.length == 2 &&
-		duration.match(durationRegex) != undefined);
+	let canSave = $derived(
+		dive.depth != 0 &&
+			dateParts.length == 3 &&
+			timeParts.length == 2 &&
+			duration.match(durationRegex) != undefined
+	);
 
-	let isEditor =
-		$derived($session.user?.level == 'ADMIN' ||
-		$session.user?.level == 'EDITOR' ||
-		!('userId' in dive) ||
-		($session.user?.id != undefined && $session.user.id === dive.userId));
+	let isEditor = $derived(
+		$session.user?.level == 'ADMIN' ||
+			$session.user?.level == 'EDITOR' ||
+			!('userId' in dive) ||
+			($session.user?.id != undefined && $session.user.id === dive.userId)
+	);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();

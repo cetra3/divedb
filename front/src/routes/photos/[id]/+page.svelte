@@ -1,10 +1,10 @@
 <script lang="ts">
-	import PhotoLabels from '$lib/components/photos/PhotoLabels.svelte';
+	import PhotoLabels from '#lib/components/photos/PhotoLabels.svelte';
 
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import imageAlt from '$lib/util/imageAlt';
-	import ImageList from '$lib/components/ImageList.svelte';
-	import Photo from '$lib/components/photos/Photo.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import imageAlt from '#lib/util/imageAlt.js';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import Photo from '#lib/components/photos/Photo.svelte';
 
 	import type { PageData } from './$types';
 	interface Props {

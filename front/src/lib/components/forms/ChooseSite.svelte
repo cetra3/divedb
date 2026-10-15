@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import { client } from '$lib/graphql/client';
-	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { SearchResultNodeFragment } from '#lib/graphql/generated.js';
 	import { onMount } from 'svelte';
 
 	let focused = $state(false);
 	let dropDownFocused = $state(false);
-
 
 	interface Props {
 		belowInput?: boolean;

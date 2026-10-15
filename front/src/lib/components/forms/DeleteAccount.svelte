@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	interface Props {

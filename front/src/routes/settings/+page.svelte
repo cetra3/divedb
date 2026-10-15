@@ -1,15 +1,15 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
+	import FormRow from '#lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
-	import type { CurrentUserFragment, PhotoSummaryFragment } from '$lib/graphql/generated';
-	import { OverlayLocation } from '$lib/graphql/generated';
-	import DeleteAccount from '$lib/components/forms/DeleteAccount.svelte';
-	import ChangePassword from '$lib/components/forms/ChangePassword.svelte';
+	import type { CurrentUserFragment, PhotoSummaryFragment } from '#lib/graphql/generated.js';
+	import { OverlayLocation } from '#lib/graphql/generated.js';
+	import DeleteAccount from '#lib/components/forms/DeleteAccount.svelte';
+	import ChangePassword from '#lib/components/forms/ChangePassword.svelte';
 	import { onMount } from 'svelte';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
-	import VerifyEmail from '$lib/components/forms/VerifyEmail.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import ImageUpload from '#lib/components/forms/ImageUpload.svelte';
+	import VerifyEmail from '#lib/components/forms/VerifyEmail.svelte';
 	let currentUser: CurrentUserFragment | undefined;
 	let username = $state('');
 	let displayName = $state('');
@@ -166,8 +166,7 @@
 						bind:value={description}
 						oninput={onInput}
 						rows="8"
-						class="form-input"
-					></textarea>
+						class="form-input"></textarea>
 					<span class="form-input-hint">
 						This description will be displayed on your public profile
 					</span>

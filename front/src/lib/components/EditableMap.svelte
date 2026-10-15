@@ -1,7 +1,7 @@
 <script lang="ts">
-	import LeafletMap from '$lib/components/leaflet/LeafletMap.svelte';
-	import TileLayer from '$lib/components/leaflet/TileLayer.svelte';
-	import Marker from '$lib/components/leaflet/Marker.svelte';
+	import LeafletMap from '#lib/components/leaflet/LeafletMap.svelte';
+	import TileLayer from '#lib/components/leaflet/TileLayer.svelte';
+	import Marker from '#lib/components/leaflet/Marker.svelte';
 	interface Props {
 		lat: number;
 		lon: number;

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import EditDiveSite from '$lib/components/forms/EditDiveSite.svelte';
-	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
+	import EditDiveSite from '#lib/components/forms/EditDiveSite.svelte';
+	import type { CreateDiveSite, SiteFragment } from '#lib/graphql/generated.js';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
 	import type { PageData } from './$types';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 	interface Props {
 		data: PageData;
 	}
@@ -16,10 +16,11 @@
 
 	let showRemove = $state(false);
 
-	let isEditor =
-		$derived($session.user?.level == 'ADMIN' ||
-		$session.user?.level == 'EDITOR' ||
-		($session.user?.id != undefined && $session.user.id === diveSite?.userId));
+	let isEditor = $derived(
+		$session.user?.level == 'ADMIN' ||
+			$session.user?.level == 'EDITOR' ||
+			($session.user?.id != undefined && $session.user.id === diveSite?.userId)
+	);
 
 	let onRemove = () => {
 		if (diveSite) {

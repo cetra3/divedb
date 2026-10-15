@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
-	import type { DiveNodeFragment } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { DiveNodeFragment } from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 	import UserLabel from './labels/UserLabel.svelte';
 
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import { goto } from '$app/navigation';
 	interface Props {
 		dive: DiveNodeFragment;

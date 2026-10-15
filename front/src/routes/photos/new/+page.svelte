@@ -1,9 +1,9 @@
 <script lang="ts">
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import ImageUpload from '$lib/components/forms/ImageUpload.svelte';
-	import ImageList from '$lib/components/ImageList.svelte';
-	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import ImageUpload from '#lib/components/forms/ImageUpload.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import type { PhotoSummaryFragment } from '#lib/graphql/generated.js';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
 
 	let isDragging = $state(false);
 
@@ -54,7 +54,7 @@
 			let file = files.item(i);
 
 			if (file) {
-			    // limit the number of uploads to 5 at a time
+				// limit the number of uploads to 5 at a time
 				let shouldUpload: boolean =
 					newFiles.length + filesToQueue.filter((val) => val !== undefined).length < 5;
 				newFiles.push({ file, shouldUpload });

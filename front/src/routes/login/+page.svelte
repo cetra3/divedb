@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { ClientError } from 'graphql-request';
-	import { browser } from '$app/environment';
-	import { fbLoginRedirect } from '$lib/util/fbRedirect';
-	import FormRow from '$lib/components/FormRow.svelte';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
+	import { browser } from '$app/env';
+	import { fbLoginRedirect } from '#lib/util/fbRedirect.js';
+	import FormRow from '#lib/components/FormRow.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -54,7 +54,8 @@
 				localStorage.setItem('token', val.login.token);
 				session.set({ loggedIn: true, user: val.login });
 				loading = false;
-				goto(redirect);
+				// goto rejects destinations that aren't app routes, so fall back to home
+				goto(redirect).catch(() => goto('/'));
 			})
 			.catch((reason: ClientError) => {
 				loading = false;
@@ -77,9 +78,7 @@
 	</div>
 	{#if !disableEmailLogin}
 		<div class="columns">
-			<div class="column col-12 col-sm-12">
-				<p>Login below using your email &amp; password</p>
-			</div>
+			<div class="column col-12 col-sm-12"><p>Login below using your email & password</p></div>
 		</div>
 	{/if}
 	<div class="columns">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CreatePhoto, PhotoSummaryFragment } from '$lib/graphql/generated';
+	import type { CreatePhoto, PhotoSummaryFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
 	import ChooseSealife from './ChooseSealife.svelte';
 	import ChooseSite from './ChooseSite.svelte';

@@ -3,8 +3,8 @@
 		DiveSummaryFragment,
 		DiveWithMetricsFragment,
 		GetDivesQueryVariables
-	} from '$lib/graphql/generated';
-	import { client } from '$lib/graphql/client';
+	} from '#lib/graphql/generated.js';
+	import { client } from '#lib/graphql/client.js';
 	import { throttle } from 'lodash-es';
 	import DiveSummary from './DiveSummary.svelte';
 	interface Props {

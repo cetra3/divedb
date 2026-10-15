@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
+	import type { CreateDiveSite, SiteFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
-	import { session } from '$lib/session';
+	import { browser } from '$app/env';
+	import { session } from '#lib/session.js';
 	import Markdown from './Markdown.svelte';
 	interface Props {
 		site: SiteFragment | CreateDiveSite;
@@ -18,7 +18,7 @@
 
 	onMount(async () => {
 		if (browser) {
-			EditableMap = (await import('$lib/components/EditableMap.svelte')).default;
+			EditableMap = (await import('#lib/components/EditableMap.svelte')).default;
 		}
 	});
 
@@ -32,12 +32,12 @@
 	let gpsError = $derived(gps != '' && !gpsMatch);
 
 	let canSave = $derived(site.name != '' && !gpsError);
-
-	let isEditor =
-		$derived($session.user?.level == 'ADMIN' ||
-		$session.user?.level == 'EDITOR' ||
-		!('userId' in site) ||
-		($session.user?.id != undefined && $session.user.id === site.userId));
+	let isEditor = $derived(
+		$session.user?.level == 'ADMIN' ||
+			$session.user?.level == 'EDITOR' ||
+			!('userId' in site) ||
+			($session.user?.id != undefined && $session.user.id === site.userId)
+	);
 
 	const onMapChange = (lat: number, lon: number) => {
 		gps = `${lat.toFixed(6)} ${lon.toFixed(6)}`;
@@ -121,11 +121,7 @@
 			{#if showMap}
 				<FormRow name="">
 					{#if browser}
-						<EditableMap
-							lat={site.lat}
-							lon={site.lon}
-							onChange={onMapChange}
-						/>
+						<EditableMap lat={site.lat} lon={site.lon} onChange={onMapChange} />
 					{/if}
 				</FormRow>
 			{/if}

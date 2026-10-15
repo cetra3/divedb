@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Category } from '$lib/graphql/generated';
+	import type { Category } from '#lib/graphql/generated.js';
 	type CategoryMap = { [category: string]: string[] };
 
 	interface Props {

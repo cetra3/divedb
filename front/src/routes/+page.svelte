@@ -1,18 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import DiveSiteSummary from '$lib/components/DiveSiteSummary.svelte';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import Search from '$lib/components/Search.svelte';
-	import { assets } from '$app/paths';
-	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
+	import DiveSiteSummary from '#lib/components/DiveSiteSummary.svelte';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import Search from '#lib/components/Search.svelte';
+	import { asset } from '$app/paths';
+	import DiveSummary from '#lib/components/dives/DiveSummary.svelte';
+
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-
 	let diveSites = $derived(data.frontPage.popularDiveSites);
 	let recentDives = $derived(data.frontPage.recentDives);
 
@@ -28,7 +28,7 @@
 		content="Scuba Diving Database with Dive Sites and Dive Photos"
 	/>
 	<meta property="og:site_name" content="DiveDB" />
-	<meta property="og:image" content="{assets}/logo.png" />
+	<meta property="og:image" content={asset('logo.png')} />
 </svelte:head>
 
 <Search bind:query />

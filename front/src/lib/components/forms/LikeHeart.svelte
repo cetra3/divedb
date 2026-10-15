@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import HeartFilled from '$lib/icons/HeartFilled.svelte';
-	import HeartOutline from '$lib/icons/HeartOutline.svelte';
-	import { session } from '$lib/session';
+	import HeartFilled from '#lib/icons/HeartFilled.svelte';
+	import HeartOutline from '#lib/icons/HeartOutline.svelte';
+	import { session } from '#lib/session.js';
 
 	interface Props {
 		liked: boolean;

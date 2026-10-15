@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Category, CreateSealife, SealifeNodeFragment } from '$lib/graphql/generated';
+	import type { Category, CreateSealife, SealifeNodeFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import CategoryPicker from '../categories/CategoryPicker.svelte';
 	import Markdown from './Markdown.svelte';
 	interface Props {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 
 	session.subscribe((val) => {
 		if (val.loggedIn === false) {

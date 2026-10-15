@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { SiteSummaryMetricsFragment } from '$lib/graphql/generated';
+	import type { SiteSummaryMetricsFragment } from '#lib/graphql/generated.js';
 	import type { LatLngBoundsExpression } from 'leaflet';
 	import DiveSiteSummary from './DiveSiteSummary.svelte';
-	import LeafletMap from '$lib/components/leaflet/LeafletMap.svelte';
-	import TileLayer from '$lib/components/leaflet/TileLayer.svelte';
-	import Marker from '$lib/components/leaflet/Marker.svelte';
-	import Icon from '$lib/components/leaflet/Icon.svelte';
-	import Popup from '$lib/components/leaflet/Popup.svelte';
+	import LeafletMap from '#lib/components/leaflet/LeafletMap.svelte';
+	import TileLayer from '#lib/components/leaflet/TileLayer.svelte';
+	import Marker from '#lib/components/leaflet/Marker.svelte';
+	import Icon from '#lib/components/leaflet/Icon.svelte';
+	import Popup from '#lib/components/leaflet/Popup.svelte';
 	interface Props {
 		sites: SiteSummaryMetricsFragment[];
 		selectedSite?: string | undefined;

@@ -1,13 +1,12 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (photo-label to photo_label) making the component unusable -->
 <script lang="ts">
-	import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '$lib/graphql/generated';
-	import { client } from '$lib/graphql/client';
+	import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '#lib/graphql/generated.js';
+	import { client } from '#lib/graphql/client.js';
 	import { throttle } from 'lodash-es';
 	export let query: GetPhotosQueryVariables | undefined = undefined;
 	export let condensed = false;
 	export let photos: PhotoSummaryFragment[];
 
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 
 	import { Swiper, SwiperSlide } from 'swiper/svelte';
 
@@ -20,7 +19,7 @@
 	import 'swiper/css/navigation';
 	import 'swiper/css/pagination';
 	import PhotoLabels from './photos/PhotoLabels.svelte';
-	import imageAlt from '$lib/util/imageAlt';
+	import imageAlt from '#lib/util/imageAlt.js';
 	import PhotoSlide from './photos/PhotoSlide.svelte';
 	import Photo from './photos/Photo.svelte';
 	import { onDestroy } from 'svelte';
@@ -114,6 +113,8 @@
 	}, 300);
 </script>
 
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (photo-label to photo_label) making the component unusable -->
+
 {#if showModal}
 	<div class="photo-modal">
 		<!-- svelte-ignore a11y-missing-content -->
@@ -175,7 +176,7 @@
 						}
 					}}>Edit</span
 				>
-				<slot name="photo-label" photo={photos[curIdx].id} />
+				<slot name="photo-label" photo={photos[curIdx].id}></slot>
 			</PhotoLabels>
 
 			{#if toEdit}
@@ -209,9 +210,8 @@
 							}}
 						/>
 					</div>
-					<div class="card-footer photo-labels no-padding">
-						<PhotoLabels {photo} />
-					</div>
+
+					<div class="card-footer photo-labels no-padding"><PhotoLabels {photo} /></div>
 				</div>
 			</div>
 		{/each}

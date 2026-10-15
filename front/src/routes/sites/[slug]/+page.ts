@@ -1,4 +1,4 @@
-import { client } from '$lib/graphql/client';
+import { client } from '#lib/graphql/client.js';
 import type { PageLoad } from './$types';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';

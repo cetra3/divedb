@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 import { getSdk } from './generated'; // THIS FILE IS THE GENERATED FILE
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 export const graphqlClient = new GraphQLClient(
 	browser ? `${window.location.origin}/api/graphql` : `${process.env.BACKEND_URL}/api/graphql`

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
 	import type { PageData } from './$types';
-	import { session } from '$lib/session';
-	import DiveList from '$lib/components/dives/DiveList.svelte';
+	import { session } from '#lib/session.js';
+	import DiveList from '#lib/components/dives/DiveList.svelte';
 
 	interface Props {
 		data: PageData;

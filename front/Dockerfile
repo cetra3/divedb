@@ -7,7 +7,7 @@ COPY package.json yarn.lock /front/
 
 RUN yarn install --frozen-lockfile
 
-COPY svelte.config.js vite.config.ts tsconfig.json /front/
+COPY vite.config.ts tsconfig.json /front/
 COPY static /front/static
 COPY src /front/src
 

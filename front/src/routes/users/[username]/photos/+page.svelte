@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ImageList from '$lib/components/ImageList.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	interface Props {
 		data: PageData;
 	}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
+	import type { PhotoSummaryFragment } from '#lib/graphql/generated.js';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 

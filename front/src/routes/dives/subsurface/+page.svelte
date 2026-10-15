@@ -1,10 +1,10 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
+	import FormRow from '#lib/components/FormRow.svelte';
 	import { goto } from '$app/navigation';
 	import type { ClientError } from 'graphql-request';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 
 	let email = $state($session.user?.email ?? '');
 	let password = $state('');

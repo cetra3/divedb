@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
 </script>
 
 <div class="hero bg-dark flex-center">

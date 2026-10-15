@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { SiteSummaryMetricsFragment } from '$lib/graphql/generated';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
+	import type { SiteSummaryMetricsFragment } from '#lib/graphql/generated.js';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
 	interface Props {
 		site: SiteSummaryMetricsFragment;
 	}

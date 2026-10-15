@@ -1,8 +1,8 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
+	import FormRow from '#lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
-	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
-	import { client } from '$lib/graphql/client';
+	import { fbRegisterRedirect } from '#lib/util/fbRedirect.js';
+	import { client } from '#lib/graphql/client.js';
 
 	import type { PageData } from './$types';
 

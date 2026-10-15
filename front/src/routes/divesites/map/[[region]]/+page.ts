@@ -1,4 +1,4 @@
-import { getClient } from '$lib/graphql/client';
+import { getClient } from '#lib/graphql/client.js';
 
 import type { PageLoad } from './$types';
 

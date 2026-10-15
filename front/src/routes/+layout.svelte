@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { CurrentUserFragment } from '$lib/graphql/generated';
-	import { browser } from '$app/environment';
-	import { client } from '$lib/graphql/client';
+	import type { CurrentUserFragment } from '#lib/graphql/generated.js';
+	import { browser } from '$app/env';
+	import { client } from '#lib/graphql/client.js';
 	import { onMount } from 'svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import { goto } from '$app/navigation';
 	interface Props {
 		children?: import('svelte').Snippet;

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ImageList from '$lib/components/ImageList.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	interface Props {
 		data: PageData;
 	}
@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-		<title>DiveDB - Photos</title>
+	<title>DiveDB - Photos</title>
 </svelte:head>
 
 <div class="dive-sites container grid-lg">

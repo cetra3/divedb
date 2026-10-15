@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
 
-	import SearchIcon from '$lib/icons/SearchIcon.svelte';
-	import { client } from '$lib/graphql/client';
-	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
+	import SearchIcon from '#lib/icons/SearchIcon.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import type { SearchResultNodeFragment } from '#lib/graphql/generated.js';
 	type CategoryMap = { [category: string]: string[] };
 
 	import SearchResult from './SearchResult.svelte';
 	import { onMount } from 'svelte';
 	import { result, throttle } from 'lodash-es';
-
 
 	interface Props {
 		query?: string;

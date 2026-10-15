@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { DiveWithMetricsFragment, DiveNodeFragment } from '$lib/graphql/generated';
+	import type { DiveWithMetricsFragment, DiveNodeFragment } from '#lib/graphql/generated.js';
 
-
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 	import DiveComment from './DiveComment.svelte';

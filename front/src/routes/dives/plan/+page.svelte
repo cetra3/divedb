@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import PlanDive from '$lib/components/forms/PlanDive.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import PlanDive from '#lib/components/forms/PlanDive.svelte';
 </script>
 
 <svelte:head>

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
-	import { client } from '$lib/graphql/client';
+	import FormRow from '#lib/components/FormRow.svelte';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
-	import { browser } from '$app/environment';
-	import { session } from '$lib/session';
+	import { browser } from '$app/env';
+	import { session } from '#lib/session.js';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -44,15 +44,15 @@
 
 <div class="container grid-lg">
 	<div class="columns">
-		<div class="column col-12 col-sm-12">
-			<h1 class="page-title">Email Verification</h1>
-		</div>
+		<div class="column col-12 col-sm-12"><h1 class="page-title">Email Verification</h1></div>
 	</div>
+
 	<div class="columns">
 		<div class="column col-12 col-sm-12">
 			<p>Set a new password below to finish resetting your password</p>
 		</div>
 	</div>
+
 	<div class="columns">
 		{#if errors}
 			<div class="toast">{errors}</div>

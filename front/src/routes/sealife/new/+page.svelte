@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import EditSealife from '$lib/components/forms/EditSealife.svelte';
-	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
-	import type { CreateSealife } from '$lib/graphql/generated';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import EditSealife from '#lib/components/forms/EditSealife.svelte';
+	import SealifeIcon from '#lib/icons/SealifeIcon.svelte';
+	import type { CreateSealife } from '#lib/graphql/generated.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {

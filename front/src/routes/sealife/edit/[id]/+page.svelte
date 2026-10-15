@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
-	import type { CreateSealife } from '$lib/graphql/generated';
+	import SealifeIcon from '#lib/icons/SealifeIcon.svelte';
+	import type { CreateSealife } from '#lib/graphql/generated.js';
 	import type { PageData } from './$types';
-	import EditSealife from '$lib/components/forms/EditSealife.svelte';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import References from '$lib/components/References.svelte';
+	import EditSealife from '#lib/components/forms/EditSealife.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import References from '#lib/components/References.svelte';
 
 	interface Props {
 		data: PageData;

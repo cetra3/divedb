@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { CreatePhoto } from '$lib/graphql/generated';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import EditPhoto from '$lib/components/forms/EditPhoto.svelte';
+	import type { CreatePhoto } from '#lib/graphql/generated.js';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import EditPhoto from '#lib/components/forms/EditPhoto.svelte';
 
 	import type { PageData } from './$types';
 
-
-	import Photo from '$lib/components/photos/Photo.svelte';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import Photo from '#lib/components/photos/Photo.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 	interface Props {
 		data: PageData;
 	}
@@ -18,7 +17,6 @@
 	let { data }: Props = $props();
 
 	let showRemove = $state(false);
-
 
 	let onRemove = () => {
 		if (photo) {

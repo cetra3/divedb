@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
-	import type { ReferenceFragment } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { ReferenceFragment } from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 	import FormRow from './FormRow.svelte';
 

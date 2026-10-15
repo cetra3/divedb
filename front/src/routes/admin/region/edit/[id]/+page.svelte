@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import EditRegion from '$lib/components/forms/EditRegion.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import EditRegion from '#lib/components/forms/EditRegion.svelte';
 
-	import { client } from '$lib/graphql/client';
-	import type { CreateRegion } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { CreateRegion } from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 
 	import type { PageData } from './$types';

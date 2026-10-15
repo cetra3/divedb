@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	let errors: string | undefined = $state(undefined);
