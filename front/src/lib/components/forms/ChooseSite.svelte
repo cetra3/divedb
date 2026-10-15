@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { client } from '#lib/graphql/client.js';
 	import type { SearchResultNodeFragment } from '#lib/graphql/generated.js';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 
 	let focused = $state(false);
 	let dropDownFocused = $state(false);
@@ -45,8 +43,11 @@
 		}
 	};
 
-	run(() => {
-		(query, focused, updateResult());
+	// Search again only when the query or focus changes, not on anything updateResult reads
+	$effect(() => {
+		query;
+		focused;
+		untrack(() => updateResult());
 	});
 </script>
 
