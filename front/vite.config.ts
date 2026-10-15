@@ -20,11 +20,11 @@ export default defineConfig(({ mode }) => {
 				// for more information about preprocessors
 				preprocess: sveltePreprocess(),
 				adapter: adapter(),
-				onwarn: (warning, handler) => {
-					if (warning.code.startsWith('a11y')) return;
-					if (warning.code === 'element_invalid_self_closing_tag') return;
-
-					handler(warning);
+				compilerOptions: {
+					// Applied by the compiler, so it covers svelte-check as well as dev/build
+					warningFilter: (warning) =>
+						!warning.code.startsWith('a11y') &&
+						warning.code !== 'element_invalid_self_closing_tag'
 				}
 			})
 		]
