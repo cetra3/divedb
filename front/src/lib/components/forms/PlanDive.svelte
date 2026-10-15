@@ -101,10 +101,6 @@
 				errors = reason.response.errors?.map((val) => val.message).join();
 			});
 	};
-
-	$effect(() => {
-		console.log(decoGasses, runtime, gfhigh, gflo);
-	});
 </script>
 
 <div class="columns">

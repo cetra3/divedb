@@ -10,7 +10,7 @@
 	let { data }: Props = $props();
 	let diveSites = $derived(data.diveSites);
 
-	let query: string = $state();
+	let query = $state('');
 	let showSearch = $state(false);
 </script>
 

@@ -39,7 +39,7 @@
 <div class="columns">
 	<div class="column col-12 col-sm-12">
 		<form class="form-horizontal" onsubmit={onSubmit}>
-			<button class="btn btn-primary" type="submit" disabled={canSave == false}
+			<button class="btn btn-primary" type="submit" disabled={!canSave}
 				>Resend Verification Email</button
 			>
 		</form>
