@@ -35,18 +35,20 @@
 
 	let displaySites = $derived(sitesToDisplay(showOnlyDived));
 
-	const siteToSelect = sites.find((site) => site.slug === selectedSite);
+	let siteToSelect = $derived(sites.find((site) => site.slug === selectedSite));
 
-	const center =
+	let center = $derived(
 		siteToSelect !== undefined
 			? [siteToSelect.lat, siteToSelect.lon]
 			: // We started in South Australia, so should the map!
-				[-34.696, 137.726];
+				[-34.696, 137.726]
+	);
 
-	const mapOptions = {
+	// Only read when the map is created
+	let mapOptions = $derived({
 		center,
 		zoom: siteToSelect != undefined ? 11 : 8
-	};
+	});
 	const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	const tileLayerOptions = {
 		minZoom: 0,

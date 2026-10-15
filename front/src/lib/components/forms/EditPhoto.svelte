@@ -10,21 +10,21 @@
 
 	let { photo, onSave }: Props = $props();
 
-	let diveSiteId: string | undefined = $state();
-
-	if ('diveSite' in photo) {
-		diveSiteId = photo.diveSite?.id;
-	} else if ('diveSiteId' in photo) {
-		diveSiteId = photo.diveSiteId ?? undefined;
-	}
-
-	let sealifeId: string | undefined = $state();
-
-	if ('sealife' in photo) {
-		sealifeId = photo.sealife?.id;
-	} else if ('sealifeId' in photo) {
-		sealifeId = photo.sealifeId ?? undefined;
-	}
+	// Editable via the pickers, and reset when a different photo is passed in
+	let diveSiteId: string | undefined = $derived(
+		'diveSite' in photo
+			? photo.diveSite?.id
+			: 'diveSiteId' in photo
+				? (photo.diveSiteId ?? undefined)
+				: undefined
+	);
+	let sealifeId: string | undefined = $derived(
+		'sealife' in photo
+			? photo.sealife?.id
+			: 'sealifeId' in photo
+				? (photo.sealifeId ?? undefined)
+				: undefined
+	);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();

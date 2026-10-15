@@ -66,6 +66,7 @@
 			</h1>
 		</div>
 		<div class="column col-12">
+			<!-- remount per region: the bounds map is only set up once -->
 			{#key region?.id}
 				<EditRegion {region} {onSave} />
 			{/key}

@@ -13,9 +13,10 @@
 
 	let { region = undefined, onSave }: Props = $props();
 
-	let name = $state(region?.name ?? '');
+	// Editable, and reset when a different region is passed in
+	let name = $derived(region?.name ?? '');
 
-	let bounds: LatLngBoundsExpression | undefined = $state(
+	let bounds: LatLngBoundsExpression | undefined = $derived(
 		region
 			? [
 					[region.latMin, region.lonMin],

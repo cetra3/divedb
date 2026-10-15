@@ -64,6 +64,7 @@
 			</div>
 		{/if}
 		<div class="column col-12">
+			<!-- remount per photo: the site and sealife pickers load their labels once -->
 			{#key photo.id}
 				<EditPhoto {onSave} {photo} />
 			{/key}
