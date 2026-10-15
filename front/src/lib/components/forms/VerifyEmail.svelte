@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	let errors: string | undefined = $state(undefined);
@@ -39,7 +39,7 @@
 <div class="columns">
 	<div class="column col-12 col-sm-12">
 		<form class="form-horizontal" onsubmit={onSubmit}>
-			<button class="btn btn-primary" type="submit" disabled={canSave == false}
+			<button class="btn btn-primary" type="submit" disabled={!canSave}
 				>Resend Verification Email</button
 			>
 		</form>

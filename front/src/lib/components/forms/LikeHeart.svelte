@@ -1,17 +1,15 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	import HeartFilled from '$lib/icons/HeartFilled.svelte';
-	import HeartOutline from '$lib/icons/HeartOutline.svelte';
-	import { session } from '$lib/session';
+	import HeartFilled from '#lib/icons/HeartFilled.svelte';
+	import HeartOutline from '#lib/icons/HeartOutline.svelte';
+	import { session } from '#lib/session.js';
 
 	interface Props {
 		liked: boolean;
 		likes: number;
+		onLiked?: (liked: boolean) => void;
 	}
 
-	let { liked = $bindable(), likes = $bindable() }: Props = $props();
-
-	const dispatch = createEventDispatcher<{ liked: boolean }>();
+	let { liked = $bindable(), likes = $bindable(), onLiked }: Props = $props();
 
 	const onClick = (e: MouseEvent) => {
 		e.preventDefault();
@@ -24,13 +22,11 @@
 				likes = likes + 1;
 				liked = true;
 			}
-			dispatch('liked', liked);
+			onLiked?.(liked);
 		}
 	};
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
 {#if $session.loggedIn || likes > 0}
 	<span
 		class="label heart-label"

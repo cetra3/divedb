@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ChatFilled from '$lib/icons/ChatFilled.svelte';
-	import ChatOutline from '$lib/icons/ChatOutline.svelte';
+	import ChatFilled from '#lib/icons/ChatFilled.svelte';
+	import ChatOutline from '#lib/icons/ChatOutline.svelte';
 
 	interface Props {
 		diveId: string;

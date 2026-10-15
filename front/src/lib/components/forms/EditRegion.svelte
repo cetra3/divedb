@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { CreateRegion, RegionNodeFragment } from '$lib/graphql/generated';
+	import type { CreateRegion, RegionNodeFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import type { LatLngBoundsExpression, LatLngLiteral } from 'leaflet';
-	import { fromLeaflet } from '$lib/util/bounds';
+	import { fromLeaflet } from '#lib/util/bounds.js';
 	interface Props {
 		region?: CreateRegion | RegionNodeFragment | undefined;
 		onSave: (region: CreateRegion) => void;
@@ -13,14 +13,17 @@
 
 	let { region = undefined, onSave }: Props = $props();
 
-	let name = $state(region?.name ?? '');
+	// Editable, and reset when a different region is passed in
+	let name = $derived(region?.name ?? '');
 
-	let bounds: LatLngBoundsExpression | undefined = $state(region
-		? [
-				[region.latMin, region.lonMin],
-				[region.latMax, region.lonMax]
-			]
-		: undefined);
+	let bounds: LatLngBoundsExpression | undefined = $derived(
+		region
+			? [
+					[region.latMin, region.lonMin],
+					[region.latMax, region.lonMax]
+				]
+			: undefined
+	);
 
 	let canSave = $derived(name != '' && bounds !== undefined);
 
@@ -47,7 +50,7 @@
 
 	onMount(async () => {
 		if (browser) {
-			EditableRegion = (await import('$lib/components/EditableRegion.svelte')).default;
+			EditableRegion = (await import('#lib/components/EditableRegion.svelte')).default;
 		}
 	});
 </script>

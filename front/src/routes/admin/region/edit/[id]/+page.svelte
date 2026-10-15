@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import EditRegion from '$lib/components/forms/EditRegion.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import EditRegion from '#lib/components/forms/EditRegion.svelte';
 
-	import { client } from '$lib/graphql/client';
-	import type { CreateRegion } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { CreateRegion } from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 
 	import type { PageData } from './$types';
@@ -13,7 +13,7 @@
 	}
 
 	let { data }: Props = $props();
-	let region = data.region;
+	let region = $derived(data.region);
 
 	let errors: string | undefined = $state(undefined);
 
@@ -66,16 +66,16 @@
 			</h1>
 		</div>
 		<div class="column col-12">
-			<EditRegion {region} {onSave} />
+			<!-- remount per region: the bounds map is only set up once -->
+			{#key region?.id}
+				<EditRegion {region} {onSave} />
+			{/key}
 
 			{#if showRemove}
 				<div class={`modal active`}>
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 					<div class="modal-container">
 						<div class="modal-header">
-							<!-- svelte-ignore a11y_missing_content -->
-							<!-- svelte-ignore a11y_invalid_attribute -->
 							<a
 								href="javascript:void(0)"
 								class="btn btn-clear float-right"

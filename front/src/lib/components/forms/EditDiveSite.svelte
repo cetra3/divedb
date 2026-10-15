@@ -1,24 +1,26 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
+	import type { CreateDiveSite, SiteFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
-	import { session } from '$lib/session';
+	import { browser } from '$app/env';
+	import { session } from '#lib/session.js';
 	import Markdown from './Markdown.svelte';
 	interface Props {
 		site: SiteFragment | CreateDiveSite;
 		onSave: (site: CreateDiveSite) => void;
 	}
 
-	let { site = $bindable(), onSave }: Props = $props();
+	let { site: initialSite, onSave }: Props = $props();
+
+	// Local reactive copy so the bound inputs drive canSave; callers pass plain objects
+	// svelte-ignore state_referenced_locally
+	let site = $state({ ...initialSite });
 
 	let EditableMap: any = $state();
 
 	onMount(async () => {
 		if (browser) {
-			EditableMap = (await import('$lib/components/EditableMap.svelte')).default;
+			EditableMap = (await import('#lib/components/EditableMap.svelte')).default;
 		}
 	});
 
@@ -32,23 +34,20 @@
 	let gpsError = $derived(gps != '' && !gpsMatch);
 
 	let canSave = $derived(site.name != '' && !gpsError);
-
-	let isEditor =
-		$derived($session.user?.level == 'ADMIN' ||
-		$session.user?.level == 'EDITOR' ||
-		!('userId' in site) ||
-		($session.user?.id != undefined && $session.user.id === site.userId));
+	let isEditor = $derived(
+		$session.user?.level == 'ADMIN' ||
+			$session.user?.level == 'EDITOR' ||
+			!('userId' in site) ||
+			($session.user?.id != undefined && $session.user.id === site.userId)
+	);
 
 	const onMapChange = (lat: number, lon: number) => {
 		gps = `${lat.toFixed(6)} ${lon.toFixed(6)}`;
 	};
 
-	run(() => {
-		if (gpsMatch != undefined) {
-			site.lat = +gpsMatch[1];
-			site.lon = +gpsMatch[2];
-		}
-	});
+	// Parsed from the GPS field, falling back to the site's saved position
+	let lat = $derived(gpsMatch ? +gpsMatch[1] : site.lat);
+	let lon = $derived(gpsMatch ? +gpsMatch[2] : site.lon);
 
 	const onSubmit = (e: Event) => {
 		e.preventDefault();
@@ -61,8 +60,8 @@
 			depth: site.depth,
 			difficulty: site.difficulty,
 			published: site.published,
-			lat: site.lat,
-			lon: site.lon,
+			lat,
+			lon,
 			photoId: site.photoId
 		});
 	};
@@ -107,7 +106,6 @@
 					</span>
 				{/if}
 				<span class="form-input-hint">
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						href="javascript:void(0)"
 						onclick={() => {
@@ -121,11 +119,7 @@
 			{#if showMap}
 				<FormRow name="">
 					{#if browser}
-						<EditableMap
-							lat={site.lat}
-							lon={site.lon}
-							onChange={onMapChange}
-						/>
+						<EditableMap {lat} {lon} onChange={onMapChange} />
 					{/if}
 				</FormRow>
 			{/if}

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { DiveWithMetricsFragment, DiveNodeFragment } from '$lib/graphql/generated';
+	import type { DiveWithMetricsFragment, DiveNodeFragment } from '#lib/graphql/generated.js';
 	import GraphImage from './GraphImage.svelte';
 	import GraphPlaceholder from './GraphPlaceholder.svelte';
-
 
 	interface Props {
 		link?: boolean;

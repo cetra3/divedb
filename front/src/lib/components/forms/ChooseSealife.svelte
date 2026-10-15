@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { client } from '$lib/graphql/client';
-	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
-	import { onMount } from 'svelte';
+	import { client } from '#lib/graphql/client.js';
+	import type { SearchResultNodeFragment } from '#lib/graphql/generated.js';
+	import { onMount, untrack } from 'svelte';
 	import Photo from '../photos/Photo.svelte';
 	import SealifeSummary from '../SealifeSummary.svelte';
 	import SearchResult from '../SearchResult.svelte';
@@ -47,8 +45,11 @@
 		}
 	};
 
-	run(() => {
-		(query, focused, updateResult());
+	// Search again only when the query or focus changes, not on anything updateResult reads
+	$effect(() => {
+		query;
+		focused;
+		untrack(() => updateResult());
 	});
 </script>
 
@@ -108,7 +109,6 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
 		onmouseenter={() => (dropDownFocused = true)}
 		onmouseleave={() => (dropDownFocused = false)}
@@ -117,7 +117,6 @@
 	>
 		<div class="menu sealife-menu">
 			{#each results as result, index}
-				<!-- svelte-ignore a11y_invalid_attribute -->
 				<a
 					class="sealife-item"
 					class:active={index == idx}
@@ -131,7 +130,6 @@
 						dropDownFocused = false;
 					}}
 				>
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<div class="sealife-photo">
 						{#if result.photoId}
 							<Photo id={result.photoId} />

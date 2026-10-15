@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	interface Props {
@@ -33,9 +33,6 @@
 	<div class="modal-overlay"></div>
 	<div class="modal-container">
 		<div class="modal-header">
-			<!-- svelte-ignore a11y_missing_attribute -->
-			<!-- svelte-ignore a11y_missing_content -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<a class="btn btn-clear float-right" aria-label="Close" onclick={onClose}></a>
 			<div class="modal-title h5">Delete Account</div>
 		</div>

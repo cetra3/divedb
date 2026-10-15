@@ -1,15 +1,15 @@
 <script lang="ts">
-	import DiveGraph from '$lib/components/dives/DiveGraph.svelte';
+	import DiveGraph from '#lib/components/dives/DiveGraph.svelte';
 
 	import type { PageData } from './$types';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import ImageList from '$lib/components/ImageList.svelte';
-	import formatMinutes from '$lib/util/formatMinutes';
-	import DiveLabels from '$lib/components/dives/DiveLabels.svelte';
-	import Comments from '$lib/components/Comments.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import formatMinutes from '#lib/util/formatMinutes.js';
+	import DiveLabels from '#lib/components/dives/DiveLabels.svelte';
+	import Comments from '#lib/components/Comments.svelte';
 	interface Props {
 		data: PageData;
 	}
@@ -21,16 +21,19 @@
 	let mdDesc = $derived(data.mdDesc);
 	let siteUrl = $derived(data.siteUrl);
 
-	let isEditor =
-		$derived($session.user?.level == 'ADMIN' ||
-		$session.user?.level == 'EDITOR' ||
-		!(dive && 'userId' in dive) ||
-		($session.user?.id != undefined && $session.user.id === dive.userId));
-	let title = $derived(dive
-		? `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
-				dive.diveSite ? ` - ${dive.diveSite.name}` : ''
-			}`
-		: '');
+	let isEditor = $derived(
+		$session.user?.level == 'ADMIN' ||
+			$session.user?.level == 'EDITOR' ||
+			!(dive && 'userId' in dive) ||
+			($session.user?.id != undefined && $session.user.id === dive.userId)
+	);
+	let title = $derived(
+		dive
+			? `${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
+					dive.diveSite ? ` - ${dive.diveSite.name}` : ''
+				}`
+			: ''
+	);
 </script>
 
 <svelte:head>

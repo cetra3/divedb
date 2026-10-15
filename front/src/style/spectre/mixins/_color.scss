@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../functions/color' as *;
 @use '../variables' as *;
 
@@ -11,7 +12,7 @@
 		// @if (lightness($color) < 60) {
 		// color: $light-color;
 		// }
-		@if (lightness($hex-color) < 60) {
+		@if (color.channel($hex-color, 'lightness', $space: hsl) < 60) {
 			color: color('light-color');
 		}
 	}

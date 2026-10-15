@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
-	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
+	import { session } from '#lib/session.js';
+	import { fbRegisterRedirect } from '#lib/util/fbRedirect.js';
 	import type { ClientError } from 'graphql-request';
-	import FormRow from '$lib/components/FormRow.svelte';
+	import FormRow from '#lib/components/FormRow.svelte';
 
 	let errors: string | undefined = $state(undefined);
 	let username = $state('');
@@ -27,7 +27,8 @@
 				localStorage.setItem('token', val.fbRegisterUser.token);
 				session.set({ loggedIn: true, user: val.fbRegisterUser });
 				loading = false;
-				goto(redirect);
+				// goto rejects destinations that aren't app routes, so fall back to home
+				goto(redirect).catch(() => goto('/'));
 			})
 			.catch((reason: ClientError) => {
 				loading = false;

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Category, CreateSealife, SealifeNodeFragment } from '$lib/graphql/generated';
+	import type { Category, CreateSealife, SealifeNodeFragment } from '#lib/graphql/generated.js';
 	import FormRow from '../FormRow.svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import CategoryPicker from '../categories/CategoryPicker.svelte';
 	import Markdown from './Markdown.svelte';
 	interface Props {
@@ -10,7 +10,11 @@
 		onSave: (site: CreateSealife) => void;
 	}
 
-	let { sealife = $bindable(), categories, onSave }: Props = $props();
+	let { sealife: initialSealife, categories, onSave }: Props = $props();
+
+	// Local reactive copy so the bound inputs drive canSave; callers pass plain objects
+	// svelte-ignore state_referenced_locally
+	let sealife = $state({ ...initialSealife });
 
 	let categoryMap = $state(sealife.categoryMap ?? {});
 

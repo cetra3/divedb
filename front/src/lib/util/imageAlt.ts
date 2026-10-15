@@ -1,4 +1,4 @@
-import type { PhotoSummaryFragment } from '$lib/graphql/generated';
+import type { PhotoSummaryFragment } from '#lib/graphql/generated.js';
 
 export default function imageAlt(image: PhotoSummaryFragment, includeDate = false) {
 	let imageAlt = '';

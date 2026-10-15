@@ -1,13 +1,14 @@
+@use 'sass:color';
 @use '../variables' as *;
 @use 'set-var' as *;
 
 // The mixin defines CSS variable color in hsl form.
 @mixin define-color($name, $color, $prefix: $var-prefix, $alpha: -1) {
-	@include set-var($name, hue($color), $prefix, 'h');
-	@include set-var($name, saturation($color), $prefix, 's');
-	@include set-var($name, lightness($color), $prefix, 'l');
+	@include set-var($name, color.channel($color, 'hue', $space: hsl), $prefix, 'h');
+	@include set-var($name, color.channel($color, 'saturation', $space: hsl), $prefix, 's');
+	@include set-var($name, color.channel($color, 'lightness', $space: hsl), $prefix, 'l');
 	@if $alpha == -1 {
-		@include set-var($name, alpha($color), $prefix, 'a');
+		@include set-var($name, color.channel($color, 'alpha'), $prefix, 'a');
 	} @else {
 		@include set-var($name, $alpha, $prefix, 'a');
 	}

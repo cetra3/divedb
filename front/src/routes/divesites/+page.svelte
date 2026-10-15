@@ -1,16 +1,16 @@
 <script lang="ts">
-	import DiveSiteSummary from '$lib/components/DiveSiteSummary.svelte';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
-	import Search from '$lib/components/Search.svelte';
+	import DiveSiteSummary from '#lib/components/DiveSiteSummary.svelte';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
+	import Search from '#lib/components/Search.svelte';
 	import type { PageData } from './$types';
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-	let diveSites = data.diveSites;
+	let diveSites = $derived(data.diveSites);
 
-	let query: string = $state();
+	let query = $state('');
 	let showSearch = $state(false);
 </script>
 

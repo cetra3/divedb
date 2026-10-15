@@ -1,9 +1,9 @@
 <script lang="ts">
-	import ImageList from '$lib/components/ImageList.svelte';
-	import DiveSummary from '$lib/components/dives/DiveSummary.svelte';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import MastodonIcon from '$lib/icons/MastodonIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import DiveSummary from '#lib/components/dives/DiveSummary.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import MastodonIcon from '#lib/icons/MastodonIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {

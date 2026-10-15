@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { SiteSummaryMetricsFragment } from '$lib/graphql/generated';
+	import type { SiteSummaryMetricsFragment } from '#lib/graphql/generated.js';
 	import type { LatLngBoundsExpression } from 'leaflet';
 	import DiveSiteSummary from './DiveSiteSummary.svelte';
-	import LeafletMap from '$lib/components/leaflet/LeafletMap.svelte';
-	import TileLayer from '$lib/components/leaflet/TileLayer.svelte';
-	import Marker from '$lib/components/leaflet/Marker.svelte';
-	import Icon from '$lib/components/leaflet/Icon.svelte';
-	import Popup from '$lib/components/leaflet/Popup.svelte';
+	import LeafletMap from '#lib/components/leaflet/LeafletMap.svelte';
+	import TileLayer from '#lib/components/leaflet/TileLayer.svelte';
+	import Marker from '#lib/components/leaflet/Marker.svelte';
+	import Icon from '#lib/components/leaflet/Icon.svelte';
+	import Popup from '#lib/components/leaflet/Popup.svelte';
 	interface Props {
 		sites: SiteSummaryMetricsFragment[];
 		selectedSite?: string | undefined;
@@ -35,18 +35,20 @@
 
 	let displaySites = $derived(sitesToDisplay(showOnlyDived));
 
-	const siteToSelect = sites.find((site) => site.slug === selectedSite);
+	let siteToSelect = $derived(sites.find((site) => site.slug === selectedSite));
 
-	const center =
+	let center = $derived(
 		siteToSelect !== undefined
 			? [siteToSelect.lat, siteToSelect.lon]
 			: // We started in South Australia, so should the map!
-				[-34.696, 137.726];
+				[-34.696, 137.726]
+	);
 
-	const mapOptions = {
+	// Only read when the map is created
+	let mapOptions = $derived({
 		center,
 		zoom: siteToSelect != undefined ? 11 : 8
-	};
+	});
 	const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	const tileLayerOptions = {
 		minZoom: 0,

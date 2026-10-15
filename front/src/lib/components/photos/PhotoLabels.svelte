@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
+	import type { PhotoSummaryFragment } from '#lib/graphql/generated.js';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 
@@ -13,10 +13,10 @@
 
 	let { showEdit = false, photo, children }: Props = $props();
 
-	const onLike = (liked: CustomEvent<boolean>) => {
+	const onLike = (liked: boolean) => {
 		let photoId = photo.id;
 
-		if (liked.detail) {
+		if (liked) {
 			client.likePhoto({ photoId });
 		} else {
 			client.unlikePhoto({ photoId });
@@ -25,7 +25,7 @@
 </script>
 
 <div class="label-list">
-	<LikeHeart liked={photo.liked} likes={photo.likes} on:liked={onLike} />
+	<LikeHeart liked={photo.liked} likes={photo.likes} onLiked={onLike} />
 
 	<a href={`/users/${photo.user.username}`}>
 		<UserLabel user={photo.user} />

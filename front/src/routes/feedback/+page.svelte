@@ -1,6 +1,6 @@
 <script lang="ts">
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import { client } from '$lib/graphql/client';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	let feedback = $state('');
@@ -44,8 +44,7 @@
 					placeholder="Enter in any feedback you may have for DiveDB, including any changes you'd like to see or challenges you are having."
 					bind:value={feedback}
 					rows="8"
-					class="form-input"
-				></textarea>
+					class="form-input"></textarea>
 			</div>
 			<div class="column col-12 col-sm-12 submit-button">
 				<button onclick={onSubmit} disabled={canSave == false} class="btn btn-primary">

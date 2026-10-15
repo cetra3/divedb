@@ -1,8 +1,8 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
+	import FormRow from '#lib/components/FormRow.svelte';
 	import type { ClientError } from 'graphql-request';
-	import { fbRegisterRedirect } from '$lib/util/fbRedirect';
-	import { client } from '$lib/graphql/client';
+	import { fbRegisterRedirect } from '#lib/util/fbRedirect.js';
+	import { client } from '#lib/graphql/client.js';
 
 	import type { PageData } from './$types';
 
@@ -12,11 +12,11 @@
 
 	let { data }: Props = $props();
 
-	let fbAppId = data.loginInfo.fbAppId;
-	let openidIssuerName = data.loginInfo.openidIssuerName;
-	let disableEmailLogin = data.loginInfo.disableEmailLogin;
+	let fbAppId = $derived(data.loginInfo.fbAppId);
+	let openidIssuerName = $derived(data.loginInfo.openidIssuerName);
+	let disableEmailLogin = $derived(data.loginInfo.disableEmailLogin);
 
-	const fbUrl = `https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`;
+	let fbUrl = $derived(`https://www.facebook.com/v8.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${fbRegisterRedirect}&scope=email`);
 
 	let username = $state('');
 	let email = $state('');

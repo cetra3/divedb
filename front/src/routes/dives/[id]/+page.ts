@@ -1,5 +1,5 @@
-import { client } from '$lib/graphql/client';
-import type { DiveWithMetricsFragment } from '$lib/graphql/generated';
+import { client } from '#lib/graphql/client.js';
+import type { DiveWithMetricsFragment } from '#lib/graphql/generated.js';
 import type { PageLoad } from './$types';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';

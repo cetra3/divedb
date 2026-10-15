@@ -1,5 +1,5 @@
-import { client } from '$lib/graphql/client';
-import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '$lib/graphql/generated';
+import { client } from '#lib/graphql/client.js';
+import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '#lib/graphql/generated.js';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ params }) => {

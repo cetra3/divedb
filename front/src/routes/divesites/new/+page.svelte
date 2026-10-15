@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import EditDiveSite from '$lib/components/forms/EditDiveSite.svelte';
-	import { client } from '$lib/graphql/client';
-	import { Difficulty, type CreateDiveSite } from '$lib/graphql/generated';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import EditDiveSite from '#lib/components/forms/EditDiveSite.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import { Difficulty, type CreateDiveSite } from '#lib/graphql/generated.js';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
 
 	let diveSite = {
 		name: '',

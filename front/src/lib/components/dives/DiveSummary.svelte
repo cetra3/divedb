@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DiveWithMetricsFragment } from '$lib/graphql/generated';
-	import formatMinutes from '$lib/util/formatMinutes';
+	import type { DiveWithMetricsFragment } from '#lib/graphql/generated.js';
+	import formatMinutes from '#lib/util/formatMinutes.js';
 	import ImageList from '../ImageList.svelte';
 	import DiveGraph from './DiveGraph.svelte';
 	import DiveLabels from './DiveLabels.svelte';
@@ -11,9 +11,11 @@
 
 	let { dive }: Props = $props();
 
-	let title = $derived(`${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
-		dive.diveSite ? ` - ${dive.diveSite.name}` : ''
-	}`);
+	let title = $derived(
+		`${dive.user.displayName ?? '@' + dive.user.username} - #${dive.number} ${
+			dive.diveSite ? ` - ${dive.diveSite.name}` : ''
+		}`
+	);
 </script>
 
 <div class="column col-6 col-lg-12">

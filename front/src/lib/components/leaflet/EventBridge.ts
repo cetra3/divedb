@@ -1,27 +1,16 @@
+export type LeafletHandlers = Record<string, (e: any) => void>;
+
 export default class EventBridge {
 	entity: any;
-	eventHandlers: any[];
+	eventHandlers: { event: string; handler: (e: any) => void }[];
 
-	constructor(entity: any, dispatch: any, events: any[] = []) {
+	constructor(entity: any, handlers: LeafletHandlers = {}) {
 		this.entity = entity;
 
-		this.eventHandlers = [];
-		if (events) {
-			const eventMap: any = {};
-			events.forEach((event) => {
-				if (!(event in eventMap)) {
-					const handler = function (e: any) {
-						dispatch(event, e);
-					};
-					this.eventHandlers.push({
-						event: event,
-						handler: handler
-					});
-					entity.on(event, handler);
-					eventMap[event] = handler;
-				}
-			});
-		}
+		this.eventHandlers = Object.entries(handlers).map(([event, handler]) => ({ event, handler }));
+		this.eventHandlers.forEach(({ event, handler }) => {
+			entity.on(event, handler);
+		});
 	}
 
 	unregister() {

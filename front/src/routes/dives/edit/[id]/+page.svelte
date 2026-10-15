@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
-	import EditDive from '$lib/components/forms/EditDive.svelte';
-	import { client } from '$lib/graphql/client';
-	import type { CreateDive } from '$lib/graphql/generated';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
+	import EditDive from '#lib/components/forms/EditDive.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import type { CreateDive } from '#lib/graphql/generated.js';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
 
 	import type { PageData } from './$types';
 	interface Props {
@@ -12,7 +12,7 @@
 	}
 
 	let { data }: Props = $props();
-	let dive = data.dive;
+	let dive = $derived(data.dive);
 	let showRemove = $state(false);
 
 	let onRemove = () => {
@@ -55,15 +55,14 @@
 	</div>
 
 	{#if dive != undefined}
-		<EditDive {onSave} {dive} />
+		{#key dive.id}
+			<EditDive {onSave} {dive} />
+		{/key}
 		{#if showRemove}
 			<div class={`modal active`}>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
-						<!-- svelte-ignore a11y_missing_content -->
-						<!-- svelte-ignore a11y_invalid_attribute -->
 						<a
 							href="javascript:void(0)"
 							class="btn btn-clear float-right"

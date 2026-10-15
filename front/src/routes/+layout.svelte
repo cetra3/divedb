@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { CurrentUserFragment } from '$lib/graphql/generated';
-	import { browser } from '$app/environment';
-	import { client } from '$lib/graphql/client';
+	import type { CurrentUserFragment } from '#lib/graphql/generated.js';
+	import { browser } from '$app/env';
+	import { client } from '#lib/graphql/client.js';
 	import { onMount } from 'svelte';
-	import { session } from '$lib/session';
+	import { session } from '#lib/session.js';
 	import { goto } from '$app/navigation';
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -145,8 +145,6 @@
 				<i class="icon icon-menu"></i>
 			</button>
 			<div class="dropdown hide-small">
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a class="btn btn-link dropdown-toggle" tabindex="0"
 					>Dives <i class="icon icon-caret"></i></a
 				>
@@ -161,8 +159,6 @@
 				</ul>
 			</div>
 			<div class="dropdown hide-small">
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a class="btn btn-link dropdown-toggle" tabindex="0"
 					>Sites <i class="icon icon-caret"></i></a
 				>
@@ -173,8 +169,6 @@
 			</div>
 			{#if $session.loggedIn}
 				<div class="dropdown hide-small">
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<!-- svelte-ignore a11y_missing_attribute -->
 					<a class="btn btn-link dropdown-toggle" tabindex="0"
 						>Photos <i class="icon icon-caret"></i></a
 					>
@@ -229,5 +223,5 @@
 </footer>
 
 <style global lang="scss">
-	@import '../style/app.scss';
+	@use '../style/app.scss';
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import FormRow from '$lib/components/FormRow.svelte';
-	import { client } from '$lib/graphql/client';
+	import FormRow from '#lib/components/FormRow.svelte';
+	import { client } from '#lib/graphql/client.js';
 	import type { ClientError } from 'graphql-request';
 
 	let email = $state('');

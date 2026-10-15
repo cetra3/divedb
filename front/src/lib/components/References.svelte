@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
-	import type { ReferenceFragment } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { ReferenceFragment } from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 	import FormRow from './FormRow.svelte';
 
@@ -114,7 +114,6 @@
 			<a href={reference.url}>{reference.title}</a>
 			<em class="text-muted text-small"> - {urlDisplay(reference.url)}</em>
 			{#if showForm}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<button
 					class="btn btn-sm"
 					onclick={() => {

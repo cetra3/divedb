@@ -1,13 +1,11 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { browser } from '$app/environment';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
-	import type { RegionNodeFragment } from '$lib/graphql/generated';
+	import { browser } from '$app/env';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
+	import type { RegionNodeFragment } from '#lib/graphql/generated.js';
 	import type { PageData } from './$types';
 	import type { LatLngBoundsExpression } from 'leaflet';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import { onMount } from 'svelte';
 	interface Props {
@@ -19,30 +17,23 @@
 
 	let DiveMap: any = $state();
 
-	const site = browser ? $page.url.searchParams.get('site') : undefined;
+	const site = browser ? page.url.searchParams.get('site') : undefined;
 
-	let region: RegionNodeFragment | undefined = $state(undefined);
-	let bounds: LatLngBoundsExpression | undefined = $state(undefined);
-
-	run(() => {
-		if (data.region) {
-			region = data.regions.find((val) => val.slug == data.region);
-
-			if (region) {
-				bounds = [
+	let region: RegionNodeFragment | undefined = $derived(
+		data.region ? data.regions.find((val) => val.slug == data.region) : undefined
+	);
+	let bounds: LatLngBoundsExpression | undefined = $derived(
+		region
+			? [
 					[region.latMin, region.lonMin],
 					[region.latMax, region.lonMax]
-				];
-			}
-		} else {
-			region = undefined;
-			bounds = undefined;
-		}
-	});
+				]
+			: undefined
+	);
 
 	onMount(async () => {
 		if (browser) {
-			DiveMap = (await import('$lib/components/DiveMap.svelte')).default;
+			DiveMap = (await import('#lib/components/DiveMap.svelte')).default;
 		}
 	});
 </script>

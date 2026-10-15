@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { createEventDispatcher, getContext, onDestroy, setContext } from 'svelte';
+	import { getContext, onDestroy, setContext } from 'svelte';
 	import L from 'leaflet';
 
-	import EventBridge from './EventBridge';
+	import EventBridge, { type LeafletHandlers } from './EventBridge';
 
 	const { getMap } = getContext<any>(L);
 
@@ -25,7 +23,7 @@
 		icon?: any;
 		opacity?: number;
 		options?: any;
-		events?: any[];
+		events?: LeafletHandlers;
 		children?: import('svelte').Snippet;
 	}
 
@@ -35,11 +33,13 @@
 		icon = defaultIcon,
 		opacity = 1.0,
 		options = {},
-		events = [],
+		events = {},
 		children
 	}: Props = $props();
 
-	let marker: L.Marker = $state();
+	// LeafletMap only renders its children once the map exists, so create the marker up front
+	// svelte-ignore state_referenced_locally
+	const marker = L.marker(latLng, options).addTo(getMap());
 
 	setContext(L.Layer, {
 		getLayer: () => marker
@@ -48,14 +48,10 @@
 		getMarker: () => marker
 	});
 
-	const dispatch = createEventDispatcher();
-	let eventBridge: EventBridge = $state();
+	// svelte-ignore state_referenced_locally
+	const eventBridge = new EventBridge(marker, events);
 
-	run(() => {
-		if (!marker) {
-			marker = L.marker(latLng, options).addTo(getMap());
-			eventBridge = new EventBridge(marker, dispatch, events);
-		}
+	$effect.pre(() => {
 		marker.setLatLng(latLng);
 		marker.setZIndexOffset(zIndexOffset);
 		marker.setIcon(icon);

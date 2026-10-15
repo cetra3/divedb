@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { DiveWithMetricsFragment, DiveNodeFragment } from '$lib/graphql/generated';
+	import type { DiveWithMetricsFragment, DiveNodeFragment } from '#lib/graphql/generated.js';
 
-
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import LikeHeart from '../forms/LikeHeart.svelte';
 	import UserLabel from '../labels/UserLabel.svelte';
 	import DiveComment from './DiveComment.svelte';
@@ -12,10 +11,10 @@
 
 	let { dive }: Props = $props();
 
-	const onLike = (liked: CustomEvent<boolean>) => {
+	const onLike = (liked: boolean) => {
 		let diveId = dive.id;
 
-		if (liked.detail) {
+		if (liked) {
 			client.likeDive({ diveId });
 		} else {
 			client.unlikeDive({ diveId });
@@ -24,7 +23,7 @@
 </script>
 
 <div class="label-list">
-	<LikeHeart liked={dive.liked} likes={dive.likes} on:liked={onLike} />
+	<LikeHeart liked={dive.liked} likes={dive.likes} onLiked={onLike} />
 
 	<DiveComment diveId={dive.id} numComments={dive.numComments} />
 

@@ -1,20 +1,20 @@
 <script lang="ts">
-	import type { CreateSealife } from '$lib/graphql/generated';
+	import type { CreateSealife } from '#lib/graphql/generated.js';
 	import type { PageData } from './$types';
-	import SealifeIcon from '$lib/icons/SealifeIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import ImageList from '$lib/components/ImageList.svelte';
-	import Photo from '$lib/components/photos/Photo.svelte';
-	import { client } from '$lib/graphql/client';
-	import CategoryView from '$lib/components/categories/CategoryView.svelte';
-	import References from '$lib/components/References.svelte';
-	import { session } from '$lib/session';
+	import SealifeIcon from '#lib/icons/SealifeIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import Photo from '#lib/components/photos/Photo.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import CategoryView from '#lib/components/categories/CategoryView.svelte';
+	import References from '#lib/components/References.svelte';
+	import { session } from '#lib/session.js';
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-	let sealife = $state(data.sealife);
+	let sealife = $derived(data.sealife);
 	let mdDesc = $derived(data.mdDesc);
 	let siteUrl = $derived(data.siteUrl);
 	let categories = $derived(data.categories);
@@ -126,11 +126,8 @@
 			</h1>
 		</div>
 		<div class="column col-12 col-sm-12">
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<ImageList {photos} query={{ sealifeId: sealife.id }}>
-				<!-- @migration-task: migrate this slot by hand, `photo-label` is an invalid identifier -->
-	<svelte:fragment let:photo slot="photo-label">
+				{#snippet photoLabel(photo)}
 					{#if sealife.photoId !== photo}
 						{#if loading}
 							<span class="loading padding-20"></span>
@@ -145,7 +142,7 @@
 					{:else if changed}
 						<i class="icon icon-check"></i>
 					{/if}
-				</svelte:fragment>
+				{/snippet}
 			</ImageList>
 		</div>
 	</div>

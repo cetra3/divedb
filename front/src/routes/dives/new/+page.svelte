@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import { goto } from '$app/navigation';
-	import EditDive from '$lib/components/forms/EditDive.svelte';
+	import EditDive from '#lib/components/forms/EditDive.svelte';
 
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import type { CreateDive } from '$lib/graphql/generated';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import type { CreateDive } from '#lib/graphql/generated.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 
 	let dive: CreateDive = {
 		date: new Date(),

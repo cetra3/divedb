@@ -1,4 +1,4 @@
-import { client } from '$lib/graphql/client';
+import { client } from '#lib/graphql/client.js';
 
 export const prerender = false;
 

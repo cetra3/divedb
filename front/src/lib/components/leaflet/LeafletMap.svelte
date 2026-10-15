@@ -1,22 +1,20 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { createEventDispatcher, setContext } from 'svelte';
+	import { setContext } from 'svelte';
 	import L, { type LatLngBoundsExpression } from 'leaflet';
 
-	import EventBridge from './EventBridge';
+	import EventBridge, { type LeafletHandlers } from './EventBridge';
 
 	interface Props {
 		options?: any;
 		fitBounds?: LatLngBoundsExpression | undefined;
-		events?: any[];
+		events?: LeafletHandlers;
 		children?: import('svelte').Snippet;
 	}
 
 	let {
 		options = {},
 		fitBounds = undefined,
-		events = [],
+		events = {},
 		children
 	}: Props = $props();
 
@@ -26,14 +24,12 @@
 		getMap: () => map
 	});
 
-	run(() => {
+	$effect(() => {
 		if (fitBounds && map) {
-			console.log('Changing bounds,', fitBounds);
 			map.fitBounds(fitBounds);
 		}
 	});
 
-	const dispatch = createEventDispatcher();
 	let eventBridge: EventBridge;
 
 	function initialize(container: HTMLElement) {
@@ -43,7 +39,7 @@
 			map.fitBounds(fitBounds);
 		}
 
-		eventBridge = new EventBridge(map, dispatch, events);
+		eventBridge = new EventBridge(map, events);
 		return {
 			destroy: () => {
 				eventBridge.unregister();

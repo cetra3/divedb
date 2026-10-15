@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { UserSummaryFragment } from '$lib/graphql/generated';
+	import type { UserSummaryFragment } from '#lib/graphql/generated.js';
 
 	interface Props {
 		user: UserSummaryFragment;

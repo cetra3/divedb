@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { CreatePhoto } from '$lib/graphql/generated';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import EditPhoto from '$lib/components/forms/EditPhoto.svelte';
+	import type { CreatePhoto } from '#lib/graphql/generated.js';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import EditPhoto from '#lib/components/forms/EditPhoto.svelte';
 
 	import type { PageData } from './$types';
 
-
-	import Photo from '$lib/components/photos/Photo.svelte';
-	import { session } from '$lib/session';
-	import { client } from '$lib/graphql/client';
-	import CheckLogin from '$lib/components/CheckLogin.svelte';
+	import Photo from '#lib/components/photos/Photo.svelte';
+	import { session } from '#lib/session.js';
+	import { client } from '#lib/graphql/client.js';
+	import CheckLogin from '#lib/components/CheckLogin.svelte';
 	interface Props {
 		data: PageData;
 	}
@@ -18,7 +17,6 @@
 	let { data }: Props = $props();
 
 	let showRemove = $state(false);
-
 
 	let onRemove = () => {
 		if (photo) {
@@ -66,16 +64,16 @@
 			</div>
 		{/if}
 		<div class="column col-12">
-			<EditPhoto {onSave} {photo} />
+			<!-- remount per photo: the site and sealife pickers load their labels once -->
+			{#key photo.id}
+				<EditPhoto {onSave} {photo} />
+			{/key}
 		</div>
 		{#if showRemove}
 			<div class={`modal active`}>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<span class="modal-overlay" aria-label="Close" onclick={onClose}></span>
 				<div class="modal-container">
 					<div class="modal-header">
-						<!-- svelte-ignore a11y_missing_content -->
-						<!-- svelte-ignore a11y_invalid_attribute -->
 						<a
 							href="javascript:void(0)"
 							class="btn btn-clear float-right"

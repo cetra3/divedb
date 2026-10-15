@@ -1,17 +1,17 @@
 <script lang="ts">
-	import ImageList from '$lib/components/ImageList.svelte';
-	import type { CreateDiveSite, SiteFragment } from '$lib/graphql/generated';
-	import SiteMetrics from '$lib/components/SiteMetrics.svelte';
-	import DiveSiteIcon from '$lib/icons/DiveSiteIcon.svelte';
-	import PhotoIcon from '$lib/icons/PhotoIcon.svelte';
-	import Photo from '$lib/components/photos/Photo.svelte';
-	import { client } from '$lib/graphql/client';
-	import { session } from '$lib/session';
+	import ImageList from '#lib/components/ImageList.svelte';
+	import type { CreateDiveSite, SiteFragment } from '#lib/graphql/generated.js';
+	import SiteMetrics from '#lib/components/SiteMetrics.svelte';
+	import DiveSiteIcon from '#lib/icons/DiveSiteIcon.svelte';
+	import PhotoIcon from '#lib/icons/PhotoIcon.svelte';
+	import Photo from '#lib/components/photos/Photo.svelte';
+	import { client } from '#lib/graphql/client.js';
+	import { session } from '#lib/session.js';
 
 	import type { PageData } from './$types';
-	import References from '$lib/components/References.svelte';
-	import DiveLogIcon from '$lib/icons/DiveLogIcon.svelte';
-	import DiveList from '$lib/components/dives/DiveList.svelte';
+	import References from '#lib/components/References.svelte';
+	import DiveLogIcon from '#lib/icons/DiveLogIcon.svelte';
+	import DiveList from '#lib/components/dives/DiveList.svelte';
 	interface Props {
 		data: PageData;
 	}
@@ -183,12 +183,9 @@
 				</h1>
 			</div>
 			<div class="column col-12 col-sm-12">
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<ImageList {photos} query={{ diveSite: diveSite.id }}>
-					<!-- @migration-task: migrate this slot by hand, `photo-label` is an invalid identifier -->
-	<svelte:fragment let:photo slot="photo-label">
-						{#if diveSite.photoId !== photo}
+					{#snippet photoLabel(photo)}
+						{#if diveSite?.photoId !== photo}
 							{#if loading}
 								<span class="loading padding-20"></span>
 							{:else}
@@ -202,7 +199,7 @@
 						{:else if changed}
 							<i class="icon icon-check"></i>
 						{/if}
-					</svelte:fragment>
+					{/snippet}
 				</ImageList>
 			</div>
 		</div>

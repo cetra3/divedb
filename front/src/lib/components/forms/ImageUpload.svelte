@@ -13,8 +13,8 @@
 </script>
 
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
-	import type { PhotoSummaryFragment } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type { PhotoSummaryFragment } from '#lib/graphql/generated.js';
 
 	import { onDestroy, onMount } from 'svelte';
 
@@ -113,7 +113,6 @@
 {:else if dataUrl}
 	<div class="column col-3 col-sm-6">
 		<div class="img-holder">
-			<!-- svelte-ignore a11y_missing_attribute -->
 			<img src={dataUrl} class:incomplete={!completed} class="img-edit img-responsive" />
 			<div class="img-overlay" style={`margin-left:${percentComplete}%`}></div>
 		</div>

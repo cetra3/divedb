@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { client } from '$lib/graphql/client';
-	import type { SearchResultNodeFragment } from '$lib/graphql/generated';
-	import { onMount } from 'svelte';
+	import { client } from '#lib/graphql/client.js';
+	import type { SearchResultNodeFragment } from '#lib/graphql/generated.js';
+	import { onMount, untrack } from 'svelte';
 
 	let focused = $state(false);
 	let dropDownFocused = $state(false);
-
 
 	interface Props {
 		belowInput?: boolean;
@@ -46,8 +43,11 @@
 		}
 	};
 
-	run(() => {
-		(query, focused, updateResult());
+	// Search again only when the query or focus changes, not on anything updateResult reads
+	$effect(() => {
+		query;
+		focused;
+		untrack(() => updateResult());
 	});
 </script>
 
@@ -99,7 +99,6 @@
 </div>
 
 {#if results.length > 0 && (dropDownFocused || focused)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
 		onmouseenter={() => (dropDownFocused = true)}
 		onmouseleave={() => (dropDownFocused = false)}
@@ -109,7 +108,6 @@
 		<ul class="menu" class:above-input={belowInput == false}>
 			{#each results as result, index}
 				<li class="menu-item">
-					<!-- svelte-ignore a11y_invalid_attribute -->
 					<a
 						class:active={index == idx}
 						href="javascript:void(0)"

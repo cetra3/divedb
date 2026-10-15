@@ -1,4 +1,4 @@
-import { getClient } from '$lib/graphql/client';
+import { getClient } from '#lib/graphql/client.js';
 
 export async function load() {
 	try {

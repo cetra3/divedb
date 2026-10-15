@@ -1,10 +1,14 @@
 <script lang="ts">
-	import { client } from '$lib/graphql/client';
-	import type { DivePlanInput, DiveScheduleNodeFragment, GasInput } from '$lib/graphql/generated';
+	import { client } from '#lib/graphql/client.js';
+	import type {
+		DivePlanInput,
+		DiveScheduleNodeFragment,
+		GasInput
+	} from '#lib/graphql/generated.js';
 	import type { ClientError } from 'graphql-request';
 
 	import FormRow from '../FormRow.svelte';
-	import formatGas from '$lib/util/formatGas';
+	import formatGas from '#lib/util/formatGas.js';
 	import { onMount } from 'svelte';
 
 	let errors: string | undefined = $state(undefined);
@@ -97,10 +101,6 @@
 				errors = reason.response.errors?.map((val) => val.message).join();
 			});
 	};
-
-	$effect(() => {
-		console.log(decoGasses, runtime, gfhigh, gflo);
-	});
 </script>
 
 <div class="columns">
@@ -187,7 +187,9 @@
 				{/each}
 				<button class="btn btn-sm gas-row" type="button" onclick={addDecoGas}>Add Gas</button>
 				{#if decoGasses.length > 0}
-					<button class="btn btn-sm gas-row" type="button" onclick={removeDecoGas}>Remove Gas</button>
+					<button class="btn btn-sm gas-row" type="button" onclick={removeDecoGas}
+						>Remove Gas</button
+					>
 				{/if}
 			</FormRow>
 
@@ -283,7 +285,7 @@
 </div>
 
 <style lang="scss" global>
-   	.gf-row {
+	.gf-row {
 		margin-top: 1rem;
 	}
 

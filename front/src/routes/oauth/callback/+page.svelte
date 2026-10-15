@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
-	import { fbLoginRedirect } from '$lib/util/fbRedirect';
+	import { session } from '#lib/session.js';
+	import { fbLoginRedirect } from '#lib/util/fbRedirect.js';
 	import type { ClientError } from 'graphql-request';
 
 	let errors: string | undefined = $state(undefined);
@@ -17,7 +17,7 @@
 		let state = searchParams.get('state') ?? '';
 
 		client
-		    .oauthCallback({code, state})
+			.oauthCallback({ code, state })
 			.then((val) => {
 				localStorage.setItem('token', val.oauthCallback.token);
 				session.set({ loggedIn: true, user: val.oauthCallback });

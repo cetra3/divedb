@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { client } from '$lib/graphql/client';
+	import { client } from '#lib/graphql/client.js';
 	import { goto } from '$app/navigation';
-	import { session } from '$lib/session';
-	import { fbLoginRedirect } from '$lib/util/fbRedirect';
+	import { session } from '#lib/session.js';
+	import { fbLoginRedirect } from '#lib/util/fbRedirect.js';
 	import type { ClientError } from 'graphql-request';
 
 	let errors: string | undefined = $state(undefined);
@@ -22,7 +22,8 @@
 				localStorage.setItem('token', val.fbLogin.token);
 				session.set({ loggedIn: true, user: val.fbLogin });
 				loading = false;
-				goto(redirect);
+				// goto rejects destinations that aren't app routes, so fall back to home
+				goto(redirect).catch(() => goto('/'));
 			})
 			.catch((reason: ClientError) => {
 				loading = false;

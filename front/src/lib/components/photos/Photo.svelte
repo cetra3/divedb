@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { run, createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	interface Props {
 		id: string;
 		imgClass?: string | undefined;
@@ -10,6 +7,7 @@
 		height?: number | undefined;
 		lazy?: boolean;
 		large?: boolean;
+		onclick?: (e: MouseEvent) => void;
 	}
 
 	let {
@@ -19,14 +17,12 @@
 		width = undefined,
 		height = undefined,
 		lazy = true,
-		large = false
+		large = false,
+		onclick
 	}: Props = $props();
 
 	const THUMB_WIDTH = 1000;
 	const LARGE_WIDTH = 2000;
-
-	let newWidth: number | undefined = $state(undefined),
-		newHeight: number | undefined = $state(undefined);
 
 	// based on a max image size of 1000 this shows the appropriate size
 	const calculatedDims = (width: number, height: number, useLarge: boolean) => {
@@ -34,22 +30,20 @@
 
 		if (width > height) {
 			let ratio = height / width;
-			newWidth = desiredWidth;
-			newHeight = Math.round(ratio * desiredWidth);
+			return { width: desiredWidth, height: Math.round(ratio * desiredWidth) };
 		} else {
 			let ratio = width / height;
-			newWidth = Math.round(ratio * desiredWidth);
-			newHeight = desiredWidth;
+			return { width: Math.round(ratio * desiredWidth), height: desiredWidth };
 		}
 	};
 
-	run(() => {
-		width !== undefined &&
-			width > 0 &&
-			height !== undefined &&
-			height > 0 &&
-			calculatedDims(width, height, large);
-	});
+	let dims = $derived(
+		width !== undefined && width > 0 && height !== undefined && height > 0
+			? calculatedDims(width, height, large)
+			: undefined
+	);
+	let newWidth = $derived(dims?.width);
+	let newHeight = $derived(dims?.height);
 </script>
 
 <picture>
@@ -60,13 +54,11 @@
 		<source type="image/webp" srcset="/api/photos/webp/{id}" />
 		<source type="image/jpeg" srcset="/api/photos/jpeg/{id}" />
 	{/if}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<img
 		width={newWidth}
 		height={newHeight}
 		class={imgClass}
-		onclick={bubble('click')}
+		{onclick}
 		loading={lazy ? 'lazy' : undefined}
 		src={`/api/photos/jpeg/${id}`}
 		{alt}
