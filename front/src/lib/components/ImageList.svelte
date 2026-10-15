@@ -2,100 +2,140 @@
 	import type { GetPhotosQueryVariables, PhotoSummaryFragment } from '#lib/graphql/generated.js';
 	import { client } from '#lib/graphql/client.js';
 	import { throttle } from 'lodash-es';
-	export let query: GetPhotosQueryVariables | undefined = undefined;
-	export let condensed = false;
-	export let photos: PhotoSummaryFragment[];
-
 	import { browser } from '$app/env';
+	import { onDestroy, type Snippet } from 'svelte';
 
-	import { Swiper, SwiperSlide } from 'swiper/svelte';
-
-	import type { Swiper as SwiperVar } from 'swiper';
-	import { Zoom, Navigation, Pagination, Virtual } from 'swiper';
+	import Swiper from 'swiper';
+	import type { VirtualData } from 'swiper/types';
+	import { Zoom, Navigation, Pagination, Virtual } from 'swiper/modules';
 
 	import 'swiper/css';
-
 	import 'swiper/css/zoom';
 	import 'swiper/css/navigation';
 	import 'swiper/css/pagination';
+	import 'swiper/css/virtual';
 	import PhotoLabels from './photos/PhotoLabels.svelte';
 	import imageAlt from '#lib/util/imageAlt.js';
 	import PhotoSlide from './photos/PhotoSlide.svelte';
 	import Photo from './photos/Photo.svelte';
-	import { onDestroy } from 'svelte';
 
-	let scrollPercent = 0;
+	interface Props {
+		query?: GetPhotosQueryVariables;
+		condensed?: boolean;
+		photos: PhotoSummaryFragment[];
+		/** Extra labels in the photo viewer toolbar, given the current photo's id */
+		photoLabel?: Snippet<[string]>;
+	}
+
+	let { query = undefined, condensed = false, photos: photosProp, photoLabel }: Props = $props();
+
+	// Grows as more photos are loaded, and resets if the parent passes a new list
+	let photos = $derived(photosProp);
+
 	let loading = false;
 	let atTheEnd = false;
 
-	let curIdx = 0;
+	let curIdx = $state(0);
+	let showModal = $state(false);
+	let toEdit: PhotoSummaryFragment | undefined = $state(undefined);
 
-	let showModal = false;
+	let swiper: Swiper | undefined;
 
-	let swiper: SwiperVar | undefined = undefined;
+	// The window of slides Swiper wants rendered; Svelte renders them in the template
+	let virtualData: VirtualData<PhotoSummaryFragment> | undefined = $state(undefined);
 
-	let toEdit: PhotoSummaryFragment | undefined = undefined;
-
-	$: offset = photos.length;
-
-	let photoId: string | undefined = undefined;
+	const refreshSlides = () => {
+		if (swiper) {
+			swiper.virtual.slides = photos;
+			swiper.virtual.update(true);
+		}
+	};
 
 	const onEditSave = (newPhoto: PhotoSummaryFragment) => {
-		const idx = photos.findIndex((photo) => photo.id == newPhoto.id);
-
-		photos[idx] = newPhoto;
-
+		photos = photos.map((photo) => (photo.id == newPhoto.id ? newPhoto : photo));
 		toEdit = undefined;
+		refreshSlides();
+	};
 
-		if (swiper) {
-			setTimeout(() => swiper?.virtual.update(true));
-		}
+	const openPhoto = (photoId: string) => {
+		curIdx = Math.max(
+			0,
+			photos.findIndex((photo) => photo.id == photoId)
+		);
+		showModal = true;
+		document.body.style.overflow = 'hidden';
 	};
 
 	const closeModal = () => {
-		if (swiper) {
-			swiper.destroy();
-			swiper = undefined;
-		}
-
-		const body = document.querySelector('body');
-		if (body) {
-			body.style.overflow = 'visible';
-		}
-
+		document.body.style.overflow = 'visible';
 		toEdit = undefined;
 		showModal = false;
-	};
-
-	const updateSwiper = () => {
-		if (swiper && photoId) {
-			const idx = photos.findIndex((photo) => photo.id == photoId);
-			swiper.slideTo(idx);
-			setTimeout(() => swiper?.update());
-		}
 	};
 
 	const morePhotos = () => {
 		if (query !== undefined && !loading && !atTheEnd) {
 			loading = true;
-			client.getPhotos({ ...query, offset }).then((val) => {
+			client.getPhotos({ ...query, offset: photos.length }).then((val) => {
 				atTheEnd = val.photos.length == 0;
 				photos = [...photos, ...val.photos];
 				loading = false;
-				if (swiper) {
-					swiper.virtual.slides = photos;
-					swiper.virtual.update(true);
-				}
+				refreshSlides();
 			});
 		}
 	};
 
+	const initSwiper = (el: HTMLElement) => {
+		swiper = new Swiper(el, {
+			modules: [Zoom, Navigation, Pagination, Virtual],
+			zoom: true,
+			initialSlide: curIdx,
+			navigation: {
+				nextEl: el.querySelector<HTMLElement>('.swiper-button-next'),
+				prevEl: el.querySelector<HTMLElement>('.swiper-button-prev')
+			},
+			pagination: {
+				el: el.querySelector<HTMLElement>('.swiper-pagination'),
+				dynamicBullets: true,
+				clickable: true
+			},
+			virtual: {
+				slides: photos,
+				renderExternal: (data) => {
+					virtualData = data as VirtualData<PhotoSummaryFragment>;
+				},
+				renderExternalUpdate: false
+			},
+			on: {
+				slideChange: (s) => {
+					curIdx = s.activeIndex;
+					toEdit = undefined;
+				},
+				reachEnd: morePhotos
+			}
+		});
+
+		return {
+			destroy: () => {
+				swiper?.destroy();
+				swiper = undefined;
+				virtualData = undefined;
+			}
+		};
+	};
+
+	// Once the slides Swiper asked for are in the DOM, let it measure them
+	$effect(() => {
+		if (virtualData && swiper && !swiper.destroyed) {
+			swiper.updateSlides();
+			swiper.updateProgress();
+			swiper.updateSlidesClasses();
+			swiper.emit('_virtualUpdated');
+		}
+	});
+
 	onDestroy(() => {
 		if (browser) {
-			const body = document.querySelector('body');
-			if (body) {
-				body.style.overflow = 'visible';
-			}
+			document.body.style.overflow = 'visible';
 		}
 	});
 
@@ -104,7 +144,7 @@
 			let scrollTop = window.scrollY;
 			let docHeight = document.body.offsetHeight;
 			let winHeight = window.innerHeight;
-			scrollPercent = scrollTop / (docHeight - winHeight);
+			let scrollPercent = scrollTop / (docHeight - winHeight);
 
 			if (scrollPercent > 0.5) {
 				morePhotos();
@@ -113,62 +153,50 @@
 	}, 300);
 </script>
 
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot (photo-label to photo_label) making the component unusable -->
-
 {#if showModal}
 	<div class="photo-modal">
-		<!-- svelte-ignore a11y-missing-content -->
-		<!-- svelte-ignore a11y-invalid-attribute -->
 		<div class="modal-close">
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
-			<span class="pointer" on:click={closeModal}>✕ </span>
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<span class="pointer" onclick={closeModal}>✕ </span>
 		</div>
-		<Swiper
+		<div
+			class="swiper"
+			use:initSwiper
 			style="--swiper-navigation-color: #FFF;--swiper-pagination-color: #FFF"
-			zoom
-			navigation
-			pagination={{
-				dynamicBullets: true,
-				clickable: true
-			}}
-			virtual={{ slides: photos }}
-			on:swiper={(val) => {
-				// @ts-ignore
-				swiper = val.detail[0];
-				updateSwiper();
-			}}
-			on:slideChange={(val) => {
-				if (swiper) {
-					curIdx = swiper.activeIndex;
-				}
-				toEdit = undefined;
-			}}
-			on:reachEnd={morePhotos}
-			let:virtualData={{ slides, offset, from }}
-			modules={[Zoom, Navigation, Pagination, Virtual]}
 		>
-			{#each slides as slide, index (from + index)}
-				<SwiperSlide virtualIndex={from + index} style={`left: ${offset}px`}>
-					<div class="swiper-zoom-container">
-						<Photo
-							large={true}
-							width={slide.width}
-							height={slide.height}
-							alt={imageAlt(slide)}
-							id={slide.id}
-						/>
-					</div>
-				</SwiperSlide>
-			{/each}
-		</Swiper>
+			<div class="swiper-wrapper">
+				{#if virtualData}
+					{#each virtualData.slides as slide, index (virtualData.from + index)}
+						<div
+							class="swiper-slide"
+							data-swiper-slide-index={virtualData.from + index}
+							style="left: {virtualData.offset}px"
+						>
+							<div class="swiper-zoom-container">
+								<Photo
+									large={true}
+									width={slide.width}
+									height={slide.height}
+									alt={imageAlt(slide)}
+									id={slide.id}
+								/>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
+			<div class="swiper-pagination"></div>
+			<div class="swiper-button-prev"></div>
+			<div class="swiper-button-next"></div>
+		</div>
 		<div class="photo-modal-toolbar">
 			<PhotoLabels photo={photos[curIdx]}>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<span
 					class="pointer label label-secondary"
-					on:click={() => {
+					onclick={() => {
 						if (toEdit != undefined) {
 							toEdit = undefined;
 						} else {
@@ -176,7 +204,7 @@
 						}
 					}}>Edit</span
 				>
-				<slot name="photo-label" photo={photos[curIdx].id}></slot>
+				{@render photoLabel?.(photos[curIdx].id)}
 			</PhotoLabels>
 
 			{#if toEdit}
@@ -186,10 +214,10 @@
 	</div>
 {/if}
 
-<svelte:window on:scroll={handleScroll} />
+<svelte:window onscroll={handleScroll} />
 {#if !condensed}
 	<div class="columns" class:hide-scroll={showModal}>
-		{#each photos as photo, idx}
+		{#each photos as photo}
 			<div class="column col-6 col-sm-12">
 				<div class="card">
 					<div class="card-image">
@@ -199,15 +227,7 @@
 							height={photo.height}
 							imgClass="img-responsive pointer"
 							id={photo.id}
-							onclick={() => {
-								photoId = photo.id;
-								updateSwiper();
-								showModal = true;
-								const body = document.querySelector('body');
-								if (body) {
-									body.style.overflow = 'hidden';
-								}
-							}}
+							onclick={() => openPhoto(photo.id)}
 						/>
 					</div>
 
@@ -220,19 +240,7 @@
 	<div class="condensed">
 		{#each photos as photo}
 			<div class="condensed-photo">
-				<Photo
-					onclick={() => {
-						photoId = photo.id;
-						updateSwiper();
-						showModal = true;
-						const body = document.querySelector('body');
-						if (body) {
-							body.style.overflow = 'hidden';
-						}
-					}}
-					imgClass="pointer"
-					id={photo.id}
-				/>
+				<Photo onclick={() => openPhoto(photo.id)} imgClass="pointer" id={photo.id} />
 			</div>
 		{/each}
 		{#if photos.length % 3 != 0}

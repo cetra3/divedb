@@ -186,9 +186,8 @@
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<ImageList {photos} query={{ diveSite: diveSite.id }}>
-					<!-- @migration-task: migrate this slot by hand, `photo-label` is an invalid identifier -->
-					<svelte:fragment let:photo slot="photo-label">
-						{#if diveSite.photoId !== photo}
+					{#snippet photoLabel(photo)}
+						{#if diveSite?.photoId !== photo}
 							{#if loading}
 								<span class="loading padding-20"></span>
 							{:else}
@@ -202,7 +201,7 @@
 						{:else if changed}
 							<i class="icon icon-check"></i>
 						{/if}
-					</svelte:fragment>
+					{/snippet}
 				</ImageList>
 			</div>
 		</div>
