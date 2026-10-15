@@ -32,5 +32,5 @@
 			</h1>
 		</div>
 	</div>
-	<ImageList {photos} />
+	<ImageList {photos} query={{}} />
 </div>
