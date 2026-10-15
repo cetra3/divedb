@@ -10,7 +10,11 @@
 		onSave: (site: CreateDive) => void;
 	}
 
-	let { dive = $bindable(), onSave }: Props = $props();
+	let { dive: initialDive, onSave }: Props = $props();
+
+	// Local reactive copy so the bound inputs drive canSave; callers pass plain objects
+	// svelte-ignore state_referenced_locally
+	let dive = $state({ ...initialDive });
 
 	const pad2 = (input: number): string => {
 		return input.toString().padStart(2, '0');

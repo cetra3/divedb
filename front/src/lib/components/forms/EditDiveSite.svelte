@@ -12,7 +12,11 @@
 		onSave: (site: CreateDiveSite) => void;
 	}
 
-	let { site = $bindable(), onSave }: Props = $props();
+	let { site: initialSite, onSave }: Props = $props();
+
+	// Local reactive copy so the bound inputs drive canSave; callers pass plain objects
+	// svelte-ignore state_referenced_locally
+	let site = $state({ ...initialSite });
 
 	let EditableMap: any = $state();
 

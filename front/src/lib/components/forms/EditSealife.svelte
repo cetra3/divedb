@@ -10,7 +10,11 @@
 		onSave: (site: CreateSealife) => void;
 	}
 
-	let { sealife = $bindable(), categories, onSave }: Props = $props();
+	let { sealife: initialSealife, categories, onSave }: Props = $props();
+
+	// Local reactive copy so the bound inputs drive canSave; callers pass plain objects
+	// svelte-ignore state_referenced_locally
+	let sealife = $state({ ...initialSealife });
 
 	let categoryMap = $state(sealife.categoryMap ?? {});
 
