@@ -4,10 +4,9 @@ use super::{Dive, DiveQuery, OgReference, OgReferenceQuery, Photo, PhotoQuery};
 use crate::escape::{md_to_text, truncate};
 use crate::{db::DbHandle, graphql::SchemaContext};
 use async_graphql::*;
-use async_trait::async_trait;
 use chrono::prelude::*;
-use dataloader::cached::Loader;
 use dataloader::BatchFn;
+use dataloader::cached::Loader;
 use divedb_core::FromRow;
 use postgres_types::{FromSql, ToSql};
 use serde::{Deserialize, Serialize};
@@ -31,7 +30,6 @@ impl DiveSiteBatcher {
     }
 }
 
-#[async_trait]
 impl BatchFn<Uuid, DiveSite> for DiveSiteBatcher {
     async fn load(&mut self, keys: &[Uuid]) -> HashMap<Uuid, DiveSite> {
         debug!("Got load for keys:{:?}", keys);

@@ -1,13 +1,13 @@
 use crate::{
-    schema::{EmailVerification, PasswordReset},
     ConfigContext, EmailSecurity, SITE_URL,
+    schema::{EmailVerification, PasswordReset},
 };
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use askama::Template;
 use lettre::{
-    message::{header, MultiPart, SinglePart},
-    transport::smtp::authentication::Credentials,
     AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
+    message::{MultiPart, SinglePart, header},
+    transport::smtp::authentication::Credentials,
 };
 use uuid::Uuid;
 pub struct Emailer {
@@ -28,7 +28,7 @@ impl Emailer {
             }
         };
 
-        if let (Some(ref user), Some(ref pass)) = (
+        if let (Some(user), Some(pass)) = (
             &context.email_settings.smtp_username,
             &context.email_settings.smtp_password,
         ) {
@@ -63,9 +63,12 @@ impl Emailer {
         .render()?;
 
         let root = mrml::parse(&mjml).map_err(|val| anyhow!("{:?}", val))?;
-        let opts = mrml::prelude::render::Options::default();
+        let opts = mrml::prelude::render::RenderOptions::default();
 
-        let html = root.render(&opts).map_err(|val| anyhow!("{:?}", val))?;
+        let html = root
+            .element
+            .render(&opts)
+            .map_err(|val| anyhow!("{:?}", val))?;
 
         let email = Message::builder()
             .from(self.from_addr.parse()?)
@@ -109,9 +112,12 @@ impl Emailer {
         .render()?;
 
         let root = mrml::parse(&mjml).map_err(|val| anyhow!("{:?}", val))?;
-        let opts = mrml::prelude::render::Options::default();
+        let opts = mrml::prelude::render::RenderOptions::default();
 
-        let html = root.render(&opts).map_err(|val| anyhow!("{:?}", val))?;
+        let html = root
+            .element
+            .render(&opts)
+            .map_err(|val| anyhow!("{:?}", val))?;
 
         let email = Message::builder()
             .from(self.from_addr.parse()?)

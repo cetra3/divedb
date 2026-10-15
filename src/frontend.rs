@@ -1,9 +1,9 @@
 use actix_web::{
+    Error, HttpRequest, HttpResponse,
     dev::HttpServiceFactory,
     error::ErrorBadRequest,
     http::Method,
     web::{self, Bytes},
-    Error, HttpRequest, HttpResponse,
 };
 use serde::{Deserialize, Serialize};
 use tracing::*;
@@ -52,15 +52,11 @@ pub async fn frontend_proxy(req: HttpRequest, web: &WebContext) -> Result<HttpRe
     // Use fetch method for cache-aside pattern
     let cached_entry = web
         .frontend_cache
-        .fetch(relative_path.clone(), {
+        .get_or_fetch(&relative_path, {
             || async move {
                 debug!("Proxying request to: {}", target_url);
 
-                let response = client
-                    .get(target_url)
-                    .send()
-                    .await
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
+                let response = client.get(target_url).send().await?;
 
                 // get mime type and send in response
                 let mime_type = response
@@ -70,13 +66,10 @@ pub async fn frontend_proxy(req: HttpRequest, web: &WebContext) -> Result<HttpRe
                     .unwrap_or("application/octet-stream")
                     .to_string();
 
-                let response_bytes = response
-                    .bytes()
-                    .await
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
+                let response_bytes = response.bytes().await?;
 
                 // Return the cache entry
-                Ok(CacheEntry {
+                Ok::<_, anyhow::Error>(CacheEntry {
                     bytes: response_bytes,
                     mime_type,
                 })

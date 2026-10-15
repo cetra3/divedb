@@ -80,8 +80,7 @@ impl DbHandle {
             return Ok(metrics.get(&dive_site_id).cloned());
         }
 
-        let photo_count_query =
-            "select count(*) as photo_count,dive_site_id from photos where dive_site_id is not null group by dive_site_id";
+        let photo_count_query = "select count(*) as photo_count,dive_site_id from photos where dive_site_id is not null group by dive_site_id";
 
         let result = client.query(photo_count_query, &[]).await?;
 
@@ -102,8 +101,7 @@ impl DbHandle {
             }
         }
 
-        let dive_count_query =
-            "select count(*) as dive_count,dive_site_id from dives where dive_site_id is not null group by dive_site_id";
+        let dive_count_query = "select count(*) as dive_count,dive_site_id from dives where dive_site_id is not null group by dive_site_id";
 
         let result = client.query(dive_count_query, &[]).await?;
 

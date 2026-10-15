@@ -1,9 +1,9 @@
-use actix_web::{error::ErrorInternalServerError, get, web, HttpResponse};
+use actix_web::{HttpResponse, error::ErrorInternalServerError, get, web};
 
 use crate::{
+    SITE_URL,
     graphql::WebContext,
     schema::{DiveQuery, DiveSiteQuery, SealifeQuery},
-    SITE_URL,
 };
 
 #[get("/robots.txt")]
@@ -21,7 +21,7 @@ Disallow: /photos/edit
 
 Sitemap: {}/sitemap.xml
 ",
-        &*SITE_URL
+        *SITE_URL
     ))
 }
 
@@ -74,7 +74,7 @@ pub async fn sitemap_handler(
                 .url(
                     UrlEntry::builder()
                         .lastmod(site.date.into())
-                        .loc(format!("{}/sites/{}", &*SITE_URL, slug)),
+                        .loc(format!("{}/sites/{}", *SITE_URL, slug)),
                 )
                 .expect("Could not write url");
         }
@@ -86,7 +86,7 @@ pub async fn sitemap_handler(
                 .url(
                     UrlEntry::builder()
                         .lastmod(entry.date.into())
-                        .loc(format!("{}/sealife/{}", &*SITE_URL, slug)),
+                        .loc(format!("{}/sealife/{}", *SITE_URL, slug)),
                 )
                 .expect("Could not write url");
         }
@@ -97,7 +97,7 @@ pub async fn sitemap_handler(
             .url(
                 UrlEntry::builder()
                     .lastmod(dive.date.into())
-                    .loc(format!("{}/dives/{}", &*SITE_URL, dive.id)),
+                    .loc(format!("{}/dives/{}", *SITE_URL, dive.id)),
             )
             .expect("Could not write url");
     }

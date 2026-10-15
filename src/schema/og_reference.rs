@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use async_graphql::*;
 use chrono::prelude::*;
 use divedb_core::FromRow;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use clap::Parser;
 
 use openidconnect::{
@@ -75,7 +75,7 @@ impl OpenIDClient {
             Some(ClientSecret::new(settings.client_secret.clone())),
         )
         // Set the URL the user will be redirected to after the authorization process.
-        .set_redirect_uri(RedirectUrl::new(format!("{}/oauth/callback", &*SITE_URL))?);
+        .set_redirect_uri(RedirectUrl::new(format!("{}/oauth/callback", *SITE_URL))?);
 
         Ok(Self {
             issuer_name: settings.issuer_name.clone(),

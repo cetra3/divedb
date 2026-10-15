@@ -7,11 +7,11 @@ use serde_json::{Map, Value};
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::{
-    Field, IndexRecordOption, OwnedValue, Schema, TextFieldIndexing, TextOptions,
-    Value as DocValue, STORED, STRING, TEXT,
+    Field, IndexRecordOption, OwnedValue, STORED, STRING, Schema, TEXT, TextFieldIndexing,
+    TextOptions, Value as DocValue,
 };
-use tantivy::{doc, Document, Index, IndexReader, ReloadPolicy};
-use tantivy::{tokenizer::*, TantivyDocument};
+use tantivy::{Document, Index, IndexReader, ReloadPolicy, doc};
+use tantivy::{TantivyDocument, tokenizer::*};
 use uuid::Uuid;
 
 use crate::db::DbHandle;
@@ -181,7 +181,7 @@ impl Searcher {
             None => TopDocs::with_limit(10),
         };
 
-        let top_docs = searcher.search(&query, &collector)?;
+        let top_docs = searcher.search(&query, &collector.order_by_score())?;
 
         let mut output = Vec::with_capacity(top_docs.len());
 

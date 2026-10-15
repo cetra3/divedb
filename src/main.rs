@@ -1,23 +1,22 @@
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_web::{
+    App, HttpRequest, HttpResponse, HttpServer,
     dev::ConnectionInfo,
     error::ErrorInternalServerError,
     middleware::{self, DefaultHeaders},
     web::{self, Data},
-    App, HttpRequest, HttpResponse, HttpServer,
 };
 
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use async_graphql::{
-    http::{playground_source, GraphQLPlaygroundConfig},
     CacheControl,
+    http::{GraphQLPlaygroundConfig, playground_source},
 };
 use clap::Parser;
 use facebook::FacebookOauth;
-use foyer::{DirectFsDeviceOptions, Engine, HybridCacheBuilder, LargeEngineOptions};
+use foyer::{BlockEngineConfig, DeviceBuilder, FsDeviceBuilder, HybridCacheBuilder};
 use once_cell::sync::Lazy;
 use photos::{open_photo, save_files};
-use rand::{thread_rng, Rng};
 use std::{
     cmp, env,
     net::{IpAddr, Ipv4Addr},
@@ -26,7 +25,7 @@ use std::{
 };
 use token::Token;
 use tracing::*;
-use tracing_subscriber::{prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, prelude::*};
 use url::Url;
 mod activitypub;
 pub mod db;
@@ -38,6 +37,7 @@ pub mod facebook;
 pub mod frontend;
 pub mod graphql;
 pub mod openid;
+mod password;
 mod photos;
 pub mod plan;
 pub mod schema;
@@ -170,8 +170,10 @@ impl SiteContext {
 
             arr[..len].copy_from_slice(&secret_key[..len]);
         } else {
-            warn!("No `SECRET_KEY` var set, using a random key.  Users will be logged out when the service restarts");
-            thread_rng().fill(&mut arr);
+            warn!(
+                "No `SECRET_KEY` var set, using a random key.  Users will be logged out when the service restarts"
+            );
+            rand::fill(&mut arr);
         }
 
         arr
@@ -191,25 +193,28 @@ pub fn cache_header(max_age: usize) -> DefaultHeaders {
     DefaultHeaders::new().add(("Cache-Control", format!("public, max-age={max_age}")))
 }
 
+/// Default logging for this project & actix web, if `RUST_LOG` isn't set
+const FALLBACK_RUST_LOG: &str = concat!(
+    "actix_web=INFO,async_graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG,",
+    env!("CARGO_CRATE_NAME"),
+    "=DEBUG"
+);
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // Sets up default logging if none is set for this project & actix web
-    if env::var("RUST_LOG").is_err() {
-        env::set_var(
-            "RUST_LOG",
-            "actix_web=INFO,divedb=DEBUG,async_graphql=DEBUG,tantivy=DEBUG,activitypub_federation=DEBUG",
-        );
-    }
-
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     tracing_subscriber::registry()
         .with(
             EnvFilter::builder()
-                .with_env_var("RUST_LOG")
-                .from_env_lossy(),
+                .try_from_env()
+                .unwrap_or_else(|_| EnvFilter::new(FALLBACK_RUST_LOG)),
         )
-        .with(tracing_subscriber::fmt::layer().with_level(true))
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_file(true)
+                .with_line_number(true),
+        )
         .init();
 
     // Grab the connect_url from the args
@@ -221,8 +226,10 @@ async fn main() -> Result<(), Error> {
 
     let frontend_cache = HybridCacheBuilder::new()
         .memory(1024)
-        .storage(Engine::Large(LargeEngineOptions::default()))
-        .with_device_options(DirectFsDeviceOptions::new(&config.cache_dir))
+        .storage()
+        .with_engine_config(BlockEngineConfig::new(
+            FsDeviceBuilder::new(&config.cache_dir).build()?,
+        ))
         .build()
         .await?;
 

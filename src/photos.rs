@@ -8,22 +8,22 @@ use std::{
 
 use actix_files::NamedFile;
 use actix_multipart::Multipart;
-use actix_web::{error::ErrorBadRequest, web, Error, HttpResponse};
+use actix_web::{Error, HttpResponse, error::ErrorBadRequest, web};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use exif::{In, Tag};
 use futures::TryStreamExt;
 use image::{
-    codecs::jpeg::JpegEncoder,
-    imageops::{overlay, FilterType},
     DynamicImage, Rgba,
+    codecs::jpeg::JpegEncoder,
+    imageops::{FilterType, overlay},
 };
-use imageproc::drawing::draw_text_mut;
+use imageproc::drawing::{draw_text_mut, text_size};
 use tokio::{fs::File, io::AsyncWriteExt};
 use tracing::*;
 use twoway::find_bytes;
 use uuid::Uuid;
 
-use rusttype::{point, Font, Scale};
+use ab_glyph::{FontRef, PxScale};
 
 use chrono::prelude::*;
 
@@ -113,8 +113,8 @@ use once_cell::sync::Lazy;
 pub static WATERMARK: Lazy<DynamicImage> =
     Lazy::new(|| image::load_from_memory(include_bytes!("../watermark.png")).unwrap());
 
-pub static FONT: Lazy<Font> =
-    Lazy::new(|| Font::try_from_bytes(include_bytes!("./static/Asap-Bold.otf")).unwrap());
+pub static FONT: Lazy<FontRef<'static>> =
+    Lazy::new(|| FontRef::try_from_slice(include_bytes!("./static/Asap-Bold.otf")).unwrap());
 
 pub fn image_dims<P: AsRef<Path>>(path: P) -> Result<(i32, i32), anyhow::Error> {
     let im = image::open(path)?;
@@ -138,10 +138,7 @@ fn add_overlay(im: &mut DynamicImage, date: Option<DateTime<Local>>, user: &User
     overlay(im, &*WATERMARK, xl as i64, yl as i64);
 
     let height = 30.0;
-    let scale = Scale {
-        x: height,
-        y: height,
-    };
+    let scale = PxScale::from(height);
 
     if let Some(location) = user.copyright_location {
         let mut copyright_notice = String::from("©");
@@ -169,19 +166,13 @@ fn add_overlay(im: &mut DynamicImage, date: Option<DateTime<Local>>, user: &User
     }
 }
 
-pub fn draw_shadowed_text(im: &mut DynamicImage, x: i32, y: i32, scale: Scale, text: &str) {
-    draw_text_mut(im, Rgba([59, 67, 81, 0]), x, y + 1, scale, &FONT, text);
-    draw_text_mut(im, Rgba([255, 255, 255, 255]), x, y, scale, &FONT, text);
+pub fn draw_shadowed_text(im: &mut DynamicImage, x: i32, y: i32, scale: PxScale, text: &str) {
+    draw_text_mut(im, Rgba([59, 67, 81, 0]), x, y + 1, scale, &*FONT, text);
+    draw_text_mut(im, Rgba([255, 255, 255, 255]), x, y, scale, &*FONT, text);
 }
 
-pub fn get_font_width(text: &str, scale: Scale) -> u32 {
-    let v_metrics = &FONT.v_metrics(scale);
-    let offset = point(0.0, v_metrics.ascent);
-    FONT.layout(text, scale, offset)
-        .filter_map(|val| val.pixel_bounding_box())
-        .map(|val| val.max.x)
-        .max()
-        .unwrap_or_default() as u32
+pub fn get_font_width(text: &str, scale: PxScale) -> u32 {
+    text_size(scale, &*FONT, text).0
 }
 
 pub fn resize_image(photo: &Photo, user: &User, force_rerender: bool) -> Result<(), anyhow::Error> {
@@ -392,17 +383,15 @@ pub async fn save_files(
 
         let internal = query.internal.unwrap_or_default();
 
-        if !internal {
-            if let Some(val) = date {
-                dive = context
-                    .handle
-                    .nearest_dive_by_time(user.id, val)
-                    .await
-                    .map_err(log_error)?;
+        if !internal && let Some(val) = date {
+            dive = context
+                .handle
+                .nearest_dive_by_time(user.id, val)
+                .await
+                .map_err(log_error)?;
 
-                if dive_site_id.is_none() {
-                    dive_site_id = dive.as_ref().and_then(|val| val.dive_site_id);
-                }
+            if dive_site_id.is_none() {
+                dive_site_id = dive.as_ref().and_then(|val| val.dive_site_id);
             }
         }
 
@@ -460,14 +449,13 @@ impl JpegReader {
         self.buffer.put(chunk.clone());
 
         // Check to see if the exif header length has been found
-        if self.exif_len == 65535 {
-            if let Some(idx) = find_bytes(&self.buffer, &[0xFF, 0xE1]) {
-                if self.buffer.len() > idx + 2 {
-                    let length_value: [u8; 2] = [self.buffer[idx + 2], self.buffer[idx + 3]];
+        if self.exif_len == 65535
+            && let Some(idx) = find_bytes(&self.buffer, &[0xFF, 0xE1])
+            && self.buffer.len() > idx + 2
+        {
+            let length_value: [u8; 2] = [self.buffer[idx + 2], self.buffer[idx + 3]];
 
-                    self.exif_len = u16::from_be_bytes(length_value);
-                }
-            }
+            self.exif_len = u16::from_be_bytes(length_value);
         }
     }
 

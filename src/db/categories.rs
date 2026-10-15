@@ -78,7 +78,9 @@ impl DbHandle {
     }
 
     pub async fn category_map(&self, sealife_id: Uuid) -> Result<CategoryMap, Error> {
-        let mut sql = StatementBuilder::new("select category_id, category_value_id  from sealife_category_values inner join category_values on category_values.id = category_value_id");
+        let mut sql = StatementBuilder::new(
+            "select category_id, category_value_id  from sealife_category_values inner join category_values on category_values.id = category_value_id",
+        );
 
         sql.add_param("sealife_id = ${}", &sealife_id);
 

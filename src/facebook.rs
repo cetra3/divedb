@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use clap::Parser;
 use reqwest::Url;
 use serde::Deserialize;

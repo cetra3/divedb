@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
 use activitypub_federation::{
+    FEDERATION_CONTENT_TYPE,
     actix_web::inbox::receive_activity,
     config::Data,
     fetch::webfinger::{Webfinger, WebfingerLink},
     protocol::context::WithContext,
     traits::Object,
-    FEDERATION_CONTENT_TYPE,
 };
 use actix_web::{
+    Error, HttpRequest, HttpResponse,
     dev::HttpServiceFactory,
     error::{ErrorInternalServerError, ErrorNotFound},
     web::{self},
-    Error, HttpRequest, HttpResponse,
 };
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
@@ -22,8 +22,8 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::{
-    schema::{activitypub::OrderedCollection, DiveQuery, User},
-    WebContext, SITE_URL,
+    SITE_URL, WebContext,
+    schema::{DiveQuery, User, activitypub::OrderedCollection},
 };
 
 use self::activities::PersonAcceptedActivities;
@@ -53,7 +53,7 @@ pub async fn node_info_well_known() -> Result<HttpResponse, Error> {
     let node_info = NodeInfoWellKnown {
         links: vec![NodeInfoWellKnownLinks {
             rel: Url::parse("http://nodeinfo.diaspora.software/ns/schema/2.0").unwrap(),
-            href: Url::parse(&format!("{}/nodeinfo/2.0.json", &*SITE_URL)).unwrap(),
+            href: Url::parse(&format!("{}/nodeinfo/2.0.json", *SITE_URL)).unwrap(),
         }],
     };
     Ok(HttpResponse::Ok().json(node_info))

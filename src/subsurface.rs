@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 
 use futures::stream::{self, StreamExt, TryStreamExt};
 use git2::{Cred, RemoteCallbacks};
@@ -14,13 +14,13 @@ use crate::{
     },
 };
 use std::{
-    fs::{read_dir, File},
+    fs::{File, read_dir},
     mem,
 };
 use tracing::*;
 use uuid::Uuid;
 
-use tempdir::TempDir;
+use tempfile::TempDir;
 
 use chrono::prelude::*;
 
@@ -46,11 +46,13 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
 
     let (_, d2, d3, d4) = site_ns.as_fields();
 
-    let temp_dir = TempDir::new("subsurface")?;
+    let temp_dir = TempDir::with_prefix("subsurface")?;
 
     if let Err(err) = clone_git(temp_dir.path(), email, password) {
         if err.class() == git2::ErrorClass::Http {
-            return Err(anyhow!("Failed to login to Subsurface cloud with the provided credentials.  Please check your email and password."));
+            return Err(anyhow!(
+                "Failed to login to Subsurface cloud with the provided credentials.  Please check your email and password."
+            ));
         }
 
         return Err(err.into());
@@ -147,60 +149,54 @@ pub fn sync_repository(user_id: Uuid, email: &str, password: &str) -> Result<Rep
                 .ok_or_else(|| anyhow!("No Filename for Directory entry"))?
                 .to_string_lossy();
 
-            if file_name.len() == 4 {
-                if let Ok(year) = file_name.parse::<i32>() {
-                    debug!("Year folder:{}", year);
+            if file_name.len() == 4
+                && let Ok(year) = file_name.parse::<i32>()
+            {
+                debug!("Year folder:{}", year);
 
-                    for entry in read_dir(folder)? {
-                        let dir_entry = entry?;
+                for entry in read_dir(folder)? {
+                    let dir_entry = entry?;
 
-                        if dir_entry.file_type()?.is_dir() {
-                            let folder = dir_entry.path();
+                    if dir_entry.file_type()?.is_dir() {
+                        let folder = dir_entry.path();
 
-                            let file_name = folder
-                                .file_name()
-                                .ok_or_else(|| anyhow!("No Filename for Directory entry"))?
-                                .to_string_lossy();
+                        let file_name = folder
+                            .file_name()
+                            .ok_or_else(|| anyhow!("No Filename for Directory entry"))?
+                            .to_string_lossy();
 
-                            if let Ok(month) = file_name.parse::<u32>() {
-                                debug!("Month folder:{}", month);
-                                for entry in read_dir(folder)? {
-                                    let dir_entry = entry?;
+                        if let Ok(month) = file_name.parse::<u32>() {
+                            debug!("Month folder:{}", month);
+                            for entry in read_dir(folder)? {
+                                let dir_entry = entry?;
 
-                                    if dir_entry.file_type()?.is_dir() {
-                                        let folder = dir_entry.path();
+                                if dir_entry.file_type()?.is_dir() {
+                                    let folder = dir_entry.path();
 
-                                        let mut subsurface_dive = parse_dive(year, month, folder)?;
+                                    let mut subsurface_dive = parse_dive(year, month, folder)?;
 
-                                        let dive_id = Uuid::from_fields(
-                                            subsurface_dive.dive_number,
-                                            d2,
-                                            d3,
-                                            d4,
-                                        );
+                                    let dive_id =
+                                        Uuid::from_fields(subsurface_dive.dive_number, d2, d3, d4);
 
-                                        let dive = Dive {
-                                            user_id,
-                                            date: subsurface_dive.date,
-                                            depth: subsurface_dive.depth,
-                                            duration: subsurface_dive.duration,
-                                            description: subsurface_dive.description,
-                                            dive_number: 0,
-                                            published: false,
-                                            dive_site_id: subsurface_dive
-                                                .dive_site_id
-                                                .and_then(|id| sites.get(&id))
-                                                .map(|site| site.id),
-                                            id: dive_id,
-                                            deco_model: subsurface_dive
-                                                .extra_data
-                                                .remove("Deco model"),
-                                        };
+                                    let dive = Dive {
+                                        user_id,
+                                        date: subsurface_dive.date,
+                                        depth: subsurface_dive.depth,
+                                        duration: subsurface_dive.duration,
+                                        description: subsurface_dive.description,
+                                        dive_number: 0,
+                                        published: false,
+                                        dive_site_id: subsurface_dive
+                                            .dive_site_id
+                                            .and_then(|id| sites.get(&id))
+                                            .map(|site| site.id),
+                                        id: dive_id,
+                                        deco_model: subsurface_dive.extra_data.remove("Deco model"),
+                                    };
 
-                                        dive_metrics.insert(dive_id, subsurface_dive.metrics);
+                                    dive_metrics.insert(dive_id, subsurface_dive.metrics);
 
-                                        dives.push(dive);
-                                    }
+                                    dives.push(dive);
                                 }
                             }
                         }
@@ -315,16 +311,16 @@ pub fn parse_dive(year: i32, month: u32, folder: PathBuf) -> Result<SubsurfaceDi
 
             //We skip ahead to the first time entry in the file
             while let Some(Ok(line)) = lines.next() {
-                if line.starts_with("keyvalue") {
-                    if let Some((key, value)) = parse_keyvalue_simple(&line) {
-                        extra_data.insert(key.to_string(), value.to_string());
-                    }
+                if line.starts_with("keyvalue")
+                    && let Some((key, value)) = parse_keyvalue_simple(&line)
+                {
+                    extra_data.insert(key.to_string(), value.to_string());
                 }
 
-                if line.starts_with("event") {
-                    if let Some((time_seconds, o2, he)) = parse_gas_change(&line) {
-                        gas_changes.insert(time_seconds, (o2, he));
-                    }
+                if line.starts_with("event")
+                    && let Some((time_seconds, o2, he)) = parse_gas_change(&line)
+                {
+                    gas_changes.insert(time_seconds, (o2, he));
                 }
 
                 if line.starts_with("  ") {
@@ -510,10 +506,10 @@ pub async fn resolve_existing_sites(
 
             //Adjust the dives to ensure that the uuid is updated too
             for dive in repo.dives.iter_mut() {
-                if let Some(site_id) = dive.dive_site_id {
-                    if site_id == site.id {
-                        dive.dive_site_id = Some(existing.id);
-                    }
+                if let Some(site_id) = dive.dive_site_id
+                    && site_id == site.id
+                {
+                    dive.dive_site_id = Some(existing.id);
                 }
             }
 

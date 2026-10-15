@@ -1,18 +1,18 @@
 use crate::activitypub::activities::CreatePost;
 use crate::email::Emailer;
 use crate::openid::OpenIDClient;
+use crate::password::{hash_password, verify_password};
 use crate::search::{SearchResult, Searcher};
+use crate::{SITE_URL, SiteContext};
 use crate::{db::DbHandle, facebook::FacebookOauth, schema::*, subsurface, token::TokenEncryptor};
-use crate::{SiteContext, SITE_URL};
 use aes_gcm::Aes256Gcm;
-use anyhow::{anyhow, Context as AnyhowContext};
+use anyhow::{Context as AnyhowContext, anyhow};
 use async_graphql::*;
 use foyer::HybridCache;
 use governor::clock::{Clock, DefaultClock};
 use governor::state::keyed::DefaultKeyedStateStore;
 use governor::{Quota, RateLimiter};
 use reqwest::Client;
-use scrypt::*;
 use std::net::IpAddr;
 use std::num::NonZeroU32;
 use std::sync::Arc;
@@ -384,12 +384,10 @@ impl Mutation {
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Existing Password"))?;
 
-        scrypt_check(&old_password, existing_password)
+        verify_password(&old_password, existing_password)
             .map_err(|_| anyhow!("Invalid Existing Password"))?;
 
-        let params = ScryptParams::recommended();
-
-        let hash = scrypt_simple(&new_password, &params)?;
+        let hash = hash_password(&new_password)?;
 
         context.web.handle.update_password(email, &hash).await?;
 
@@ -411,9 +409,7 @@ impl Mutation {
         if let Some(reset) = resets.iter().find(|reset| reset.id == token) {
             debug!("Valid password reset found:{reset:?}, resetting");
 
-            let params = ScryptParams::recommended();
-
-            let hash = scrypt_simple(&new_password, &params)?;
+            let hash = hash_password(&new_password)?;
 
             context.web.handle.update_password(&email, &hash).await?;
             context.web.handle.remove_reset(reset.id).await?;
@@ -450,9 +446,7 @@ impl Mutation {
             return Err(anyhow!("Email address is already in use.  Try logging in instead").into());
         }
 
-        let params = ScryptParams::recommended();
-
-        let hash = scrypt_simple(&password, &params)?;
+        let hash = hash_password(&password)?;
 
         let user = context
             .web
@@ -460,14 +454,14 @@ impl Mutation {
             .new_user(&username, &email, Some(&hash))
             .await?;
 
-        if let Some(ref admin_email) = context.web.admin_email {
-            if admin_email.to_lowercase() == email.to_lowercase() {
-                context
-                    .web
-                    .handle
-                    .set_user_level(&email, UserLevel::Admin)
-                    .await?;
-            }
+        if let Some(ref admin_email) = context.web.admin_email
+            && admin_email.to_lowercase() == email.to_lowercase()
+        {
+            context
+                .web
+                .handle
+                .set_user_level(&email, UserLevel::Admin)
+                .await?;
         }
 
         let verification = context
@@ -546,7 +540,7 @@ impl Mutation {
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Password"))?;
 
-        scrypt_check(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
+        verify_password(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         let token = context.web.cipher.base64_encrypt(user.id.as_bytes())?;
 
@@ -1096,7 +1090,7 @@ impl Mutation {
             .password
             .as_deref()
             .ok_or_else(|| anyhow!("Invalid Password"))?;
-        scrypt_check(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
+        verify_password(&password, existing_password).map_err(|_| anyhow!("Invalid Password"))?;
 
         context.web.handle.delete_user(user.id).await?;
 
@@ -1204,17 +1198,17 @@ impl Mutation {
             .ok_or_else(|| anyhow!("Login Required"))?;
 
         // Only allow editors and above the ability to edit whether location is hidden
-        if !user.is_editor() {
-            if let Some(id) = sealife.id {
-                sealife.hide_location = context
-                    .web
-                    .handle
-                    .sealife(&SealifeQuery::id(id))
-                    .await?
-                    .pop()
-                    .map(|val| val.hide_location)
-                    .unwrap_or_default();
-            }
+        if !user.is_editor()
+            && let Some(id) = sealife.id
+        {
+            sealife.hide_location = context
+                .web
+                .handle
+                .sealife(&SealifeQuery::id(id))
+                .await?
+                .pop()
+                .map(|val| val.hide_location)
+                .unwrap_or_default();
         }
 
         let sealife = context.web.handle.create_sealife(&sealife).await?;
@@ -1381,7 +1375,7 @@ impl Mutation {
         let user = match context.con.user {
             Some(ref user) => user,
             None => {
-                return Err(anyhow!("You must be logged in to resend a verification email").into())
+                return Err(anyhow!("You must be logged in to resend a verification email").into());
             }
         };
 

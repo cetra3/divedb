@@ -9,19 +9,18 @@ use activitypub_federation::{
     traits::{ActivityHandler, Actor, Object},
 };
 use anyhow::Error;
-use kuchiki::traits::TendrilSink;
-use kuchikiki as kuchiki;
+use scraper::Html;
 use serde::{Deserialize, Serialize};
 use tracing::*;
 use url::Url;
 
 use crate::{
+    SITE_URL,
     graphql::WebContext,
     schema::{
-        activitypub::{Note, NoteReply},
         Dive, User,
+        activitypub::{Note, NoteReply},
     },
-    SITE_URL,
 };
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -88,7 +87,7 @@ impl ActivityHandler for Follow {
         let follower = self.actor.dereference(data).await?;
 
         let id =
-            format!("{}/accept/{}/{}", &*SITE_URL, local_user.id, follower.id).parse::<Url>()?;
+            format!("{}/accept/{}/{}", *SITE_URL, local_user.id, follower.id).parse::<Url>()?;
 
         data.handle.new_follow(local_user.id, follower.id).await?;
 
@@ -216,7 +215,10 @@ impl ActivityHandler for CreateDiveComment {
         let dive = note.in_reply_to.dereference_local(data).await?;
         let user = self.actor.dereference(data).await?;
 
-        let plain_text = kuchiki::parse_html().one(note.content).text_contents();
+        let plain_text = Html::parse_document(&note.content)
+            .root_element()
+            .text()
+            .collect::<String>();
 
         data.handle
             .new_external_comment(dive.id, user.id, &plain_text, note.id.inner().as_str())
@@ -280,7 +282,7 @@ impl CreatePost {
 
         let mut note = dive.into_json(data).await?;
 
-        let id = format!("{}/dives/{}/upsert", &*SITE_URL, dive_id).parse::<Url>()?;
+        let id = format!("{}/dives/{}/upsert", *SITE_URL, dive_id).parse::<Url>()?;
 
         note.to.append(&mut inboxes.clone());
 
