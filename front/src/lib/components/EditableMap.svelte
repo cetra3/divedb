@@ -2,6 +2,7 @@
 	import LeafletMap from '#lib/components/leaflet/LeafletMap.svelte';
 	import TileLayer from '#lib/components/leaflet/TileLayer.svelte';
 	import Marker from '#lib/components/leaflet/Marker.svelte';
+	import type { LeafletMouseEvent } from 'leaflet';
 	interface Props {
 		lat: number;
 		lon: number;
@@ -22,15 +23,15 @@
 		attribution: '© OpenStreetMap contributors'
 	};
 
-	const onClick = (e: any) => {
-		lat = e.detail.latlng.lat;
-		lon = e.detail.latlng.lng;
+	const onClick = (e: LeafletMouseEvent) => {
+		lat = e.latlng.lat;
+		lon = e.latlng.lng;
 		onChange(lat, lon);
 	};
 </script>
 
 <div class="editable-map-view">
-	<LeafletMap events={['click']} on:click={onClick} options={mapOptions}>
+	<LeafletMap events={{ click: onClick }} options={mapOptions}>
 		<TileLayer url={tileUrl} options={tileLayerOptions} />
 		<Marker latLng={[lat, lon]} />
 	</LeafletMap>

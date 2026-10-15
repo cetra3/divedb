@@ -199,7 +199,7 @@
 							height={photo.height}
 							imgClass="img-responsive pointer"
 							id={photo.id}
-							on:click={() => {
+							onclick={() => {
 								photoId = photo.id;
 								updateSwiper();
 								showModal = true;
@@ -221,7 +221,7 @@
 		{#each photos as photo}
 			<div class="condensed-photo">
 				<Photo
-					on:click={() => {
+					onclick={() => {
 						photoId = photo.id;
 						updateSwiper();
 						showModal = true;

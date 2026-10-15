@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	interface Props {
 		id: string;
 		imgClass?: string | undefined;
@@ -10,6 +7,7 @@
 		height?: number | undefined;
 		lazy?: boolean;
 		large?: boolean;
+		onclick?: (e: MouseEvent) => void;
 	}
 
 	let {
@@ -19,7 +17,8 @@
 		width = undefined,
 		height = undefined,
 		lazy = true,
-		large = false
+		large = false,
+		onclick
 	}: Props = $props();
 
 	const THUMB_WIDTH = 1000;
@@ -61,7 +60,7 @@
 		width={newWidth}
 		height={newHeight}
 		class={imgClass}
-		onclick={bubble('click')}
+		{onclick}
 		loading={lazy ? 'lazy' : undefined}
 		src={`/api/photos/jpeg/${id}`}
 		{alt}

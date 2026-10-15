@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher, getContext, onDestroy } from 'svelte';
+	import { getContext, onDestroy } from 'svelte';
 	import L from 'leaflet';
 
-	import EventBridge from './EventBridge';
+	import EventBridge, { type LeafletHandlers } from './EventBridge';
 
 	const { getMap } = getContext<any>(L);
 
@@ -12,7 +12,7 @@
 		opacity?: number;
 		zIndex?: number;
 		options?: any;
-		events?: any;
+		events?: LeafletHandlers;
 	}
 
 	let {
@@ -21,7 +21,7 @@
 		opacity = 1.0,
 		zIndex = 1,
 		options = {},
-		events = []
+		events = {}
 	}: Props = $props();
 
 	// LeafletMap only renders its children once the map exists, so create the layer up front
@@ -30,9 +30,8 @@
 		getMap()
 	);
 
-	const dispatch = createEventDispatcher();
 	// svelte-ignore state_referenced_locally
-	const eventBridge = new EventBridge(tileLayer, dispatch, events);
+	const eventBridge = new EventBridge(tileLayer, events);
 
 	$effect.pre(() => {
 		tileLayer.setUrl(url);

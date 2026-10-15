@@ -11,10 +11,10 @@
 
 	let { dive }: Props = $props();
 
-	const onLike = (liked: CustomEvent<boolean>) => {
+	const onLike = (liked: boolean) => {
 		let diveId = dive.id;
 
-		if (liked.detail) {
+		if (liked) {
 			client.likeDive({ diveId });
 		} else {
 			client.unlikeDive({ diveId });
@@ -23,7 +23,7 @@
 </script>
 
 <div class="label-list">
-	<LikeHeart liked={dive.liked} likes={dive.likes} on:liked={onLike} />
+	<LikeHeart liked={dive.liked} likes={dive.likes} onLiked={onLike} />
 
 	<DiveComment diveId={dive.id} numComments={dive.numComments} />
 
