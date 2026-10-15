@@ -6,8 +6,8 @@
 
 	let { data }: Props = $props();
 
-	let regions = data.regions;
-	let feedback = data.feedback;
+	let regions = $derived(data.regions);
+	let feedback = $derived(data.feedback);
 </script>
 
 <svelte:head>

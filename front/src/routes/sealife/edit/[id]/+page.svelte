@@ -59,7 +59,9 @@
 	</div>
 
 	{#if sealife}
-		<EditSealife {categories} {onSave} {sealife} />
+		{#key sealife.id}
+			<EditSealife {categories} {onSave} {sealife} />
+		{/key}
 		{#if showRemove}
 			<div class={`modal active`}>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->

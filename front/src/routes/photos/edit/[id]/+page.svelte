@@ -64,7 +64,9 @@
 			</div>
 		{/if}
 		<div class="column col-12">
-			<EditPhoto {onSave} {photo} />
+			{#key photo.id}
+				<EditPhoto {onSave} {photo} />
+			{/key}
 		</div>
 		{#if showRemove}
 			<div class={`modal active`}>

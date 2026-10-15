@@ -12,7 +12,7 @@
 	}
 
 	let { data }: Props = $props();
-	let dive = data.dive;
+	let dive = $derived(data.dive);
 	let showRemove = $state(false);
 
 	let onRemove = () => {
@@ -55,7 +55,9 @@
 	</div>
 
 	{#if dive != undefined}
-		<EditDive {onSave} {dive} />
+		{#key dive.id}
+			<EditDive {onSave} {dive} />
+		{/key}
 		{#if showRemove}
 			<div class={`modal active`}>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->

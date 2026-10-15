@@ -14,7 +14,7 @@
 	}
 
 	let { data }: Props = $props();
-	let sealife = $state(data.sealife);
+	let sealife = $derived(data.sealife);
 	let mdDesc = $derived(data.mdDesc);
 	let siteUrl = $derived(data.siteUrl);
 	let categories = $derived(data.categories);

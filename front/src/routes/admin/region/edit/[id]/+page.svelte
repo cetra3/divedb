@@ -13,7 +13,7 @@
 	}
 
 	let { data }: Props = $props();
-	let region = data.region;
+	let region = $derived(data.region);
 
 	let errors: string | undefined = $state(undefined);
 
@@ -66,7 +66,9 @@
 			</h1>
 		</div>
 		<div class="column col-12">
-			<EditRegion {region} {onSave} />
+			{#key region?.id}
+				<EditRegion {region} {onSave} />
+			{/key}
 
 			{#if showRemove}
 				<div class={`modal active`}>
