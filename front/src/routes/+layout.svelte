@@ -229,5 +229,5 @@
 </footer>
 
 <style global lang="scss">
-	@import '../style/app.scss';
+	@use '../style/app.scss';
 </style>

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Core variables
 $version: '1.0.0-alpha.2';
 
@@ -21,34 +23,34 @@ $light-color: #fff !default; // CSS variable.
 
 // Primary.
 $primary-color: #5755d9 !default; // CSS variable.
-$primary-color-dark: darken($primary-color, 3%) !default; // CSS variable.
-$primary-color-light: lighten($primary-color, 3%) !default; // CSS variable.
+$primary-color-dark: color.adjust($primary-color, $lightness: -3%) !default; // CSS variable.
+$primary-color-light: color.adjust($primary-color, $lightness: 3%) !default; // CSS variable.
 
 // Secondary.
-$secondary-color: lighten($primary-color, 37.5%) !default; // CSS variable.
-$secondary-color-dark: darken($secondary-color, 3%) !default; // CSS variable.
-$secondary-color-light: lighten($secondary-color, 3%) !default; // CSS variable.
+$secondary-color: color.adjust($primary-color, $lightness: 37.5%) !default; // CSS variable.
+$secondary-color-dark: color.adjust($secondary-color, $lightness: -3%) !default; // CSS variable.
+$secondary-color-light: color.adjust($secondary-color, $lightness: 3%) !default; // CSS variable.
 
 /*
   Gray colors.
 */
-$gray-color: lighten($dark-color, 55%) !default; // CSS variable.
-$gray-color-dark: darken($gray-color, 30%) !default; // CSS variable.
-$gray-color-light: lighten($gray-color, 20%) !default; // CSS variable.
+$gray-color: color.adjust($dark-color, $lightness: 55%) !default; // CSS variable.
+$gray-color-dark: color.adjust($gray-color, $lightness: -30%) !default; // CSS variable.
+$gray-color-light: color.adjust($gray-color, $lightness: 20%) !default; // CSS variable.
 
 /*
   Background colors.
 */
-$bg-color: lighten($dark-color, 75%) !default; // CSS variable.
-$bg-color-dark: darken($bg-color, 3%) !default; // CSS variable.
+$bg-color: color.adjust($dark-color, $lightness: 75%) !default; // CSS variable.
+$bg-color-dark: color.adjust($bg-color, $lightness: -3%) !default; // CSS variable.
 $bg-color-light: $light-color !default; // CSS variable.
 
 /*
   Border colors.
 */
-$border-color: lighten($dark-color, 65%) !default; // CSS variable.
-$border-color-dark: darken($border-color, 10%) !default; // CSS variable.
-$border-color-light: lighten($border-color, 8%) !default; // CSS variable.
+$border-color: color.adjust($dark-color, $lightness: 65%) !default; // CSS variable.
+$border-color-dark: color.adjust($border-color, $lightness: -10%) !default; // CSS variable.
+$border-color-light: color.adjust($border-color, $lightness: 8%) !default; // CSS variable.
 
 /*
   Control colors.
@@ -61,8 +63,8 @@ $warning-color: #ffb700 !default; // CSS variable.
 
 // Link colors.
 $link-color: $primary-color !default; // CSS variable.
-$link-color-dark: darken($link-color, 10%) !default; // CSS variable.
-$link-color-light: lighten($link-color, 10%) !default; // CSS variable.
+$link-color-dark: color.adjust($link-color, $lightness: -10%) !default; // CSS variable.
+$link-color-light: color.adjust($link-color, $lightness: 10%) !default; // CSS variable.
 
 /*
   Other colors.
@@ -74,7 +76,7 @@ $highlight-color: #ffe9b3 !default; // CSS variable.
   Body colors.
 */
 $body-bg-color: $bg-color-light !default; // New SCSS variable, CSS variable.
-$body-font-color: lighten($dark-color, 5%) !default; // CSS variable.
+$body-font-color: color.adjust($dark-color, $lightness: 5%) !default; // CSS variable.
 
 // Fonts
 // Credit: https://www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/
