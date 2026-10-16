@@ -50,13 +50,12 @@ impl Migration for FixPhotoDiveIds {
         let handle = DbHandle::from_pool(pool);
 
         for photo in photos {
-            if photo.dive_id.is_none() {
-                if let Some(date) = photo.date {
-                    if let Some(dive) = handle.nearest_dive_by_time(photo.user_id, date).await? {
-                        debug!("Setting dive id to {} for photo {}", dive.id, photo.id);
-                        conn.execute(&statement, &[&dive.id, &photo.id]).await?;
-                    }
-                }
+            if photo.dive_id.is_none()
+                && let Some(date) = photo.date
+                && let Some(dive) = handle.nearest_dive_by_time(photo.user_id, date).await?
+            {
+                debug!("Setting dive id to {} for photo {}", dive.id, photo.id);
+                conn.execute(&statement, &[&dive.id, &photo.id]).await?;
             }
         }
 

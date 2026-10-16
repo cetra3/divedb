@@ -4,10 +4,9 @@ use super::{OgReference, OgReferenceQuery, Photo, PhotoQuery};
 use crate::escape::{md_to_text, truncate};
 use crate::{db::DbHandle, graphql::SchemaContext};
 use async_graphql::*;
-use async_trait::async_trait;
 use chrono::prelude::*;
-use dataloader::cached::Loader;
 use dataloader::BatchFn;
+use dataloader::cached::Loader;
 use divedb_core::FromRow;
 use serde::{Deserialize, Serialize};
 use tracing::*;
@@ -30,7 +29,6 @@ impl SealifeBatcher {
     }
 }
 
-#[async_trait]
 impl BatchFn<Uuid, Sealife> for SealifeBatcher {
     async fn load(&mut self, keys: &[Uuid]) -> HashMap<Uuid, Sealife> {
         debug!("Got load for keys:{:?}", keys);

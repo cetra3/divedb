@@ -1,5 +1,4 @@
 use anyhow::Error;
-use deadpool::managed::HookErrorCause;
 use deadpool_postgres::{Hook, HookError, Manager, ManagerConfig, Pool, RecyclingMethod};
 use foyer::HybridCache;
 use postgres_types::ToSql;
@@ -60,7 +59,7 @@ impl DbHandle {
                 Box::pin(async move {
                     obj.execute("SET deadlock_timeout = '900s'", &[])
                         .await
-                        .map_err(|err| HookError::Abort(HookErrorCause::Backend(err)))?;
+                        .map_err(HookError::Backend)?;
                     Ok(())
                 })
             }))

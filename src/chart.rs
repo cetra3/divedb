@@ -2,28 +2,30 @@ use std::io::Cursor;
 
 use crate::{
     graphql::WebContext,
-    photos::{get_font_width, FONT, WATERMARK},
+    photos::{FONT, WATERMARK, get_font_width},
     schema::{DiveMetric, DiveSiteQuery},
 };
+use ab_glyph::PxScale;
 use actix_web::{
+    Error as ActixError, HttpResponse,
     error::{ErrorInternalServerError, ErrorNotFound},
-    web, Error as ActixError, HttpResponse,
+    web,
 };
 use anyhow::Error;
 use askama::Template;
 use dive_deco::{BuhlmannConfig, BuhlmannModel, DecoModel, Depth, Gas, Time};
-use image::{imageops::overlay, ImageOutputFormat, Rgba, RgbaImage};
+use image::{ImageFormat, Rgba, RgbaImage, imageops::overlay};
 use imageproc::drawing::draw_text_mut;
 use once_cell::sync::Lazy;
 use resvg::{
     tiny_skia::{self, Color},
     usvg::{
+        self,
         fontdb::{self, Database},
-        TreeParsing, TreeTextToPath,
     },
 };
-use rusttype::Scale;
 use std::fmt::Write;
+use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
@@ -34,11 +36,11 @@ pub struct ChartRequest {
     height: Option<f64>,
 }
 
-static FONT_DB: Lazy<Database> = Lazy::new(|| {
+static FONT_DB: Lazy<Arc<Database>> = Lazy::new(|| {
     let mut fontdb = fontdb::Database::new();
     fontdb.load_system_fonts();
 
-    fontdb
+    Arc::new(fontdb)
 });
 
 pub async fn png_chart(
@@ -103,16 +105,19 @@ pub async fn png_chart(
     let svg = render_dive(dive_metrics, deco_model, width, height)
         .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
-    let mut tree = resvg::usvg::Tree::from_data(svg.as_bytes(), &Default::default()).unwrap();
-    tree.convert_text(&FONT_DB);
+    let options = usvg::Options {
+        fontdb: FONT_DB.clone(),
+        ..Default::default()
+    };
 
-    let rtree = resvg::Tree::from_usvg(&tree);
+    let tree = usvg::Tree::from_data(svg.as_bytes(), &options)
+        .map_err(|err| ErrorInternalServerError(err.to_string()))?;
 
-    let pixmap_size = rtree.size.to_int_size();
+    let pixmap_size = tree.size().to_int_size();
     let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
 
     pixmap.fill(Color::from_rgba8(48, 55, 66, 255));
-    rtree.render(tiny_skia::Transform::default(), &mut pixmap.as_mut());
+    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
 
     let img = RgbaImage::from_raw(pixmap.width(), pixmap.height(), pixmap.take())
         .ok_or_else(|| ErrorInternalServerError("Not enough pixels"))?;
@@ -132,10 +137,7 @@ pub async fn png_chart(
     }
 
     let font_height = 30.0;
-    let scale = Scale {
-        x: font_height,
-        y: font_height,
-    };
+    let scale = PxScale::from(font_height);
 
     let font_width = get_font_width(&output_text, scale);
 
@@ -151,14 +153,14 @@ pub async fn png_chart(
         font_x as i32,
         15 + WATERMARK.height() as i32,
         scale,
-        &FONT,
+        &*FONT,
         &output_text,
     );
 
     let mut output_body = Cursor::new(Vec::<u8>::new());
 
     out_img
-        .write_to(&mut output_body, ImageOutputFormat::Png)
+        .write_to(&mut output_body, ImageFormat::Png)
         .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok()
@@ -491,7 +493,8 @@ pub fn render_dive(
 }
 
 mod filters {
-    pub fn minutes(val: &f64) -> ::askama::Result<String> {
+    #[askama::filter_fn]
+    pub fn minutes(val: &f64, _: &dyn askama::Values) -> askama::Result<String> {
         Ok(super::minutes(val))
     }
 }

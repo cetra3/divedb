@@ -10,6 +10,7 @@ mod external_sql;
 
 mod create_apub_keys;
 mod fix_photo_dive_ids;
+mod scrypt_phc;
 
 use deadpool_postgres::Pool;
 use divedb_core::FromRow;
@@ -55,6 +56,7 @@ impl Migrator {
                 Box::new(external!("V020__external_users.sql")),
                 Box::new(external!("V021__email_verification.sql")),
                 Box::new(external!("V022__deco_model.sql")),
+                Box::new(scrypt_phc::ScryptPhc),
             ],
         }
     }

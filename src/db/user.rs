@@ -20,7 +20,7 @@ impl DbHandle {
 
         let key_pair = generate_actor_keypair()?;
 
-        let query =  "insert into users (id, username, email, password, level, public_key, private_key) values ($1, slugify($2), lower($3), $4, 'User', $5, $6) returning *";
+        let query = "insert into users (id, username, email, password, level, public_key, private_key) values ($1, slugify($2), lower($3), $4, 'User', $5, $6) returning *";
         let result = client
             .query_one(
                 query,
@@ -48,7 +48,7 @@ impl DbHandle {
         let uuid = Uuid::new_v4();
         let client = self.pool.get().await?;
 
-        let username = format!("{}@{}", &username, ap_id.domain().unwrap_or_default());
+        let username = format!("{}@{}", username, ap_id.domain().unwrap_or_default());
 
         let query = "
             insert into users (

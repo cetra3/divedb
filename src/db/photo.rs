@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use divedb_core::FromRow;
 use tracing::*;
 use uuid::Uuid;

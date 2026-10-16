@@ -16,14 +16,13 @@ use activitypub_federation::{
     traits::{Actor, Object},
 };
 
-use anyhow::{anyhow, Error};
-use kuchiki::traits::TendrilSink;
-use kuchikiki as kuchiki;
+use anyhow::{Error, anyhow};
+use scraper::Html;
 use serde::{Deserialize, Serialize};
 use std::fmt::Write;
 use url::Url;
 
-use crate::{chart::minutes, escape::md_to_html, WebContext, SITE_URL};
+use crate::{SITE_URL, WebContext, chart::minutes, escape::md_to_html};
 
 use super::{Dive, DiveComment, DiveSite, DiveSiteQuery, Photo, PhotoQuery, User};
 
@@ -51,7 +50,7 @@ impl User {
             .as_ref()
             .map(|val| val.parse::<Url>().expect("Invalid Site Url!"))
             .unwrap_or_else(|| {
-                format!("{}/users/{}", &*SITE_URL, self.username)
+                format!("{}/users/{}", *SITE_URL, self.username)
                     .parse::<Url>()
                     .expect("Invalid Site Url!")
             })
@@ -62,7 +61,7 @@ impl User {
             .as_ref()
             .map(|val| val.parse::<Url>().expect("Invalid Site Url!"))
             .unwrap_or_else(|| {
-                format!("{}/users/{}/inbox", &*SITE_URL, self.username)
+                format!("{}/users/{}/inbox", *SITE_URL, self.username)
                     .parse::<Url>()
                     .expect("Invalid Site Url!")
             })
@@ -73,7 +72,7 @@ impl User {
             None
         } else {
             Some(
-                format!("{}/users/{}/outbox", &*SITE_URL, self.username)
+                format!("{}/users/{}/outbox", *SITE_URL, self.username)
                     .parse::<Url>()
                     .expect("Invalid Site Url!"),
             )
@@ -109,7 +108,7 @@ impl Object for User {
         object_id: Url,
         data: &Data<Self::DataType>,
     ) -> Result<Option<Self>, Self::Error> {
-        let prefix = format!("{}/users/", &*SITE_URL);
+        let prefix = format!("{}/users/", *SITE_URL);
 
         if let Some(username) = object_id.to_string().strip_prefix(&prefix) {
             return Ok(data.handle.user_by_username(username).await.ok());
@@ -181,18 +180,23 @@ impl Object for User {
             return Self::read_from_id(json.id.into(), data)
                 .await?
                 .ok_or_else(|| anyhow!("No user found!"));
-        } else if let Ok(user) = data.handle.user_by_ap_id(json.id.inner().as_str()).await {
-            return Ok(user);
         } else {
-            return data
-                .handle
-                .new_external_user(
-                    &json.preferred_username,
-                    json.id.inner(),
-                    json.inbox.as_str(),
-                    &json.public_key.public_key_pem,
-                )
-                .await;
+            match data.handle.user_by_ap_id(json.id.inner().as_str()).await {
+                Ok(user) => {
+                    return Ok(user);
+                }
+                _ => {
+                    return data
+                        .handle
+                        .new_external_user(
+                            &json.preferred_username,
+                            json.id.inner(),
+                            json.inbox.as_str(),
+                            &json.public_key.public_key_pem,
+                        )
+                        .await;
+                }
+            }
         }
     }
 }
@@ -216,7 +220,7 @@ pub struct Note {
 
 impl Dive {
     pub fn ap_id(&self) -> Url {
-        format!("{}/dives/{}", &*SITE_URL, self.id)
+        format!("{}/dives/{}", *SITE_URL, self.id)
             .parse::<Url>()
             .expect("Invalid Site Url!")
     }
@@ -232,7 +236,7 @@ impl Object for Dive {
         object_id: Url,
         data: &Data<Self::DataType>,
     ) -> Result<Option<Self>, Self::Error> {
-        let prefix = format!("{}/dives/", &*SITE_URL);
+        let prefix = format!("{}/dives/", *SITE_URL);
 
         if let Some(id) = object_id
             .as_str()
@@ -257,16 +261,18 @@ impl Object for Dive {
     }
 
     async fn into_json(self, data: &Data<Self::DataType>) -> Result<Self::Kind, Self::Error> {
-        let id = format!("{}/dives/{}", &*SITE_URL, self.id)
+        let id = format!("{}/dives/{}", *SITE_URL, self.id)
             .parse::<Url>()?
             .into();
 
         let attributed_to = data.handle.user_details(self.user_id).await?.ap_id().into();
 
         let to = if self.published {
-            vec!["https://www.w3.org/ns/activitystreams#Public"
-                .parse::<Url>()
-                .unwrap()]
+            vec![
+                "https://www.w3.org/ns/activitystreams#Public"
+                    .parse::<Url>()
+                    .unwrap(),
+            ]
         } else {
             vec![]
         };
@@ -384,7 +390,7 @@ impl DiveComment {
             .as_ref()
             .map(|val| val.parse::<Url>().expect("Invalid Site Url!"))
             .unwrap_or_else(|| {
-                format!("{}/comments/{}", &*SITE_URL, self.id)
+                format!("{}/comments/{}", *SITE_URL, self.id)
                     .parse::<Url>()
                     .expect("Invalid Site Url!")
             })
@@ -401,7 +407,7 @@ impl Object for DiveComment {
         object_id: Url,
         data: &Data<Self::DataType>,
     ) -> Result<Option<Self>, Self::Error> {
-        let prefix = format!("{}/comments/", &*SITE_URL);
+        let prefix = format!("{}/comments/", *SITE_URL);
 
         if let Some(id) = object_id
             .as_str()
@@ -476,18 +482,31 @@ impl Object for DiveComment {
             return Self::read_from_id(json.id.into(), data)
                 .await?
                 .ok_or_else(|| anyhow!("No user found!"));
-        } else if let Ok(comment) = data.handle.comment_by_ap_id(json.id.inner().as_str()).await {
-            return Ok(comment);
         } else {
-            let dive = json.in_reply_to.dereference_local(data).await?;
-            let user = json.attributed_to.dereference(data).await?;
+            match data.handle.comment_by_ap_id(json.id.inner().as_str()).await {
+                Ok(comment) => {
+                    return Ok(comment);
+                }
+                _ => {
+                    let dive = json.in_reply_to.dereference_local(data).await?;
+                    let user = json.attributed_to.dereference(data).await?;
 
-            let plain_text = kuchiki::parse_html().one(json.content).text_contents();
+                    let plain_text = Html::parse_document(&json.content)
+                        .root_element()
+                        .text()
+                        .collect::<String>();
 
-            return data
-                .handle
-                .new_external_comment(dive.id, user.id, &plain_text, json.id.inner().as_str())
-                .await;
+                    return data
+                        .handle
+                        .new_external_comment(
+                            dive.id,
+                            user.id,
+                            &plain_text,
+                            json.id.inner().as_str(),
+                        )
+                        .await;
+                }
+            }
         }
     }
 }
@@ -520,7 +539,7 @@ impl Tag {
         let slug = site.slug.as_deref().unwrap_or_default();
         Self {
             kind: "Hashtag".into(),
-            href: format!("{}/sites/{}", &*SITE_URL, slug),
+            href: format!("{}/sites/{}", *SITE_URL, slug),
             name: format!("#{}", site.name.replace(' ', "")),
         }
     }
@@ -528,7 +547,7 @@ impl Tag {
 
 impl Image {
     pub fn dive_chart(dive_id: Uuid) -> Self {
-        let url = format!("{}/api/chart/{}/png", &*SITE_URL, dive_id);
+        let url = format!("{}/api/chart/{}/png", *SITE_URL, dive_id);
         let media_type = "image/png".to_string();
         let width = 877;
         let height = 300;
@@ -548,25 +567,21 @@ impl Image {
         let media_type = "image/jpeg".to_string();
 
         let url = if photo.internal {
-            format!("{}/api/photos/jpeg/{}", &*SITE_URL, photo.id)
+            format!("{}/api/photos/jpeg/{}", *SITE_URL, photo.id)
         } else {
-            format!("{}/api/photos/jpeglarge/{}", &*SITE_URL, photo.id)
+            format!("{}/api/photos/jpeglarge/{}", *SITE_URL, photo.id)
         };
 
         // Large size
         let desired_width = if photo.internal { 512 } else { 2000 };
-        let width;
-        let height;
 
-        if photo.width > photo.height {
+        let (width, height) = if photo.width > photo.height {
             let ratio = photo.height as f32 / photo.width as f32;
-            width = desired_width;
-            height = (desired_width as f32 * ratio) as i32;
+            (desired_width, (desired_width as f32 * ratio) as i32)
         } else {
             let ratio = photo.width as f32 / photo.height as f32;
-            width = (desired_width as f32 * ratio) as i32;
-            height = desired_width;
-        }
+            ((desired_width as f32 * ratio) as i32, desired_width)
+        };
 
         Image {
             kind,

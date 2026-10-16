@@ -1,14 +1,13 @@
-use aes_gcm::aead::{generic_array::GenericArray, Aead};
 use aes_gcm::Aes256Gcm; // Or `Aes128Gcm`
-use anyhow::{anyhow, Error};
-use base64::{decode, encode};
-use rand::{thread_rng, Rng};
+use aes_gcm::aead::{Aead, Nonce};
+use anyhow::{Error, anyhow};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use uuid::Uuid;
 
-use actix_web::{dev::Payload, FromRequest, HttpRequest};
-use actix_web::{web, Error as ActixError};
+use actix_web::{Error as ActixError, web};
+use actix_web::{FromRequest, HttpRequest, dev::Payload};
 
-use futures::future::{ready, Ready};
+use futures::future::{Ready, ready};
 
 use crate::graphql::WebContext;
 
@@ -22,10 +21,10 @@ pub trait TokenEncryptor {
 impl TokenEncryptor for Aes256Gcm {
     fn base64_encrypt<I: AsRef<[u8]>>(&self, input: I) -> Result<String, Error> {
         let mut nonce = [0; NONCE_LEN];
-        thread_rng().fill(&mut nonce);
+        rand::fill(&mut nonce);
 
         let mut ciphertext = self
-            .encrypt(GenericArray::from_slice(&nonce), input.as_ref())
+            .encrypt(&Nonce::<Self>::from(nonce), input.as_ref())
             .map_err(|err| anyhow!("{}", err))?;
 
         let mut output = Vec::new();
@@ -33,20 +32,21 @@ impl TokenEncryptor for Aes256Gcm {
         output.extend_from_slice(&nonce);
         output.append(&mut ciphertext);
 
-        Ok(encode(&output))
+        Ok(STANDARD.encode(&output))
     }
 
     fn base64_decrypt<I: AsRef<[u8]>>(&self, input: I) -> Result<Vec<u8>, Error> {
-        let bytes = decode(input.as_ref())?;
+        let bytes = STANDARD.decode(input.as_ref())?;
 
         if bytes.len() < NONCE_LEN {
             return Err(anyhow!("Invalid sized token"));
         }
 
         let (nonce, ciphertext) = bytes.split_at(NONCE_LEN);
+        let nonce = Nonce::<Self>::try_from(nonce)?;
 
         let output = self
-            .decrypt(GenericArray::from_slice(nonce), ciphertext)
+            .decrypt(&nonce, ciphertext)
             .map_err(|err| anyhow!("{}", err))?;
 
         Ok(output)
@@ -62,17 +62,17 @@ impl FromRequest for Token {
     type Future = Ready<Result<Token, ActixError>>;
 
     fn from_request(req: &HttpRequest, _pl: &mut Payload) -> Self::Future {
-        if let Some(web) = req.app_data::<web::Data<WebContext>>() {
-            if let Some(header) = req.headers().get("divedb-token") {
-                return ready(Ok(Token {
-                    user_id: web
-                        .cipher
-                        .base64_decrypt(header)
-                        .ok()
-                        .and_then(|val| TryInto::try_into(val).ok())
-                        .map(Uuid::from_bytes),
-                }));
-            }
+        if let Some(web) = req.app_data::<web::Data<WebContext>>()
+            && let Some(header) = req.headers().get("divedb-token")
+        {
+            return ready(Ok(Token {
+                user_id: web
+                    .cipher
+                    .base64_decrypt(header)
+                    .ok()
+                    .and_then(|val| TryInto::try_into(val).ok())
+                    .map(Uuid::from_bytes),
+            }));
         }
 
         ready(Ok(Token { user_id: None }))
@@ -83,15 +83,14 @@ impl FromRequest for Token {
 mod tests {
 
     use crate::token::*;
-    use aes_gcm::{aead::generic_array::GenericArray, KeyInit};
+    use aes_gcm::KeyInit;
 
     const KEY: &[u8; 32] = b"Really Secret Key!!!!!!!!!!!!!!!";
     const MESSAGE: &str = "Hello World";
 
     #[test]
     fn test_key() {
-        let key = GenericArray::from_slice(KEY);
-        let cipher = Aes256Gcm::new(key);
+        let cipher = Aes256Gcm::new(KEY.into());
 
         let ciphertext = cipher.base64_encrypt(MESSAGE).expect("Encodes correctly");
 

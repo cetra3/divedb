@@ -231,8 +231,7 @@ impl DbHandle {
 
     pub async fn dive_number(&self, dive_id: Uuid, user_id: Uuid) -> Result<i64, Error> {
         let client = self.pool.get().await?;
-        let query =
-            "select count(*) from dives where date <= (select date from dives where id = $1) and user_id = $2";
+        let query = "select count(*) from dives where date <= (select date from dives where id = $1) and user_id = $2";
         let result = client.query_one(query, &[&dive_id, &user_id]).await?;
 
         let count: i64 = result.get(0);
@@ -252,8 +251,7 @@ impl DbHandle {
 
     pub async fn dive_metrics(&self, dive_id: Uuid) -> Result<Vec<DiveMetric>, Error> {
         let client = self.pool.get().await?;
-        let query =
-            "select time, depth, pressure, temperature, o2, he from dive_metrics where dive_id = $1 order by time asc";
+        let query = "select time, depth, pressure, temperature, o2, he from dive_metrics where dive_id = $1 order by time asc";
         let result = client.query(query, &[&dive_id]).await?;
 
         DiveMetric::from_rows(result)
