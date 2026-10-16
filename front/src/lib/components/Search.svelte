@@ -6,7 +6,7 @@
 
 	import SearchResult from './SearchResult.svelte';
 	import { onMount, untrack } from 'svelte';
-	import { result, throttle } from 'lodash-es';
+	import { throttle } from 'lodash-es';
 
 	interface Props {
 		query?: string;
@@ -42,35 +42,52 @@
 
 	let hasValues = $derived(map !== undefined && Object.values(map).flat().length > 0);
 
+	// Incremented for each search, so responses to superseded searches can be ignored
+	let latestSearch = 0;
+
 	const updateResult = (more: boolean = false) => {
-		if ((query != '' || hasValues) && !loading) {
-			loading = true;
+		// Loading more waits for the current request, but a new query always searches
+		if ((query == '' && !hasValues) || (more && loading)) {
+			return;
+		}
 
-			if (!more) {
-				offset = 0;
-			}
+		const search = ++latestSearch;
+		loading = true;
 
-			let queryString = query;
+		if (!more) {
+			offset = 0;
+			atTheEnd = false;
+		}
 
-			if (filter) {
-				queryString += ` ${filter} `;
-			}
+		let queryString = query;
 
-			if (map) {
-				queryString += Object.values(map)
-					.flat()
-					.map((val) => `category:${val}`)
-					.join(' ');
-			}
+		if (filter) {
+			queryString += ` ${filter} `;
+		}
 
-			client.search({ query: queryString, offset }).then((val) => {
-				loading = false;
+		if (map) {
+			queryString += Object.values(map)
+				.flat()
+				.map((val) => `category:${val}`)
+				.join(' ');
+		}
+
+		client
+			.search({ query: queryString, offset })
+			.then((val) => {
+				if (search != latestSearch) {
+					return;
+				}
 				called = true;
 				results = more ? [...results, ...val.search] : val.search;
 				offset = results.length;
 				atTheEnd = val.search.length == 0;
+			})
+			.finally(() => {
+				if (search == latestSearch) {
+					loading = false;
+				}
 			});
-		}
 	};
 
 	// Search again only when the query or category filters change, not on anything updateResult reads
