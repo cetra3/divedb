@@ -211,12 +211,10 @@
 	<div class="columns">
 		<div class="column column-lg">
 			<div class="float-right">
-				<p>
-					<small>
-						DiveDB is an <a href="https://github.com/cetra3/divedb">open source project</a>, made
-						with ❤️ by <a href="https://cetra3.github.io/">cetra3</a>
-					</small>
-				</p>
+				<small>
+					DiveDB is an <a href="https://github.com/cetra3/divedb">open source project</a>, made with
+					❤️ by <a href="https://cetra3.github.io/">cetra3</a>
+				</small>
 			</div>
 		</div>
 	</div>

@@ -13,7 +13,6 @@
 	}
 
 	let { data }: Props = $props();
-	let diveSites = $derived(data.diveSites);
 
 	let DiveMap: any = $state();
 
@@ -42,38 +41,42 @@
 	<title>DiveDB - Dive Map</title>
 </svelte:head>
 
-<div class="dive-sites container grid-lg">
-	<div class="columns">
-		<div class="column col-12 col-lg-12">
-			<h1 class="page-title inline">
-				<DiveSiteIcon size="22px" /> Dive Map
-				{#if data.regions.length > 0}
-					<div class="dropdown inline">
-						<button class="btn btn-sm dropdown-toggle">
-							{#if region != undefined}
-								{region.name}
-							{:else}
-								Choose a Region
-							{/if}
-						</button>
-						<ul class="menu region-list">
-							{#each data.regions as region}
-								<li class="menu-item">
-									<a href="/divesites/map/{region.slug}">{region.name}</a>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
-				<a href="/divesites">
-					<button class="btn btn-secondary btn-sm">View List</button>
-				</a>
-			</h1>
-		</div>
+<div class="dive-sites">
+	<div class="container grid-lg">
+		<h1 class="page-title inline">
+			<DiveSiteIcon size="22px" /> Dive Map
+			{#if data.regions.length > 0}
+				<div class="dropdown inline">
+					<button class="btn btn-sm dropdown-toggle">
+						{#if region != undefined}
+							{region.name}
+						{:else}
+							Choose a Region
+						{/if}
+					</button>
+					<ul class="menu region-list">
+						{#each data.regions as region}
+							<li class="menu-item">
+								<a href="/divesites/map/{region.slug}">{region.name}</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+			<a href="/divesites">
+				<button class="btn btn-secondary btn-sm">View List</button>
+			</a>
+		</h1>
 	</div>
-	<div class="columns dive-site-content">
+	<div class="dive-site-content">
 		{#if browser}
-			<DiveMap sites={diveSites} selectedSite={site} {bounds} />
+			{#await data.diveSites}
+				<div class="column col-12 map-loading"><div class="loading loading-lg"></div></div>
+			{:then diveSites}
+				<DiveMap sites={diveSites} selectedSite={site} {bounds} />
+			{:catch}
+				<div class="column col-12 map-loading">Could not load dive sites</div>
+			{/await}
 		{/if}
 	</div>
 </div>
@@ -96,5 +99,14 @@
 	}
 	.dive-site-content {
 		flex: 1;
+		display: flex;
+	}
+	.dive-site-content :global(.leaflet-container) {
+		border-radius: 0.3rem;
+	}
+	.map-loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 </style>
